@@ -1,0 +1,1 @@
+Welcome to my Capstone project, the Neumont Group Network. Through this site, you will be able to manage your extracurricular clubs and orders without having to use Facebook. 
