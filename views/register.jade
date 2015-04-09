@@ -2,7 +2,8 @@ extends layout
 
 block content
     h1 #{title}
-        form
-            p Username
-            p Password
-            p Email
+        form(action='http://localhost:3000/register', method='post')
+            input(type='text', name='username', placeholder='Your username')
+            input(type='text', name='password', placeholder='Your password')
+            input(type='text', name='email', placeholder='Your email')
+            input(type='button', value='Register')
