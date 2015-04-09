@@ -26,17 +26,16 @@ var createConnectionToDB = function() {
     return(db_conn);
 }
 
-var executeBasicQuery = function(db_conn) {
-    console.log("Executing basic query");
-    db_conn.query('SELECT * from users', function(err, rows, fields) {
+var insertIntoDB = function(db_conn, username, password, email) {
+    console.log("Inserting user into database");
+    console.log('INSERT INTO `users`(`username`, `password`, `email`) VALUES (\'' + username + '\', \'' + password + '\', \'' + email + '\')');
+    db_conn.query('INSERT INTO `users`(`username`, `password`, `email`) VALUES (\'' + username + '\', \'' + password + '\', \'' + email + '\')', function(err, rows, fields) {
         if (err) {
             throw err;
         }
-
-        console.log('Results: ', rows);
     });
-    console.log("Basic query executed");
+    console.log("User successfully recorded in database");
 }
 
 module.exports.createConnectionToDB = createConnectionToDB;
-module.exports.executeBasicQuery = executeBasicQuery;
+module.exports.insertIntoDB = insertIntoDB;
