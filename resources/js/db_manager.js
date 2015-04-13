@@ -35,14 +35,9 @@ var checkPotentialMaliciousInput = function(input_string) {
 }
 
 var registerNewUser = function(db_conn, username, password, email) {
-    console.log("Inserting user into database");
-    console.log('INSERT INTO `users`(`username`, `password`, `email`) VALUES (\'' + username + '\', \'' + password + '\', \'' + email + '\')');
     db_conn.query('INSERT INTO `users`(`username`, `password`, `email`) VALUES (\'' + username + '\', \'' + password + '\', \'' + email + '\')', function(err, rows, fields) {
         if (err) {
-            throw err;
-        }
-        else {
-            console.log("User successfully recorded in database");
+            return err;
         }
     });
 }
@@ -50,14 +45,14 @@ var registerNewUser = function(db_conn, username, password, email) {
 var signIn = function(db_conn, username, password) {
     db_conn.query('SELECT * FROM users where username=\'' + username + '\' and password=\'' + password + '\'', function(err, rows, fields) {
         if (err) {
-            throw err;
+            return err;
         }
         else {
             console.log("==== Retrieved user from database ====");
-            console.log("==== Fields[0]: " + fields[0] + "====");
-            console.log("==== Rows[0]: " + rows[0] + "====");
-            console.log("==== Retrieved user ID: " + rows[0].user_id + "====");
-            console.log("==== Retrieved username: " + rows[0].username + "====");
+            console.log("==== Fields[0]: " + fields[0] + " ====");
+            console.log("==== Rows[0]: " + rows[0] + " ====");
+            console.log("==== Retrieved user ID: " + rows[0].user_id + " ====");
+            console.log("==== Retrieved username: " + rows[0].username + " ====");
             return rows.username;
         }
     });
@@ -67,3 +62,14 @@ module.exports.createConnectionToDB = createConnectionToDB;
 module.exports.checkPotentialMaliciousInput = checkPotentialMaliciousInput;
 module.exports.registerNewUser = registerNewUser;
 module.exports.signIn = signIn;
+
+
+//db_conn.query('INSERT INTO `users`(`username`, `password`, `email`) VALUES (\'' + username + '\', \'' + password + '\', \'' + email + '\')', function(err, rows, fields) {
+//    if (err) {
+//        console.log("throwing error");
+//        throw err;
+//    }
+//    else {
+//        console.log("User successfully recorded in database");
+//    }
+//});
