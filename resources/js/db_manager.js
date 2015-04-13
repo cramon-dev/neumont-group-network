@@ -11,35 +11,48 @@ var createConnectionToDB = function() {
         database: 'ngn-db'
     });
     
-    console.log("Calling connect function");
     db_conn.connect();
     
-    console.log("Returning connection: " + db_conn);
+    console.log("Successfully connected to database, returning connection");
     return(db_conn);
 }
 
-var checkPotentialMaliciousInput = function(input_string) {
+var checkInvalidInput = function(input_string) {
     //If input contains any scripts, kick them back to register
     //Does not currently protect against SQL injection
     if(input_string.indexOf('<script') > -1) {
-        console.log("Malicious content found");
+        console.log("Potentially malicious content found");
         throw {
             name: "InvalidInputException",
             message: "Invalid input."
         };
     }
     else {
-        console.log("Returning " + input_string);
         return input_string;
     }
 }
 
 var registerNewUser = function(db_conn, username, password, email) {
+    var errToThrow;
+    
     db_conn.query('INSERT INTO `users`(`username`, `password`, `email`) VALUES (\'' + username + '\', \'' + password + '\', \'' + email + '\')', function(err, rows, fields) {
-        if (err) {
-            return err;
+        console.log("Inside callback query");
+        console.log("Callback query error: " + err);
+        if (err === null) {
+            console.log("No error found while inserting user");
+            return true;
         }
+        else {
+            console.log("Error found while inserting user");
+            console.log(err);
+            errToThrow = err;
+        }
+//        return false;
     });
+    
+    if(errToThrow !== null) {
+        throw errToThrow;
+    }
 }
 
 var signIn = function(db_conn, username, password) {
@@ -59,7 +72,7 @@ var signIn = function(db_conn, username, password) {
 }
 
 module.exports.createConnectionToDB = createConnectionToDB;
-module.exports.checkPotentialMaliciousInput = checkPotentialMaliciousInput;
+module.exports.checkInvalidInput = checkInvalidInput;
 module.exports.registerNewUser = registerNewUser;
 module.exports.signIn = signIn;
 
