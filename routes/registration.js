@@ -22,15 +22,14 @@ router.post('/', function(req, res, next) {
         res.render('register', { message: e.message });
     }
     
-    try {
-        var db_conn = db_manager.createConnectionToDB();
-        if(db_manager.registerNewUser(db_conn, username, password, email)) {
-            res.render('home', { username: username } ); //render home page with their username to show they're logged in
-        }
-    }
-    catch(e) {
-        res.render('register', { message: e.message });
+    var db_conn = db_manager.createConnectionToDB();
+    if(db_manager.registerNewUser(db_conn, username, password, email)) {
+        res.render('home', { username: username } ); //render home page with their username to show they're logged in
     }
 });
+
+//router.put('/', function(req, res, next) {
+//    res.send('PUT new user in database');
+//});
 
 module.exports = router;
