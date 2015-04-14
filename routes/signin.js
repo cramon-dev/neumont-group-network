@@ -11,12 +11,12 @@ router.post('/', function(req, res, next) {
         username = db_manager.checkInvalidInput(req.body.username);
         password = db_manager.checkInvalidInput(req.body.password);
         
-        var db_conn = db_manager.createConnectionToDB();
-        var session_user_id = db_manager.signIn(db_conn, username, password);
-        res.render('home', { username: username } ); //render home page with their username to show they're logged in
+//        var db_conn = db_manager.createConnectionToDB();
+//        var session_user_id = db_manager.signIn(db_conn, username, password);
+//        res.render('home', { username: username } ); //render home page with their username to show they're logged in
     }
     catch(e) {
-        res.render('index', { error_message: e.message });
+        res.render('index', { message: e.message });
     }
 });
 
