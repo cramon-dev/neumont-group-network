@@ -1,4 +1,5 @@
 var express = require('express');
+var bcrypt = require('bcrypt');
 var router = express.Router();
 var db_manager = require('../resources/js/db_manager.js');
 
@@ -8,6 +9,7 @@ router.get('/', function(req, res, next) {
 });
 
 //Upon successful user account registration, redirect to logged in home page
+//Consider moving this to PUT
 router.post('/', function(req, res, next) {
     var username, password, email;
     
@@ -28,8 +30,8 @@ router.post('/', function(req, res, next) {
     }
 });
 
-//router.put('/', function(req, res, next) {
-//    res.send('PUT new user in database');
-//});
+router.put('/', function(req, res, next) {
+    res.send('PUT new user in database');
+});
 
 module.exports = router;

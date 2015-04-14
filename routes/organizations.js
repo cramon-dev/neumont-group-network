@@ -23,11 +23,13 @@ router.post('/order', function(req, res, next) {
 
 //Create
 router.put('/club', function(req, res, next) {
-    res.render('organization', { message: 'Club created!' });
+    res.send('Club created!');
+//    res.render('organization', { message: 'Club created!' });
 });
 
 router.put('/order', function(req, res, next) {
-    res.render('organization', { message: 'Order created!' });
+    res.send('Order created!');
+//    res.render('organization', { message: 'Order created!' });
 });
 
 module.exports = router;
