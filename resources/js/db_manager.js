@@ -32,33 +32,21 @@ var checkInvalidInput = function(input_string) {
     }
 }
 
-var registerNewUser = function(db_conn, username, password, email) {
-    var errToThrow;
-    
+var registerNewUser = function(db_conn, username, password, email, callback) {
     db_conn.query('INSERT INTO `users`(`username`, `password`, `email`) VALUES (\'' + username + '\', \'' + password + '\', \'' + email + '\')', function(err, rows, fields) {
-        console.log("Inside callback query");
-        console.log("Callback query error: " + err);
-        if (err === null) {
-            console.log("No error found while inserting user");
-            return true;
+        if (err) {
+            callback(err, false);
         }
         else {
-            console.log("Error found while inserting user");
-            console.log(err);
-            errToThrow = err;
+            callback(null, true);
         }
-//        return false;
     });
-    
-    if(errToThrow !== null) {
-        throw errToThrow;
-    }
 }
 
-var signIn = function(db_conn, username, password) {
-    db_conn.query('SELECT * FROM users where username=\'' + username + '\' and password=\'' + password + '\'', function(err, rows, fields) {
-        if (err) {
-            return err;
+var signIn = function(db_conn, username, callback) {
+    db_conn.query('SELECT * FROM users where username=\'' + username + '\' LIMIT 1', function(err, rows, fields) {
+        if(err) {
+            callback(err, null);
         }
         else {
             console.log("==== Retrieved user from database ====");
@@ -66,7 +54,8 @@ var signIn = function(db_conn, username, password) {
             console.log("==== Rows[0]: " + rows[0] + " ====");
             console.log("==== Retrieved user ID: " + rows[0].user_id + " ====");
             console.log("==== Retrieved username: " + rows[0].username + " ====");
-            return rows.username;
+            console.log("==== Retrieved password: " + rows[0].password + " ====");
+            callback(null, rows[0].password);
         }
     });
 }
