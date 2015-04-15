@@ -1,5 +1,6 @@
 //Manage DB connection and check for potentially malicious input with this DB manager
 var mysql = require('mysql');
+var bcrypt = require('bcrypt');
 
 var createConnectionToDB = function() {
     console.log("Creating connection to database..");
@@ -33,7 +34,9 @@ var checkInvalidInput = function(input_string) {
 }
 
 var registerNewUser = function(db_conn, username, password, email, callback) {
-    db_conn.query('INSERT INTO `users`(`username`, `password`, `email`) VALUES (\'' + username + '\', \'' + password + '\', \'' + email + '\')', function(err, rows, fields) {
+    console.log("password inside registerNewUser: " + password);
+    var hashed_password = generateNewHash(password);
+    db_conn.query('INSERT INTO `users`(`username`, `password`, `email`) VALUES (\'' + username + '\', \'' + hashed_password + '\', \'' + email + '\')', function(err, rows, fields) {
         if (err) {
             callback(err, false);
         }
@@ -58,6 +61,11 @@ var signIn = function(db_conn, username, callback) {
             callback(null, rows[0].password);
         }
     });
+}
+
+var generateNewHash = function(password_to_hash) {
+    var salt = bcrypt.genSaltSync(10);
+    return bcrypt.hashSync(password_to_hash, salt);
 }
 
 module.exports.createConnectionToDB = createConnectionToDB;

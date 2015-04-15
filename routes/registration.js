@@ -1,5 +1,4 @@
 var express = require('express');
-var bcrypt = require('bcrypt');
 var router = express.Router();
 var db_manager = require('../resources/js/db_manager.js');
 
@@ -10,29 +9,36 @@ router.get('/', function(req, res, next) {
 
 //Upon successful user account registration, redirect to logged in home page
 router.post('/', function(req, res, next) {
-    var username, email, hash;
-    var salt = bcrypt.genSaltSync(10);
+    var username, password, email;
     
     try {
-        var password = db_manager.checkInvalidInput(req.body.password);
         username = db_manager.checkInvalidInput(req.body.username);
+        password = db_manager.checkInvalidInput(req.body.password);
+        console.log("password after initializing: " + password);
         email = db_manager.checkInvalidInput(req.body.email);
         
-        hash = bcrypt.hashSync(password, salt);
+        var db_conn = db_manager.createConnectionToDB();
+        if(db_manager.registerNewUser(db_conn, username, password, email, wasUserInsertSuccessful)) {
+            res.render('home', { username: username } ); //render home page with their username to show they're logged in
+        }
+        else {
+            res.render('register', { message: 'User insert unsuccessful' });
+        }
     }
     catch(e) {
         console.log("Exception caught..");
         console.log(e);
         res.render('register', { title: 'Register', message: e.message });
     }
-    
-    var db_conn = db_manager.createConnectionToDB();
-    if(db_manager.registerNewUser(db_conn, username, hash, email)) {
-        res.render('home', { username: username } ); //render home page with their username to show they're logged in
+});
+
+var wasUserInsertSuccessful = function(err, bool) {
+    if(err) {
+        throw err;
     }
     else {
-        console.log("registerNewUser doesn't work because fuck you, that's why");
+        return bool;
     }
-});
+}
 
 module.exports = router;

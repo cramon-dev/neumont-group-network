@@ -30,7 +30,7 @@ var compareHashes = function(err, stored_hash) {
         console.log(err);
     }
     else {
-        console.log("Do passwords match? " + bcrypt.compareSync(password, stored_hash));
+//        console.log("Do passwords match? " + bcrypt.compareSync(password, stored_hash));
         return bcrypt.compareSync(password, stored_hash);
     }
 }
