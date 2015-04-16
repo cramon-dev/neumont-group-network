@@ -52,12 +52,6 @@ var signIn = function(db_conn, username, callback) {
             callback(err, null);
         }
         else {
-            console.log("==== Retrieved user from database ====");
-            console.log("==== Fields[0]: " + fields[0] + " ====");
-            console.log("==== Rows[0]: " + rows[0] + " ====");
-            console.log("==== Retrieved user ID: " + rows[0].user_id + " ====");
-            console.log("==== Retrieved username: " + rows[0].username + " ====");
-            console.log("==== Retrieved password: " + rows[0].password + " ====");
             callback(null, rows[0].password);
         }
     });
@@ -83,3 +77,10 @@ module.exports.signIn = signIn;
 //        console.log("User successfully recorded in database");
 //    }
 //});
+
+//console.log("==== Retrieved user from database ====");
+//console.log("==== Fields[0]: " + fields[0] + " ====");
+//console.log("==== Rows[0]: " + rows[0] + " ====");
+//console.log("==== Retrieved user ID: " + rows[0].user_id + " ====");
+//console.log("==== Retrieved username: " + rows[0].username + " ====");
+//console.log("==== Retrieved password: " + rows[0].password + " ====");
