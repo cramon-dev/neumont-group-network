@@ -1,12 +1,11 @@
 var express = require('express');
 var router = express.Router();
-var bcrypt = require('bcrypt');
 var db_manager = require('../resources/js/db_manager.js');
 
 var password;
 
-/* GET sign in page. */
-//I know this isn't exactly adhering to REST, but I'm just trying this out
+/* POST credentials */
+//I know this isn't adhering to REST, but I'll fix that later..
 router.post('/', function(req, res, next) {
     try {
         var username = db_manager.checkInvalidInput(req.body.username);
