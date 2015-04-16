@@ -23,12 +23,12 @@ router.post('/', function(req, res, next) {
                 res.render('home', { username: username } ); //render home page with their username to show they're logged in
             }
             else {
-                res.render('register', { message: err.message });
+                res.render('register', { error_message: 'Error registering user.. try again in a few seconds' });
             }
         });
     }
     catch(e) {
-        res.render('register', { message: e.message });
+        res.render('register', { error_message: e.message });
     }
 });
 
