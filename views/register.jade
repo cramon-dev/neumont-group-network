@@ -1,7 +1,7 @@
 extends layout
 
 block content
-    h1 #{title}
+    h1 Register
         form(action='http://localhost:3000/register', method='post')
             input(type='text', name='username', placeholder='Your username')
             input(type='password', name='password', placeholder='Your password')

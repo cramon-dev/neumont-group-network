@@ -34,14 +34,13 @@ var checkInvalidInput = function(input_string) {
 }
 
 var registerNewUser = function(db_conn, username, password, email, callback) {
-    console.log("password inside registerNewUser: " + password);
     var hashed_password = generateNewHash(password);
     db_conn.query('INSERT INTO `users`(`username`, `password`, `email`) VALUES (\'' + username + '\', \'' + hashed_password + '\', \'' + email + '\')', function(err, rows, fields) {
         if (err) {
-            callback(err, false);
+            callback(err);
         }
         else {
-            callback(null, true);
+            callback(null);
         }
     });
 }
