@@ -20,10 +20,12 @@ router.post('/', function(req, res, next) {
         
         db_manager.registerNewUser(db_conn, username, password, email, function(err) {
             if(!err) {
+//                req.session.username = username;
+//                res.redirect('/');
                 res.render('home', { username: username } ); //render home page with their username to show they're logged in
             }
             else {
-                res.render('register', { error_message: 'Error registering user.. please try again' });
+                res.render('register', { error_message: err.message });
             }
         });
     }

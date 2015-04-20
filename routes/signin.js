@@ -19,7 +19,10 @@ router.post('/', function(req, res, next) {
             }
             else {
                 if(bcrypt.compareSync(password, stored_hash)) {
+//                    req.session.username = username;
+//                    res.redirect('/');
                     res.render('home', { username: username } ); //render home page with their username to show they're logged in
+                    
                 }
                 else {
                     res.render('index', { message: 'Invalid username or password, try again' });

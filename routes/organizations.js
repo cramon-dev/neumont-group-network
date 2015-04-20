@@ -24,7 +24,8 @@ router.post('/order', function(req, res, next) {
 });
 
 router.post('/create', function(req, res, next) {
-    //Create organization here
+    console.log(req.body.org_name);
+    console.log(req.body.org_desc);
 });
 
 module.exports = router;

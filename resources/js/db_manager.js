@@ -61,10 +61,24 @@ var generateNewHash = function(password_to_hash) {
     return bcrypt.hashSync(password_to_hash, salt);
 }
 
+var addNewOrganization = function(org_name, org_desc, org_author_id) {
+    db_conn.query('INSERT INTO `organizations`(`name`, `description`, `original_author_id`) VALUES (\'' + org_name + '\', \'' + org_desc + '\', \'' + org_author_id + '\')', function(err, rows, fields) {
+        //Todo: Add an appropriate callback?
+//        if(err) {
+//            callback(err, null);
+//        }
+//        else {
+//            callback(null, rows[0].password);
+//        }
+    });
+}
+
+
 module.exports.createConnectionToDB = createConnectionToDB;
 module.exports.checkInvalidInput = checkInvalidInput;
 module.exports.registerNewUser = registerNewUser;
 module.exports.signIn = signIn;
+module.exports.addNewOrganization = addNewOrganization;
 
 
 //db_conn.query('INSERT INTO `users`(`username`, `password`, `email`) VALUES (\'' + username + '\', \'' + password + '\', \'' + email + '\')', function(err, rows, fields) {
