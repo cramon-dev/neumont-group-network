@@ -36,13 +36,13 @@ app.use('/register', registration);
 app.use('/organizations', organizations);
 
 
-//Sessions
-app.use(sessions({
-    name: 'session',
-    secret: 'blargadeeblargblarg', // should be a large unguessable string
-    duration: 24 * 60 * 60 * 1000, // how long the session will stay valid in ms
-    activeDuration: 1000 * 60 * 5 // if expiresIn < activeDuration, the session will be extended by activeDuration milliseconds
-}));
+////Sessions
+//app.use(sessions({
+//    name: 'session',
+//    secret: 'blargadeeblargblarg', // should be a large unguessable string
+//    duration: 24 * 60 * 60 * 1000, // how long the session will stay valid in ms
+//    activeDuration: 1000 * 60 * 5 // if expiresIn < activeDuration, the session will be extended by activeDuration milliseconds
+//}));
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

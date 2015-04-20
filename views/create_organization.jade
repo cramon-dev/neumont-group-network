@@ -1,0 +1,7 @@
+extends layout
+
+block content
+    h1 Create Organization
+    form(action="http://localhost:3000/organizations/create", method="post")
+        input(type="text", name="org_name")
+        input(type="submit", value="Submit")

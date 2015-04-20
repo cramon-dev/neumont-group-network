@@ -1,4 +1,15 @@
+var orgs = list_of_orgs;
+
 extends layout
 
 block content
     h1 Welcome, #{username}!
+    
+    a(href="http://localhost:3000/organizations/create") Create a Club/Order
+    
+
+// 
+    if orgs
+            ul
+                li #{org_name}
+        else
