@@ -4,8 +4,8 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-var redis = require('redis');
-var client = redis.createClient(6379, 'localhost');
+var connect = require('connect');
+//var sessions = require('client-sessions');
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
@@ -34,6 +34,15 @@ app.use('/signin', signin);
 app.use('/signout', signout);
 app.use('/register', registration);
 app.use('/organizations', organizations);
+
+
+//Sessions
+app.use(sessions({
+    name: 'session',
+    secret: 'blargadeeblargblarg', // should be a large unguessable string
+    duration: 24 * 60 * 60 * 1000, // how long the session will stay valid in ms
+    activeDuration: 1000 * 60 * 5 // if expiresIn < activeDuration, the session will be extended by activeDuration milliseconds
+}));
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -66,18 +75,17 @@ app.use(function(err, req, res, next) {
     });
 });
 
-//Sessions
-app.use(express.session({
-    secret: 'a4f8071f-c873-4447-8ee2',
-    cookie: { maxAge: 2628000000 },
-    store: new (require('express-sessions'))({
-        storage: 'redis',
-        instance: client, // optional
-        host: 'localhost', // optional
-        port: 6379, // optional
-        collection: 'sessions', // optional
-        expire: 86400 // optional
-    })
-}));
+
+//app.get('/test', function(req, res) {
+//    res.send("test route, username: " + req.session.username);
+//});
+//
+//app.get('/testlogin', function(req, res) {
+//    req.session.username = "John";
+//});
+//
+//app.get('/testlogout', function(req, res) {
+//    req.session.reset();
+//});
 
 module.exports = app;

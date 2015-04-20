@@ -23,7 +23,7 @@ router.post('/', function(req, res, next) {
                 res.render('home', { username: username } ); //render home page with their username to show they're logged in
             }
             else {
-                res.render('register', { error_message: 'Error registering user.. try again in a few seconds' });
+                res.render('register', { error_message: 'Error registering user.. please try again' });
             }
         });
     }
@@ -31,14 +31,5 @@ router.post('/', function(req, res, next) {
         res.render('register', { error_message: e.message });
     }
 });
-
-//var wasUserInsertSuccessful = function(err, bool) {
-//    if(err) {
-//        throw err;
-//    }
-//    else {
-//        return bool;
-//    }
-//}
 
 module.exports = router;
