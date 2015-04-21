@@ -13,7 +13,7 @@ router.post('/', function(req, res, next) {
         password = db_manager.checkInvalidInput(req.body.password);
         
         var db_conn = db_manager.createConnectionToDB();
-        db_manager.signIn(db_conn, username, function(err, stored_hash) {
+        db_manager.signIn(db_conn, username, function(err, stored_hash, user_id) {
             if(err) {
                 console.log(err);
             }

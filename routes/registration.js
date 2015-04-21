@@ -9,9 +9,9 @@ router.get('/', function(req, res, next) {
 
 //Upon successful user account registration, redirect to logged in home page
 router.post('/', function(req, res, next) {
-    var username, password, email;
-    
     try {
+        var username, password, email;
+        
         username = db_manager.checkInvalidInput(req.body.username);
         password = db_manager.checkInvalidInput(req.body.password);
         email = db_manager.checkInvalidInput(req.body.email);

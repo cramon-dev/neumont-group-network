@@ -18,6 +18,9 @@ var createConnectionToDB = function() {
     return(db_conn);
 }
 
+
+//Utility
+
 var checkInvalidInput = function(input_string) {
     //If input contains any scripts, kick them back to register
     //Does not currently protect against SQL injection
@@ -32,6 +35,9 @@ var checkInvalidInput = function(input_string) {
         return input_string;
     }
 }
+
+
+//Sign In/Registration
 
 var registerNewUser = function(db_conn, username, password, email, callback) {
     var hashed_password = generateNewHash(password);
@@ -48,10 +54,10 @@ var registerNewUser = function(db_conn, username, password, email, callback) {
 var signIn = function(db_conn, username, callback) {
     db_conn.query('SELECT * FROM users where username=\'' + username + '\' LIMIT 1', function(err, rows, fields) {
         if(err) {
-            callback(err, null);
+            callback(err, null, null);
         }
         else {
-            callback(null, rows[0].password);
+            callback(null, rows[0].password, rows[0].user_id);
         }
     });
 }
@@ -61,15 +67,29 @@ var generateNewHash = function(password_to_hash) {
     return bcrypt.hashSync(password_to_hash, salt);
 }
 
-var addNewOrganization = function(org_name, org_desc, org_author_id) {
+
+//Organizations
+
+var getOrganization = function(db_conn, requested_id, callback) {
+    db_conn.query('SELECT * FROM organizations where organization_id=\'' + requested_id + '\' LIMIT 1', function(err, rows, fields) {
+        if(err) {
+            callback(err, null, null);
+        }
+        else {
+            callback(null, rows[0].organization_id, rows[0].name, rows[0].description, rows[0].original_author_id);
+        }
+    });
+}
+
+var addNewOrganization = function(db_conn, org_name, org_desc, org_author_id, callback) {
     db_conn.query('INSERT INTO `organizations`(`name`, `description`, `original_author_id`) VALUES (\'' + org_name + '\', \'' + org_desc + '\', \'' + org_author_id + '\')', function(err, rows, fields) {
         //Todo: Add an appropriate callback?
-//        if(err) {
-//            callback(err, null);
-//        }
-//        else {
-//            callback(null, rows[0].password);
-//        }
+        if(err) {
+            callback(err);
+        }
+        else {
+            callback(null);
+        }
     });
 }
 
@@ -79,6 +99,7 @@ module.exports.checkInvalidInput = checkInvalidInput;
 module.exports.registerNewUser = registerNewUser;
 module.exports.signIn = signIn;
 module.exports.addNewOrganization = addNewOrganization;
+module.exports.getOrganization = getOrganization;
 
 
 //db_conn.query('INSERT INTO `users`(`username`, `password`, `email`) VALUES (\'' + username + '\', \'' + password + '\', \'' + email + '\')', function(err, rows, fields) {
