@@ -1,12 +1,16 @@
 var express = require('express');
 var router = express.Router();
+var db_manager = require('../resources/js/db_manager.js');
 
-//Get
+//Get an organization
 router.get(/(\d+)/, function(req, res, next) {
-    db_manager.getOrganization(req.params[0], function(err, org_id, org_name, org_desc, org_author_id) {
+    console.log("GET ORGANIZATION #: " + req.params[0]);
+    var db_conn = db_manager.createConnectionToDB();
+    
+    db_manager.getOrganization(db_conn, req.params[0], function(err, org_id, org_name, org_desc) {
         if(!err) {
-            //Use the organization's id to get a list of members
-            res.render('organization', { org_name: org_name, org_desc: org_desc, org_author_id: org_author_id });
+            //Use the organization's id to get a list of members somewhere in here before we render
+            res.render('organization', { org_id: org_id, org_name: org_name, org_desc: org_desc });
         }
         else {
             var err = new Error('Not Found');
@@ -16,11 +20,12 @@ router.get(/(\d+)/, function(req, res, next) {
     });
 });
 
+//Get organization creation form
 router.get('/create', function(req, res, next) {
     res.render('create_organization');
 });
 
-//Create/Update
+//Update organization based on id
 router.post(/(\d+)/, function(req, res, next) {
     throw {
         name: "NotImplementedException",
@@ -29,6 +34,7 @@ router.post(/(\d+)/, function(req, res, next) {
 //    res.render('organization', { message: 'Details successfully changed' });
 });
 
+//Create a new organization
 router.post('/create', function(req, res, next) {
     try {
         var org_name = db_manager.checkInvalidInput(req.body.org_name);
@@ -36,12 +42,13 @@ router.post('/create', function(req, res, next) {
         
         var db_conn = db_manager.createConnectionToDB();
         
-        db_manager.addNewOrganization(db_conn, org_name, org_desc, original_author_id, function(err) {
+        //Refactor this callback hell later
+        db_manager.addNewOrganization(db_conn, org_name, org_desc, function(err) {
             if(!err) {
                 res.render('organization', { org_name: org_name, org_desc: org_desc });
             }
             else {
-                res.render('create_organization', { error_message: e.message });
+                res.render('create_organization', { error_message: err.message });
             }
         });
     }
@@ -49,5 +56,9 @@ router.post('/create', function(req, res, next) {
         res.render('create_organization', { error_message: e.message });
     }
 });
+
+var addNewMember = function(db_conn, user_id, org_id, isAdmin) {
+    
+}
 
 module.exports = router;

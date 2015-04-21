@@ -68,6 +68,31 @@ var generateNewHash = function(password_to_hash) {
 }
 
 
+//Users
+
+var retrieveUser = function(db_conn, requested_id, callback) {
+    db_conn.query('SELECT * FROM users where user_id=\'' + requested_id + '\' LIMIT 1', function(err, rows, fields) {
+        if(err) {
+            callback(err, null, null);
+        }
+        else {
+            callback(null, rows[0].user_id, rows[0].username);
+        }
+    });
+}
+
+var retrieveUserIdByUsername = function(db_conn, username, callback) {
+    db_conn.query('SELECT * FROM users where username=\'' + username + '\' LIMIT 1', function(err, rows, fields) {
+        if(err) {
+            callback(err, null);
+        }
+        else {
+            console.log("User ID of " + username + ": " + rows[0].user_id);
+            callback(null, rows[0].user_id);
+        }
+    });
+}
+
 //Organizations
 
 var getOrganization = function(db_conn, requested_id, callback) {
@@ -76,13 +101,13 @@ var getOrganization = function(db_conn, requested_id, callback) {
             callback(err, null, null);
         }
         else {
-            callback(null, rows[0].organization_id, rows[0].name, rows[0].description, rows[0].original_author_id);
+            callback(null, rows[0].organization_id, rows[0].name, rows[0].description);
         }
     });
 }
 
-var addNewOrganization = function(db_conn, org_name, org_desc, org_author_id, callback) {
-    db_conn.query('INSERT INTO `organizations`(`name`, `description`, `original_author_id`) VALUES (\'' + org_name + '\', \'' + org_desc + '\', \'' + org_author_id + '\')', function(err, rows, fields) {
+var addNewOrganization = function(db_conn, org_name, org_desc, callback) {
+    db_conn.query('INSERT INTO `organizations`(`name`, `description`) VALUES (\'' + org_name + '\', \'' + org_desc + '\')', function(err, rows, fields) {
         //Todo: Add an appropriate callback?
         if(err) {
             callback(err);
@@ -98,6 +123,8 @@ module.exports.createConnectionToDB = createConnectionToDB;
 module.exports.checkInvalidInput = checkInvalidInput;
 module.exports.registerNewUser = registerNewUser;
 module.exports.signIn = signIn;
+module.exports.retrieveUser = retrieveUser;
+module.exports.retrieveUserIdByUsername = retrieveUserIdByUsername;
 module.exports.addNewOrganization = addNewOrganization;
 module.exports.getOrganization = getOrganization;
 
