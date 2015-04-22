@@ -25,12 +25,18 @@ router.get('/create', function(req, res, next) {
     res.render('create_organization');
 });
 
-//Update organization based on id
-router.post(/(\d+)/, function(req, res, next) {
-    throw {
-        name: "NotImplementedException",
-        message: "This method isn't implemented yet, but will be in the near future"
-    }
+//Edit organization form
+router.get(/(\d+)\/edit/, function(req, res, next) {
+    res.render('edit_organization', { org_id: req.params[0] });
+});
+
+//Update organization's info
+router.post(/(\d+)\/edit/, function(req, res, next) {
+    console.log(req.params[0]);
+//    throw {
+//        name: "NotImplementedException",
+//        message: "This method isn't implemented yet, but will be in the near future"
+//    }
 //    res.render('organization', { message: 'Details successfully changed' });
 });
 
@@ -57,8 +63,15 @@ router.post('/create', function(req, res, next) {
     }
 });
 
-var addNewMember = function(db_conn, user_id, org_id, isAdmin) {
-    
+var addNewMember = function(db_conn, org_id, user_id, isAdmin) {
+    db_manager.addNewMemberToOrg(db_conn, org_id, user_id, isAdmin, function(err) {
+        if(!err) {
+            return null;
+        }
+        else {
+            return err;
+        }
+    });
 }
 
 module.exports = router;

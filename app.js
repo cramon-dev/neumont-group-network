@@ -4,8 +4,10 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-var connect = require('connect');
+//var connect = require('connect');
 var sessions = require('express-session');
+//var redis = require('redis');
+//var client = redis.createClient();
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
@@ -41,16 +43,6 @@ app.use('/register', registration);
 app.use('/organizations', organizations);
 
 
-////Sessions
-//app.use(sessions({
-//    name: 'session',
-//    secret: 'blargadeeblargblarg', // should be a large unguessable string
-//    duration: 24 * 60 * 60 * 1000, // how long the session will stay valid in ms
-//    activeDuration: 1000 * 60 * 5 // if expiresIn < activeDuration, the session will be extended by activeDuration milliseconds
-//}));
-
-
-
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
     var err = new Error('Not Found');
@@ -82,26 +74,18 @@ app.use(function(err, req, res, next) {
     });
 });
 
-app.get('/test', function(req, res) {
-    if(req.session.lastPage) {
-        res.write('Last page was: ' + req.session.lastPage + '. ');
-    }
-
-    req.session.lastPage = '/test';
-    res.send('test page');
-});
-
-
-//app.get('/test', function(req, res) {
-//    res.send("test route, username: " + req.session.username);
-//});
-//
-//app.get('/testlogin', function(req, res) {
-//    req.session.username = "John";
-//});
-//
-//app.get('/testlogout', function(req, res) {
-//    req.session.reset();
-//});
 
 module.exports = app;
+
+
+////Sessions
+//app.use(sessions({
+//    name: 'session',
+//    secret: 'blargadeeblargblarg', // should be a large unguessable string
+//    duration: 24 * 60 * 60 * 1000, // how long the session will stay valid in ms
+//    activeDuration: 1000 * 60 * 5 // if expiresIn < activeDuration, the session will be extended by activeDuration milliseconds
+//}));
+
+//client.on('connect', function() {
+//    console.log('connected');
+//});

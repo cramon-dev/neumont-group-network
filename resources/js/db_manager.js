@@ -118,6 +118,18 @@ var addNewOrganization = function(db_conn, org_name, org_desc, callback) {
     });
 }
 
+var addNewMemberToOrg = function(db_conn, user_id, org_id, callback) {
+    db_conn.query('INSERT INTO `members`(`org_id`, `user_id`, `is_admin`) VALUES (\'' + org_id + '\', \'' + user_id + '\', \'' + is_admin + '\')', function(err, rows, fields) {
+        //Todo: Add an appropriate callback?
+        if(err) {
+            callback(err);
+        }
+        else {
+            callback(null);
+        }
+    });
+}
+
 
 module.exports.createConnectionToDB = createConnectionToDB;
 module.exports.checkInvalidInput = checkInvalidInput;
@@ -125,8 +137,9 @@ module.exports.registerNewUser = registerNewUser;
 module.exports.signIn = signIn;
 module.exports.retrieveUser = retrieveUser;
 module.exports.retrieveUserIdByUsername = retrieveUserIdByUsername;
-module.exports.addNewOrganization = addNewOrganization;
 module.exports.getOrganization = getOrganization;
+module.exports.addNewOrganization = addNewOrganization;
+module.exports.addNewMemberToOrg = addNewMemberToOrg;
 
 
 //db_conn.query('INSERT INTO `users`(`username`, `password`, `email`) VALUES (\'' + username + '\', \'' + password + '\', \'' + email + '\')', function(err, rows, fields) {
