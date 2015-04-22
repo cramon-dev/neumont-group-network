@@ -106,6 +106,17 @@ var getOrganization = function(db_conn, requested_id, callback) {
     });
 }
 
+var getOrgIDByName = function(db_conn, requested_org_name, callback) {
+    db_conn.query('SELECT * FROM organizations where name=\'' + requested_org_name + '\'', function(err, rows, fields) {
+        if(err) {
+            callback(err, null);
+        }
+        else {
+            callback(null, rows[0].organization_id);
+        }
+    });
+}
+
 var addNewOrganization = function(db_conn, org_name, org_desc, callback) {
     db_conn.query('INSERT INTO `organizations`(`name`, `description`) VALUES (\'' + org_name + '\', \'' + org_desc + '\')', function(err, rows, fields) {
         //Todo: Add an appropriate callback?
@@ -118,8 +129,8 @@ var addNewOrganization = function(db_conn, org_name, org_desc, callback) {
     });
 }
 
-var addNewMemberToOrg = function(db_conn, user_id, org_id, callback) {
-    db_conn.query('INSERT INTO `members`(`org_id`, `user_id`, `is_admin`) VALUES (\'' + org_id + '\', \'' + user_id + '\', \'' + is_admin + '\')', function(err, rows, fields) {
+var addNewMemberToOrg = function(db_conn, org_id, new_member_id, is_admin, callback) {
+    db_conn.query('INSERT INTO `members`(`org_id`, `member_id`, `is_admin`) VALUES (\'' + org_id + '\', \'' + new_member_id + '\', \'' + is_admin + '\')', function(err, rows, fields) {
         //Todo: Add an appropriate callback?
         if(err) {
             callback(err);
@@ -138,6 +149,7 @@ module.exports.signIn = signIn;
 module.exports.retrieveUser = retrieveUser;
 module.exports.retrieveUserIdByUsername = retrieveUserIdByUsername;
 module.exports.getOrganization = getOrganization;
+module.exports.getOrgIDByName = getOrgIDByName;
 module.exports.addNewOrganization = addNewOrganization;
 module.exports.addNewMemberToOrg = addNewMemberToOrg;
 

@@ -31,6 +31,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(sessions({
     secret: 'itsasecret',
+    duration: 60 * 60 * 1000,
     resave: false,
     saveUninitialized: true
 }));
@@ -42,6 +43,21 @@ app.use('/signout', signout);
 app.use('/register', registration);
 app.use('/organizations', organizations);
 
+
+//check if user is logged in
+
+app.get('/', function(req, res, next) {
+    next(req, res);
+});
+
+app.get('/*', function(req, res, next) {
+    if(req.session.username) {
+        next(req, res);
+    }
+    else {
+        res.redirect('/', { message: 'You need to be logged in to do that' });
+    }
+});
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
