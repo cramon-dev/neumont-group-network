@@ -21,7 +21,7 @@ router.post('/', function(req, res, next) {
                 if(bcrypt.compareSync(password, stored_hash)) {
                     req.session.user_id = user_id;
                     req.session.username = username;
-                    res.redirect('/');
+                    res.render('home', { user_id: req.session.user_id, username: req.session.username });
 //                    res.render('home', { username: username } ); //render home page with their username to show they're logged in
                     
                 }

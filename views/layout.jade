@@ -5,6 +5,9 @@ html
         link(rel='stylesheet', href='/stylesheets/style.min.css')
     body
         header
+            if locals.username
+                p= username
+                a(href="http://localhost:3000/signout") Sign Out
         block content
         footer
             p Created 2015, Christian Ramon

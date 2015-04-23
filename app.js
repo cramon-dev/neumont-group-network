@@ -36,6 +36,22 @@ app.use(sessions({
     saveUninitialized: true
 }));
 
+//check if user is logged in
+app.all('/\w+/*', function(req, res, next) {
+    console.log("Caught a general route");
+    if(req.session.username) {
+        console.log("Found session");
+        next(req, res);
+    }
+    else {
+        console.log("Could not find session");
+        res.render('index', { message: 'You need to be logged in to do that' });
+//        res.redirect('/');
+//        { message: 'You need to be logged in to do that' }
+    }
+});
+
+//Routes
 app.use('/', routes);
 app.use('/users', users);
 app.use('/signin', signin);
@@ -43,21 +59,6 @@ app.use('/signout', signout);
 app.use('/register', registration);
 app.use('/organizations', organizations);
 
-
-//check if user is logged in
-
-app.get('/', function(req, res, next) {
-    next(req, res);
-});
-
-app.get('/*', function(req, res, next) {
-    if(req.session.username) {
-        next(req, res);
-    }
-    else {
-        res.redirect('/', { message: 'You need to be logged in to do that' });
-    }
-});
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
