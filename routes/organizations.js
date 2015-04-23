@@ -2,9 +2,8 @@ var express = require('express');
 var router = express.Router();
 var db_manager = require('../resources/js/db_manager.js');
 
-//Get an organization
+//Retrieve and display an organization and its basic information
 router.get(/(\d+)/, function(req, res, next) {
-//    checkIfUserIsLoggedIn(req, res);
     console.log("GET ORGANIZATION #: " + req.params[0]);
     var db_conn = db_manager.createConnectionToDB();
 
@@ -23,19 +22,16 @@ router.get(/(\d+)/, function(req, res, next) {
 
 //Get organization creation form
 router.get('/create', function(req, res, next) {
-//    checkIfUserIsLoggedIn(req, res);
     res.render('create_organization');
 });
 
 //Edit organization form
 router.get(/(\d+)\/edit/, function(req, res, next) {
-//    checkIfUserIsLoggedIn(req, res);
     res.render('edit_organization', { org_id: req.params[0] });
 });
 
 //Update organization's info
 router.post(/(\d+)\/edit/, function(req, res, next) {
-//    checkIfUserIsLoggedIn(req, res);
     console.log(req.params[0]);
 //    throw {
 //        name: "NotImplementedException",
@@ -46,7 +42,6 @@ router.post(/(\d+)\/edit/, function(req, res, next) {
 
 //Create a new organization
 router.post('/create', function(req, res, next) {
-//    checkIfUserIsLoggedIn(req, res);
     try {
         //Thinking I should generate an ID for the organization created so that I can add a new member without
         var org_name = db_manager.checkInvalidInput(req.body.org_name);
@@ -89,10 +84,5 @@ var addNewMember = function(db_conn, org_id, user_id, isAdmin) {
     });
 }
 
-//var checkIfUserIsLoggedIn = function(req, res) {
-//    if(!req.session.username) {
-//        res.redirect('/', { message: 'You need to be logged in to do that' });
-//    }
-//}
 
 module.exports = router;

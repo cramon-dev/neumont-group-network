@@ -31,23 +31,23 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(sessions({
     secret: 'itsasecret',
-    duration: 60 * 60 * 1000,
+    cookie: { expires: (Date.now() + 10000), maxAge: 10000 }, //in milliseconds
     resave: false,
     saveUninitialized: true
 }));
 
-//check if user is logged in
-app.all('/\w+/*', function(req, res, next) {
-    console.log("Caught a general route");
+//Catch all routes except GET/POST sign in and check if user has a session
+//If session doesn't exist, kick them back to sign in screen
+//BONUS FEATURE TO IMPLEMENT:
+//If they're not logged in and they try to do something, record that action and when they log in and reroute them to the page they were trying to access
+app.all(/\/(?!signin)(?!register)(\w+)/, function(req, res, next) {
     if(req.session.username) {
-        console.log("Found session");
-        next(req, res);
+        console.log("Found valid session");
+        next();
     }
     else {
-        console.log("Could not find session");
+        console.log("Could not find session or session has expired, sending user to sign in screen");
         res.render('index', { message: 'You need to be logged in to do that' });
-//        res.redirect('/');
-//        { message: 'You need to be logged in to do that' }
     }
 });
 

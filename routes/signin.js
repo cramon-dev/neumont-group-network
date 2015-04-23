@@ -23,7 +23,6 @@ router.post('/', function(req, res, next) {
                     req.session.username = username;
                     res.render('home', { user_id: req.session.user_id, username: req.session.username });
 //                    res.render('home', { username: username } ); //render home page with their username to show they're logged in
-                    
                 }
                 else {
                     res.render('index', { message: 'Invalid username or password, try again' });
@@ -36,14 +35,4 @@ router.post('/', function(req, res, next) {
     }
 });
 
-var compareHashes = function(err, stored_hash) {
-    if(err) {
-        console.log(err);
-    }
-    else {
-        return bcrypt.compareSync(password, stored_hash);
-    }
-}
-
 module.exports = router;
-module.exports.compareHashes = compareHashes;
