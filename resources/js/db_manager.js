@@ -119,7 +119,6 @@ var getOrgIDByName = function(db_conn, requested_org_name, callback) {
 
 var addNewOrganization = function(db_conn, org_name, org_desc, callback) {
     db_conn.query('INSERT INTO `organizations`(`name`, `description`) VALUES (\'' + org_name + '\', \'' + org_desc + '\')', function(err, rows, fields) {
-        //Todo: Add an appropriate callback?
         if(err) {
             callback(err);
         }
@@ -131,7 +130,17 @@ var addNewOrganization = function(db_conn, org_name, org_desc, callback) {
 
 var addNewMemberToOrg = function(db_conn, org_id, new_member_id, is_admin, callback) {
     db_conn.query('INSERT INTO `members`(`org_id`, `member_id`, `is_admin`) VALUES (\'' + org_id + '\', \'' + new_member_id + '\', \'' + is_admin + '\')', function(err, rows, fields) {
-        //Todo: Add an appropriate callback?
+        if(err) {
+            callback(err);
+        }
+        else {
+            callback(null);
+        }
+    });
+}
+
+var alterOrganizationInfo = function(db_conn, org_id, new_org_name, new_org_desc, callback) {
+    db_conn.query('UPDATE `organizations` SET `name` = \'' + new_org_name + '\', `description` = \'' + new_org_desc + '\' WHERE `organization_id` = \'' + org_id + '\'', function(err, rows, fields) {
         if(err) {
             callback(err);
         }
@@ -152,6 +161,7 @@ module.exports.getOrganization = getOrganization;
 module.exports.getOrgIDByName = getOrgIDByName;
 module.exports.addNewOrganization = addNewOrganization;
 module.exports.addNewMemberToOrg = addNewMemberToOrg;
+module.exports.alterOrganizationInfo = alterOrganizationInfo;
 
 
 //db_conn.query('INSERT INTO `users`(`username`, `password`, `email`) VALUES (\'' + username + '\', \'' + password + '\', \'' + email + '\')', function(err, rows, fields) {

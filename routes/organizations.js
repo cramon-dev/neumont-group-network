@@ -3,7 +3,7 @@ var router = express.Router();
 var db_manager = require('../resources/js/db_manager.js');
 
 //Retrieve and display an organization and its basic information
-router.get(/(\d+)/, function(req, res, next) {
+router.get(/(\d+)(?!\/.*)/, function(req, res, next) {
     console.log("GET ORGANIZATION #: " + req.params[0]);
     var db_conn = db_manager.createConnectionToDB();
 
@@ -32,12 +32,25 @@ router.get(/(\d+)\/edit/, function(req, res, next) {
 
 //Update organization's info
 router.post(/(\d+)\/edit/, function(req, res, next) {
-    console.log(req.params[0]);
-//    throw {
-//        name: "NotImplementedException",
-//        message: "This method isn't implemented yet, but will be in the near future"
-//    }
-//    res.render('organization', { message: 'Details successfully changed' });
+    console.log(req.body.new_org_name);
+    console.log(req.body.new_org_desc);
+    //This is potentially a bad idea, consider refactoring this so that the user doesn't see the org's id?
+    console.log(req.body.org_id);
+    
+    var db_conn = db_manager.createConnectionToDB();
+    var org_id = req.body.org_id;
+    var new_org_name = db_manager.checkInvalidInput(req.body.new_org_name);
+    var new_org_desc = db_manager.checkInvalidInput(req.body.new_org_desc);
+    
+    db_manager.alterOrganizationInfo(db_conn, org_id, new_org_name, new_org_desc, function(err) {
+        if(!err) {
+            console.log("Organization successfully updated");
+            res.render('organization', { org_id: org_id, message: 'Organization successfully updated' });
+        }
+        else {
+            res.render('organization', { org_id: org_id, error_message: 'Error updating organization, please try again' });
+        }
+    });
 });
 
 //Create a new organization

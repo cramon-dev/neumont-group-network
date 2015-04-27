@@ -8,6 +8,8 @@ html
             if locals.username
                 p= username
                 a(href="http://localhost:3000/signout") Sign Out
+        h4(class="message") #{message}
+        h4(class="error_message") #{error_message}
         block content
         footer
             p Created 2015, Christian Ramon

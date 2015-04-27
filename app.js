@@ -17,6 +17,7 @@ var registration = require('./routes/registration');
 var organizations = require('./routes/organizations');
 
 var app = express();
+var hour = 1000 * 60 * 60;
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -31,7 +32,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(sessions({
     secret: 'itsasecret',
-    cookie: { expires: (Date.now() + 10000), maxAge: 10000 }, //in milliseconds
+    cookie: { expires: (Date.now() + hour), maxAge: hour }, //in milliseconds
     resave: false,
     saveUninitialized: true
 }));
