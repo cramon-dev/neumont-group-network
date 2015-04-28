@@ -81,8 +81,25 @@ var retrieveUser = function(db_conn, requested_id, callback) {
     });
 }
 
+var retrieveAllUsers = function(db_conn, callback) {
+    db_conn.query('SELECT * FROM users', function(err, rows, fields) {
+        if(err) {
+            callback(err, null);
+        }
+        else {
+            var user_details = [];
+            for(var i = 0; i < rows.length; i++) {
+                user_details.push({ user_id: rows[i].user_id, username: rows[i].username });
+//                console.log("User ID " + i + ": " + user_details[i].user_id);
+//                console.log("Username " + i + ": " + user_details[i].username);
+            }
+            callback(null, user_details);
+        }
+    });
+}
+
 var retrieveUserIdByUsername = function(db_conn, username, callback) {
-    db_conn.query('SELECT * FROM users where username=\'' + username + '\' LIMIT 1', function(err, rows, fields) {
+    db_conn.query('SELECT `user_id` FROM users where username=\'' + username + '\' LIMIT 1', function(err, rows, fields) {
         if(err) {
             callback(err, null);
         }
@@ -92,6 +109,18 @@ var retrieveUserIdByUsername = function(db_conn, username, callback) {
         }
     });
 }
+
+var retrieveUsernameByID = function(db_conn, user_id, callback) {
+    db_conn.query('SELECT `username` FROM users where user_id=\'' + user_id + '\'', function(err, rows, fields) {
+        if(err) {
+            callback(err, null);
+        }
+        else {
+            callback(null, rows[0].username);
+        }
+    });
+}
+
 
 //Organizations
 
@@ -107,7 +136,7 @@ var getOrganization = function(db_conn, requested_id, callback) {
 }
 
 var getOrgIDByName = function(db_conn, requested_org_name, callback) {
-    db_conn.query('SELECT * FROM organizations where name=\'' + requested_org_name + '\'', function(err, rows, fields) {
+    db_conn.query('SELECT organization_id FROM organizations where name=\'' + requested_org_name + '\'', function(err, rows, fields) {
         if(err) {
             callback(err, null);
         }
@@ -139,6 +168,31 @@ var addNewMemberToOrg = function(db_conn, org_id, new_member_id, is_admin, callb
     });
 }
 
+var retrieveMembersOfOrg = function(db_conn, org_id, callback) {
+    db_conn.query('SELECT * FROM members where org_id = \'' + org_id + '\'', function(err, rows, fields) {
+        if(err) {
+            callback(err, null);
+        }
+        else { 
+            console.log(rows);
+            callback(null, rows);
+        }
+    });
+}
+
+var retrieveIsMemberAdmin = function(db_conn, org_id, member_id, callback) {
+    db_conn.query('SELECT is_admin FROM members where member_id=\'' + member_id + '\' AND org_id=\'' + org_id + '\'', function(err, rows, fields) {
+        var boolToReturn = rows[0].is_admin ? true : false;
+        
+        if(err) {
+            callback(err);
+        }
+        else {
+            callback(boolToReturn);
+        }  
+    });
+}
+
 var alterOrganizationInfo = function(db_conn, org_id, new_org_name, new_org_desc, callback) {
     db_conn.query('UPDATE `organizations` SET `name` = \'' + new_org_name + '\', `description` = \'' + new_org_desc + '\' WHERE `organization_id` = \'' + org_id + '\'', function(err, rows, fields) {
         if(err) {
@@ -156,12 +210,16 @@ module.exports.checkInvalidInput = checkInvalidInput;
 module.exports.registerNewUser = registerNewUser;
 module.exports.signIn = signIn;
 module.exports.retrieveUser = retrieveUser;
+module.exports.retrieveAllUsers = retrieveAllUsers;
 module.exports.retrieveUserIdByUsername = retrieveUserIdByUsername;
+module.exports.retrieveUsernameByID = retrieveUsernameByID;
 module.exports.getOrganization = getOrganization;
 module.exports.getOrgIDByName = getOrgIDByName;
 module.exports.addNewOrganization = addNewOrganization;
 module.exports.addNewMemberToOrg = addNewMemberToOrg;
 module.exports.alterOrganizationInfo = alterOrganizationInfo;
+module.exports.retrieveIsMemberAdmin = retrieveIsMemberAdmin;
+module.exports.retrieveMembersOfOrg = retrieveMembersOfOrg;
 
 
 //db_conn.query('INSERT INTO `users`(`username`, `password`, `email`) VALUES (\'' + username + '\', \'' + password + '\', \'' + email + '\')', function(err, rows, fields) {

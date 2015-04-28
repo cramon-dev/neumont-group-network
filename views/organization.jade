@@ -6,5 +6,8 @@ block content
     p #{org_desc}
     
     h4 Members
+    if locals.members
+        each val in members
+            li= val.username
     
     a(href="http://localhost:3000/organizations/#{org_id}/edit") Edit Information
