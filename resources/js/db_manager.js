@@ -2,6 +2,22 @@
 var mysql = require('mysql');
 var bcrypt = require('bcrypt');
 
+var pool = mysql.createPool({
+    host: 'localhost',
+    user: 'ngn-user',
+    password: 'zJ7m9cdujSGrSvAq',
+    database: 'ngn-db'
+});
+
+
+//Utility
+
+var getConnection = function(callback) {
+    pool.getConnection(function(err, conn) {
+        callback(err, conn);
+    });
+}
+
 var createConnectionToDB = function() {
     console.log("Creating connection to database..");
     
@@ -18,9 +34,6 @@ var createConnectionToDB = function() {
     return(db_conn);
 }
 
-
-//Utility
-
 var checkInvalidInput = function(input_string) {
     //If input contains any scripts, kick them back to register
     //Does not currently protect against SQL injection
@@ -28,7 +41,7 @@ var checkInvalidInput = function(input_string) {
         console.log("Potentially malicious content found");
         throw {
             name: "InvalidInputException",
-            message: "Invalid input."
+            message: "Invalid input"
         };
     }
     else {
@@ -37,12 +50,12 @@ var checkInvalidInput = function(input_string) {
 }
 
 
-//Sign In/Registration
+//Sign In/Registration/Crypto
 
 var registerNewUser = function(db_conn, username, password, email, callback) {
     var hashed_password = generateNewHash(password);
     db_conn.query('INSERT INTO `users`(`username`, `password`, `email`) VALUES (\'' + username + '\', \'' + hashed_password + '\', \'' + email + '\')', function(err, rows, fields) {
-        if (err) {
+        if(err) {
             callback(err);
         }
         else {
@@ -157,6 +170,72 @@ var addNewOrganization = function(db_conn, org_name, org_desc, callback) {
     });
 }
 
+var alterOrganizationInfo = function(db_conn, org_id, new_org_name, new_org_desc, callback) {
+    db_conn.query('UPDATE `organizations` SET `name` = \'' + new_org_name + '\', `description` = \'' + new_org_desc + '\' WHERE `organization_id` = \'' + org_id + '\'', function(err, rows, fields) {
+        if(err) {
+            callback(err);
+        }
+        else {
+            callback(null);
+        }
+    });
+}
+
+
+//Events
+
+var addNewEvent = function(org_id, new_event_title, new_event_desc, new_event_date, callback) {
+    console.log("Org ID in overall function scope: " + org_id);
+    getConnection(function onConnect(err, db_conn) {
+        console.log("Org ID in onConnect scope: " + org_id);
+        if(err) {
+            throw err;
+        }
+        else {
+            console.log("Org ID in else clause scope: " + org_id);
+            db_conn.query('INSERT INTO `events`(`event_org_id`, `title`, `description`, `time`) VALUES (\'' +
+                                org_id + '\', \'' + new_event_title + '\', \'' + new_event_desc + '\', \'' + new_event_date + '\')', function(err, rows, fields) {
+                if(err) {
+                    callback(err);
+                }
+                else {
+                    callback(null);
+                }
+            });
+        }
+    });
+}
+
+var retrieveAllEvents = function(callback) {
+    getConnection(function onConnect(err, db_conn) {
+        if(err) {
+            //Maybe I should just throw an error.. or should I callback with the error?
+            throw err;
+        }
+        else {
+            db_conn.query('SELECT * FROM events', function(err, rows, fields) {
+                callback(err, rows);
+            });
+        }
+    });
+}
+
+var retrieveAllEventsByOrgID = function(requested_org_id, callback) {
+    getConnection(function onConnect(err, db_conn) {
+        if(err) {
+            throw err;
+            //callback(err);
+        }
+        else {
+            db_conn.query('SELECT * FROM events where event_org_id=\'' + requested_org_id + '\'', function(err, rows, fields) {
+                callback(err, rows);
+            });
+        }
+    });
+}
+
+//Members
+
 var addNewMemberToOrg = function(db_conn, org_id, new_member_id, is_admin, callback) {
     db_conn.query('INSERT INTO `members`(`org_id`, `member_id`, `is_admin`) VALUES (\'' + org_id + '\', \'' + new_member_id + '\', \'' + is_admin + '\')', function(err, rows, fields) {
         if(err) {
@@ -173,8 +252,7 @@ var retrieveMembersOfOrg = function(db_conn, org_id, callback) {
         if(err) {
             callback(err, null);
         }
-        else { 
-            console.log(rows);
+        else {
             callback(null, rows);
         }
     });
@@ -193,18 +271,13 @@ var retrieveIsMemberAdmin = function(db_conn, org_id, member_id, callback) {
     });
 }
 
-var alterOrganizationInfo = function(db_conn, org_id, new_org_name, new_org_desc, callback) {
-    db_conn.query('UPDATE `organizations` SET `name` = \'' + new_org_name + '\', `description` = \'' + new_org_desc + '\' WHERE `organization_id` = \'' + org_id + '\'', function(err, rows, fields) {
-        if(err) {
-            callback(err);
-        }
-        else {
-            callback(null);
-        }
-    });
-}
 
+//How can I clean this up?
+//Should I not export mysql connections to other classes?
+//Should I just let the db manager handle connections?
 
+module.exports.pool = pool;
+module.exports.getConnection = getConnection;
 module.exports.createConnectionToDB = createConnectionToDB;
 module.exports.checkInvalidInput = checkInvalidInput;
 module.exports.registerNewUser = registerNewUser;
@@ -216,8 +289,11 @@ module.exports.retrieveUsernameByID = retrieveUsernameByID;
 module.exports.getOrganization = getOrganization;
 module.exports.getOrgIDByName = getOrgIDByName;
 module.exports.addNewOrganization = addNewOrganization;
-module.exports.addNewMemberToOrg = addNewMemberToOrg;
 module.exports.alterOrganizationInfo = alterOrganizationInfo;
+module.exports.addNewEvent = addNewEvent;
+module.exports.retrieveAllEvents = retrieveAllEvents;
+module.exports.retrieveAllEventsByOrgID = retrieveAllEventsByOrgID;
+module.exports.addNewMemberToOrg = addNewMemberToOrg;
 module.exports.retrieveIsMemberAdmin = retrieveIsMemberAdmin;
 module.exports.retrieveMembersOfOrg = retrieveMembersOfOrg;
 

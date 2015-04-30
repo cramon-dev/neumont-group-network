@@ -4,7 +4,6 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-//var connect = require('connect');
 var sessions = require('express-session');
 //var redis = require('redis');
 //var client = redis.createClient();
@@ -39,8 +38,6 @@ app.use(sessions({
 
 //Catch all routes except GET/POST sign in and check if user has a session
 //If session doesn't exist, kick them back to sign in screen
-//BONUS FEATURE TO IMPLEMENT:
-//If they're not logged in and they try to do something, record that action and when they log in and reroute them to the page they were trying to access
 app.all(/\/(?!signin)(?!register)(\w+)/, function(req, res, next) {
     if(req.session.username) {
         console.log("Found valid session");
@@ -48,6 +45,7 @@ app.all(/\/(?!signin)(?!register)(\w+)/, function(req, res, next) {
     }
     else {
         console.log("Could not find session or session has expired, sending user to sign in screen");
+        req.session.last_action = req.path;
         res.render('index', { message: 'You need to be logged in to do that' });
     }
 });
@@ -94,16 +92,3 @@ app.use(function(err, req, res, next) {
 
 
 module.exports = app;
-
-
-////Sessions
-//app.use(sessions({
-//    name: 'session',
-//    secret: 'blargadeeblargblarg', // should be a large unguessable string
-//    duration: 24 * 60 * 60 * 1000, // how long the session will stay valid in ms
-//    activeDuration: 1000 * 60 * 5 // if expiresIn < activeDuration, the session will be extended by activeDuration milliseconds
-//}));
-
-//client.on('connect', function() {
-//    console.log('connected');
-//});

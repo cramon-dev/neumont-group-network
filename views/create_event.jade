@@ -1,0 +1,12 @@
+extends layout
+
+block content
+    h1 Create Event
+    form(action="http://localhost:3000/organizations/#{org_id}/events/create", method="post")
+        p Event title:
+        input(type="text", name="new_event_title")
+        p Event description:
+        input(type="text", name="new_event_desc")
+        p Event date:
+        input(type="date", name="new_event_date")
+        input(type="submit", value="Submit")
