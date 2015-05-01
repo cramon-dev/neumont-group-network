@@ -30,7 +30,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(sessions({
-    secret: 'itsasecret',
+    secret: 'g53hm#v+c=u7(4b#7q*9wds+(j)=i3+j(x4=6joi9v$7v0-gfwn5z',
     cookie: { expires: (Date.now() + hour), maxAge: hour }, //in milliseconds
     resave: false,
     saveUninitialized: true
@@ -45,7 +45,8 @@ app.all(/\/(?!signin)(?!register)(\w+)/, function(req, res, next) {
     }
     else {
         console.log("Could not find session or session has expired, sending user to sign in screen");
-        req.session.last_action = req.path;
+        //Should probably check for certain actions, like sign out, so as to prevent them from signing out accidentally
+        req.session.lastAction = req.path;
         res.render('index', { message: 'You need to be logged in to do that' });
     }
 });

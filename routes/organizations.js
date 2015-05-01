@@ -1,20 +1,23 @@
 var express = require('express');
 var router = express.Router();
-var db_manager = require('../resources/js/db_manager.js');
+var dbManager = require('../resources/js/db-manager.js');
 
 //Retrieve and display an organization and its basic information
 router.get(/(\d+)(?!\/.*)/, function(req, res, next) {
-    var org_id = req.params[0];
-//    var db_conn = db_manager.getConnection();
-    var db_conn = db_manager.createConnectionToDB();
-
-    db_manager.getOrganization(db_conn, org_id, function(err, org_id, org_name, org_desc) {
+    var orgId = req.params[0];
+    
+    dbManager.getOrganization(orgId, function(err, data) {
         if(!err) {
-            retrieveMembersOfOrg(org_id, function(err, members) {
+            var orgId = data.organization_id;
+            var orgName = data.name;
+            var orgDesc = data.description;
+            
+            retrieveMembersOfOrg(orgId, function(err, members) {
                 if(!err) {
-                    retrieveUserDetails(db_conn, members, function(err, member_details) {
-                        req.session.member_details = member_details;
-//                        res.render('organization', { org_id: org_id, org_name: org_name, org_desc: org_desc, members: member_details });
+                    retrieveMemberDetails(members, function(err, memberDetails) {
+                        //make a json object like req.session.organization1
+                        req.session.memberDetails = memberDetails;
+//                        res.render('organization', { orgId: orgId, orgName: orgName, orgDesc: orgDesc, members: memberDetails });
                     });
                 }
                 else {
@@ -22,11 +25,11 @@ router.get(/(\d+)(?!\/.*)/, function(req, res, next) {
                 }
             });
             
-            retrieveEventDetails(org_id, function(err, event_details) {
+            retrieveEventDetails(orgId, function(err, eventDetails) {
                 if(!err) {
-                    req.session.event_details = event_details;
-                    console.log("Event details: " + event_details);
-                    res.render('organization', { org_id: org_id, org_name: org_name, org_desc: org_desc, members: req.session.member_details, events: event_details });
+                    req.session.eventDetails = eventDetails;
+                    console.log('Member details inside retrieveEventDetails: ' + req.session.memberDetails);
+                    res.render('organization', { orgId: orgId, orgName: orgName, orgDesc: orgDesc, members: req.session.memberDetails, events: eventDetails });
                 }
                 else {
                     throw err;
@@ -48,45 +51,38 @@ router.get('/create', function(req, res, next) {
 
 //Edit organization form
 router.get(/(\d+)\/edit/, function(req, res, next) {
-    var org_id = req.params[0];
-    var db_conn = db_manager.createConnectionToDB();
+    var orgId = req.params[0];
     
-    db_manager.retrieveIsMemberAdmin(db_conn, org_id, req.session.user_id, function(isAdmin) {
+    dbManager.retrieveIsMemberAdmin(orgId, req.session.userId, function(isAdmin) {
         if(isAdmin) {
-            res.render('edit_organization', { org_id: org_id });
+            res.render('edit_organization', { orgId: orgId });
         }
         else {
-            res.render('organization', { org_id: org_id, message: 'You are not an admin of this organizaion' });
+            res.render('organization', { orgId: orgId, message: 'You are not an admin of this organizaion' });
         }
     });
 });
 
 //Update organization's info
 router.post(/(\d+)\/edit/, function(req, res, next) {
-    console.log(req.body.new_org_name);
-    console.log(req.body.new_org_desc);
-    //This is potentially a bad idea, consider refactoring this so that the user doesn't see the org's id?
-    console.log(req.body.org_id);
+    var orgId = req.params[0];
+    var newOrgName = dbManager.checkInvalidInput(req.body.newOrgName);
+    var newOrgDesc = dbManager.checkInvalidInput(req.body.newOrgDesc);
     
-    var db_conn = db_manager.createConnectionToDB();
-    var org_id = req.params[0];
-    var new_org_name = db_manager.checkInvalidInput(req.body.new_org_name);
-    var new_org_desc = db_manager.checkInvalidInput(req.body.new_org_desc);
-    
-    db_manager.retrieveIsMemberAdmin(db_conn, org_id, req.session.user_id, function(isAdmin) {
+    dbManager.retrieveIsMemberAdmin(orgId, req.session.userId, function(isAdmin) {
         if(isAdmin) {
-            db_manager.alterOrganizationInfo(db_conn, org_id, new_org_name, new_org_desc, function(err) {
+            dbManager.alterOrganizationInfo(orgId, newOrgName, newOrgDesc, function(err) {
                 if(!err) {
                     console.log("Organization successfully updated");
-                    res.render('organization', { org_id: org_id, message: 'Organization successfully updated' });
+                    res.render('organization', { orgId: orgId, message: 'Organization successfully updated' });
                 }
                 else {
-                    res.render('organization', { org_id: org_id, error_message: 'Error updating organization, please try again' });
+                    res.render('organization', { orgId: orgId, errorMessage: 'Error updating organization, please try again' });
                 }
             });
         }
         else {
-            res.render('organization', { org_id: org_id, message: 'You are not an admin of this organization' });
+            res.render('organization', { orgId: orgId, message: 'You are not an admin of this organization' });
         }
     });
 });
@@ -94,43 +90,43 @@ router.post(/(\d+)\/edit/, function(req, res, next) {
 //Create a new organization
 router.post('/create', function(req, res, next) {
     try {
-        var org_name = db_manager.checkInvalidInput(req.body.org_name);
-        var org_desc = db_manager.checkInvalidInput(req.body.org_desc);
-        var db_conn = db_manager.createConnectionToDB();
+        var orgName = dbManager.checkInvalidInput(req.body.orgName);
+        var orgDesc = dbManager.checkInvalidInput(req.body.orgDesc);
+        var db_conn = dbManager.createConnectionToDB();
 
         //Add a new organization to the DB
-        db_manager.addNewOrganization(db_conn, org_name, org_desc, function(err) {
+        dbManager.addNewOrganization(orgName, orgDesc, function(err) {
             if(err) {
-                res.render('create_organization', { error_message: err.message });
+                res.render('create_organization', { errorMessage: err.message });
             }
             else {
                 //Get the organization's ID and add the user as a member/admin to that organization
-                db_manager.getOrgIDByName(db_conn, org_name, function(err, org_id) {
+                dbManager.getOrgIDByName(orgName, function(err, orgId) {
                     if(!err) {
-                        addNewMember(db_conn, org_id, req.session.user_id, true);
-                        res.redirect('/organizations/' + org_id);
+                        addNewMember(orgId, req.session.userId, true);
+                        res.redirect('/organizations/' + orgId);
                     }
                 });
             }
         });
     }
     catch(e) {
-        res.render('create_organization', { error_message: e.message });
+        res.render('create_organization', { errorMessage: e.message });
     }
 });
 
 //Get event creation form
 router.get(/(\d+)\/events\/create/, function(req, res, next) {
-    res.render('create_event', { org_id: req.params[0] });
+    res.render('create_event', { orgId: req.params[0] });
 });
 
 //Create new event
 router.post(/(\d+)\/events\/create/, function(req, res, next) {
-    var event_title = db_manager.checkInvalidInput(req.body.new_event_title);
-    var event_desc = db_manager.checkInvalidInput(req.body.new_event_desc);
-    var event_date = req.body.new_event_date;
+    var eventTitle = dbManager.checkInvalidInput(req.body.newEventTitle);
+    var eventDesc = dbManager.checkInvalidInput(req.body.newEventDesc);
+    var startDate = req.body.eventStartDate;
     
-    db_manager.addNewEvent(req.params[0], event_title, event_desc, event_date, function(err) {
+    dbManager.addNewEvent(req.params[0], eventTitle, eventDesc, startDate, function(err) {
         if(err) {
             throw err;
         }
@@ -144,57 +140,51 @@ router.post(/(\d+)\/events\/create/, function(req, res, next) {
 
 //Misc methods to get myself out of callback hell
 
-var addNewMember = function(db_conn, org_id, user_id, isAdmin) {
-    var is_admin = isAdmin ? 1 : 0;
-    db_manager.addNewMemberToOrg(db_conn, org_id, user_id, is_admin, function(err) {
+var addNewMember = function(orgId, userId, isAdmin) {
+    dbManager.addNewMemberToOrg(orgId, userId, isAdmin, function(err) {
         if(!err) {
             console.log("Success adding new member");
         }
         else {
+            console.log("Error adding new member");
             console.log(err);
             throw err;
         }
     });
 }
 
-var retrieveMembersOfOrg = function(org_id, callback) {
-    var db_conn = db_manager.createConnectionToDB();
-    
-    db_manager.retrieveMembersOfOrg(db_conn, org_id, function(err, members) {
-        if(!err) {
-            callback(null, members);
-        }
-        else {
-            callback(err, null, null);
-        }
+var retrieveMembersOfOrg = function(orgId, callback) {
+    dbManager.retrieveMembersOfOrg(orgId, function(err, members) {
+        callback(err, members);
     });
 }
 
-var retrieveUsernameByID = function(member_id, callback) {
-    db_manager.retrieveUsernameByID(db_conn, member_id, function(err, username) {
-        if(!err) {
-            callback(null, username);
-        }
-        else {
-            callback(err, null);
-        }
+var retrieveIsMemberAdmin = function(orgId, memberId, callback) {
+    dbManager.retrieveIsMemberAdmin(orgId, memberId, function(err, isAdmin) {
+        callback(err, isAdmin);
     });
 }
 
-var retrieveUserDetails = function(db_conn, members_list, callback) {
-    db_manager.retrieveAllUsers(db_conn, function(err, user_details) {
+var retrieveUsernameByID = function(memberId, callback) {
+    dbManager.retrieveUsernameByID(memberId, function(err, username) {
+        callback(err, username);
+    });
+}
+
+var retrieveMemberDetails = function(membersList, callback) {
+    dbManager.retrieveAllUsers(function(err, userDetails) {
         if(!err) {
-            var new_user_details = [];
+            var detailsToReturn = [];
             
-            for(member in members_list) {
-                for(var i = 0; i < user_details.length; i++) {
-                    if(members_list[member] && (user_details[i].user_id === members_list[member].member_id)) {
-                        new_user_details.push({ user_id: user_details[i].user_id, username: user_details[i].username });
+            for(member in membersList) {
+                for(var i = 0; i < userDetails.length; i++) {
+                    if(membersList[member] && (userDetails[i].user_id === membersList[member].member_id)) {
+                        detailsToReturn.push({ userId: userDetails[i].user_id, username: userDetails[i].username });
                     }
                 }
             }
             
-            callback(null, new_user_details); 
+            callback(null, detailsToReturn); 
         }
         else {
             callback(err, null);
@@ -202,10 +192,10 @@ var retrieveUserDetails = function(db_conn, members_list, callback) {
     });
 }
 
-var retrieveEventDetails = function(requested_org_id, callback) {
-    db_manager.retrieveAllEventsByOrgID(requested_org_id, function(err, event_details) {
+var retrieveEventDetails = function(requestedOrgId, callback) {
+    dbManager.retrieveAllEventsByOrgID(requestedOrgId, function(err, eventDetails) {
         if(!err) {
-            callback(null, event_details);
+            callback(null, eventDetails);
         }
         else {
             throw err;
@@ -214,16 +204,16 @@ var retrieveEventDetails = function(requested_org_id, callback) {
 }
 
 ////Implement this method for ease of use later?
-//var renderPage = function(view_name, params, message) {
+//var renderPage = function(viewName, params, message) {
 ////    for every value in params, pass it to res.render
-////    console.log("Organization #" + org_id);
+////    console.log("Organization #" + orgId);
 ////    console.log("Members: " + members);
-////    res.render('organization', { org_id: org_id, org_name: org_name, org_desc: org_desc });
+////    res.render('organization', { orgId: orgId, orgName: orgName, orgDesc: orgDesc });
 //    if(message) {
-//        res.render(view_name, params, message);
+//        res.render(viewName, params, message);
 //    }
 //    else {
-//        res.render(view_name, params);
+//        res.render(viewName, params);
 //    }
 ////    res.render(, { 
 //}

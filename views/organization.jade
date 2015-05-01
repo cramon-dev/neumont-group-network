@@ -1,9 +1,9 @@
 extends layout
 
 block content
-    h1 #{org_name}
+    h1 #{orgName}
     
-    p #{org_desc}
+    p #{orgDesc}
     
     h4 Members
     if locals.members
@@ -14,13 +14,15 @@ block content
     if locals.events
         each val in events
             li= val.title
-            
-    a(href="http://localhost:3000/organizations/#{org_id}/edit") Edit Information
     
-    a(href="http://localhost:3000/organizations/#{org_id}/events/create") Add Event
+    
+    a(href="http://localhost:3000/organizations/#{orgId}/edit") Edit Information
+    
+    a(href="http://localhost:3000/organizations/#{orgId}/events/create") Add Event
     
     //
         DON'T FORGET TO ADD A BUTTON THAT ALLOWS USERS TO BECOME A MEMBER OF AN ORGANIZATION
         Also some logic in the controllers that checks if the user is already a member
+        Another also, pass the view a boolean that dictates whether the current user is an admin or not and if not an admin, don't show the last two links
         
-        a(href="http://localhost:3000/organizations/#{org_id}/join") Join Organization
+        a(href="http://localhost:3000/organizations/#{orgId}/join") Join Organization
