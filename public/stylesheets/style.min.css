@@ -1,1 +1,1 @@
-*{margin:0;padding:0}.error_message{color:#C00;font-size:16px;font-weight:700}
+.errorMessage,.message{font-size:16px;font-weight:700}*{margin:0;padding:0}.message{color:#ECD600}.errorMessage{color:#C00}

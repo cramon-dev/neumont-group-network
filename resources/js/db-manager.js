@@ -161,7 +161,6 @@ var retrieveUsernameByID = function(user_id, callback) {
 //Get an organization's information based off of ID
 var getOrganization = function(requested_id, callback) {
     getConnection(function(err, connection) {
-        console.log('SELECT * FROM organizations where organization_id=\'' + requested_id + '\' LIMIT 1');
         if(!err) {
             connection.query('SELECT * FROM organizations where organization_id=\'' + requested_id + '\' LIMIT 1', function(err, rows, fields) {
                 callback(err, rows[0]);

@@ -2,51 +2,78 @@ var express = require('express');
 var router = express.Router();
 var dbManager = require('../resources/js/db-manager.js');
 
+
+// ======== GET ========
+
 //Retrieve and display an organization and its basic information
-router.get(/(\d+)(?!\/.*)/, function(req, res, next) {
+//Old regex pattern for capturing just digit: (\d+)(?!\/.*)
+router.get(/^\/(\d+)\/?$/, function(req, res, next) {
+    console.log('Captured URL: ' + req.url);
     var orgId = req.params[0];
     
+    console.log("Organization to retrieve: " + orgId);
+    
     dbManager.getOrganization(orgId, function(err, data) {
+        console.log("Inside get organization query");
         if(!err) {
             var orgId = data.organization_id;
             var orgName = data.name;
             var orgDesc = data.description;
             
-            retrieveMembersOfOrg(orgId, function(err, members) {
-                if(!err) {
-                    retrieveMemberDetails(members, function(err, memberDetails) {
-                        //make a json object like req.session.organization1
-                        req.session.memberDetails = memberDetails;
-//                        res.render('organization', { orgId: orgId, orgName: orgName, orgDesc: orgDesc, members: memberDetails });
-                    });
-                }
-                else {
-                    throw err;
-                }
-            });
+//            retrieveExtraDetails(orgId, function(err, data) {
+//                
+//            });
             
-            retrieveEventDetails(orgId, function(err, eventDetails) {
-                if(!err) {
-                    req.session.eventDetails = eventDetails;
-                    console.log('Member details inside retrieveEventDetails: ' + req.session.memberDetails);
-                    res.render('organization', { orgId: orgId, orgName: orgName, orgDesc: orgDesc, members: req.session.memberDetails, events: eventDetails });
-                }
-                else {
-                    throw err;
-                }
-            });
+//            if(orgId === req.session.lastOrgVisited[orgId]) {
+//                console.log('Found organization details in session, rendering organization page now');
+//            }
+//            else {
+                console.log('Organization details not found inside session');
+                //There's a better way but you're just not seeing it yet
+                //Stop throwing errors, do something about it
+                retrieveMembersOfOrg(orgId, function(err, members) {
+                    if(!err) {
+                        retrieveMemberDetails(members, function(err, memberDetails) {
+                            if(!err) {
+                                retrieveEventDetails(orgId, function(err, eventDetails) {
+                                    if(!err) {
+        //                                req.session.eventDetails = eventDetails;
+                                        console.log('Member details inside retrieveEventDetails: ' + memberDetails);
+                                        req.session.lastOrgVisited = { orgId: orgId, orgName: orgName, orgDesc: orgDesc, memberDetails: memberDetails, eventDetails: eventDetails };
+                                        console.log('Last org visited ID: ' + req.session.lastOrgVisited.orgId);
+                                        console.log('Last org visited event details: ' + req.session.lastOrgVisited['eventDetails']);
+                                        res.render('organization', { orgId: orgId, orgName: orgName, orgDesc: orgDesc, members: memberDetails, events: eventDetails });
+                                    }
+                                    else {
+                                        console.log(err);
+    //                                    redirectError(err);
+                                    }
+                                });
+                            }
+                            else {
+                                console.log(err);
+    //                            redirectError(err);
+                            }
+                            //make a json object like req.session.organization1
+    //                        req.session.organization1.push({ orgId: orgId, orgName: orgName, orgDesc: orgDesc, memberDetails: memberDetails });
+    //                        req.session.memberDetails = memberDetails;
+    //                        res.render('organization', { orgId: orgId, orgName: orgName, orgDesc: orgDesc, members: memberDetails });
+                        });
+                    }
+                    else {
+                        console.log(err);
+    //                    redirectError(err);
+                    }
+                });
+//            }
         }
         else {
+            console.log(err);
             var err = new Error('Not Found');
             err.status = 404;
             res.render('error', { error: err });
         }
     });
-});
-
-//Get organization creation form
-router.get('/create', function(req, res, next) {
-    res.render('create_organization');
 });
 
 //Edit organization form
@@ -59,6 +86,48 @@ router.get(/(\d+)\/edit/, function(req, res, next) {
         }
         else {
             res.render('organization', { orgId: orgId, message: 'You are not an admin of this organizaion' });
+        }
+    });
+});
+
+//Get an event's page with details
+router.get(/\/(\d+)\/events\/(\d+)/, function(req, res, next) {
+    console.log('get event details');
+    if(req.session.lastOrgVisited) {
+        console.log('found stuff in session');
+        var eventDetails = req.session.lastVisitedOrg['eventDetails'];
+        res.render('event', { title: eventDetails.title, description: eventDetails.description });
+    }
+//    res.render('event', { title: title, description: desc });
+//    res.render('event', { 
+});
+
+//Get event creation form
+router.get(/(\d+)\/events\/create/, function(req, res, next) {
+    res.render('create_event', { orgId: req.params[0] });
+});
+
+//Get organization creation form
+router.get('/create', function(req, res, next) {
+    res.render('create_organization');
+});
+
+
+// ======== POST ========
+
+//Create new event
+router.post(/(\d+)\/events\/create/, function(req, res, next) {
+    var eventTitle = dbManager.checkInvalidInput(req.body.newEventTitle);
+    var eventDesc = dbManager.checkInvalidInput(req.body.newEventDesc);
+    var startDate = req.body.eventStartDate;
+    
+    dbManager.addNewEvent(req.params[0], eventTitle, eventDesc, startDate, function(err) {
+        if(err) {
+            throw err;
+        }
+        else {
+            console.log("Success adding new event");
+            res.redirect('/organizations/' + req.params[0]);
         }
     });
 });
@@ -92,7 +161,6 @@ router.post('/create', function(req, res, next) {
     try {
         var orgName = dbManager.checkInvalidInput(req.body.orgName);
         var orgDesc = dbManager.checkInvalidInput(req.body.orgDesc);
-        var db_conn = dbManager.createConnectionToDB();
 
         //Add a new organization to the DB
         dbManager.addNewOrganization(orgName, orgDesc, function(err) {
@@ -113,28 +181,6 @@ router.post('/create', function(req, res, next) {
     catch(e) {
         res.render('create_organization', { errorMessage: e.message });
     }
-});
-
-//Get event creation form
-router.get(/(\d+)\/events\/create/, function(req, res, next) {
-    res.render('create_event', { orgId: req.params[0] });
-});
-
-//Create new event
-router.post(/(\d+)\/events\/create/, function(req, res, next) {
-    var eventTitle = dbManager.checkInvalidInput(req.body.newEventTitle);
-    var eventDesc = dbManager.checkInvalidInput(req.body.newEventDesc);
-    var startDate = req.body.eventStartDate;
-    
-    dbManager.addNewEvent(req.params[0], eventTitle, eventDesc, startDate, function(err) {
-        if(err) {
-            throw err;
-        }
-        else {
-            console.log("Success adding new event");
-            res.redirect('/organizations/' + req.params[0]);
-        }
-    });
 });
 
 
@@ -195,6 +241,11 @@ var retrieveMemberDetails = function(membersList, callback) {
 var retrieveEventDetails = function(requestedOrgId, callback) {
     dbManager.retrieveAllEventsByOrgID(requestedOrgId, function(err, eventDetails) {
         if(!err) {
+            console.log('After retrieving all events by org ID');
+            console.log('Event title: ' + eventDetails[0].title);
+            console.log('Event description: ' + eventDetails[0].description);
+            console.log('Event start date: ' + eventDetails[0].start_date);
+            
             callback(null, eventDetails);
         }
         else {

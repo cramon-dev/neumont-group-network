@@ -13,7 +13,8 @@ block content
     h4 Events
     if locals.events
         each val in events
-            li= val.title
+            li 
+                a(href="http://localhost:3000/organizations/#{orgId}/events/#{val.event_id}")= val.title
     
     
     a(href="http://localhost:3000/organizations/#{orgId}/edit") Edit Information
