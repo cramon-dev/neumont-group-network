@@ -2,11 +2,11 @@ extends layout
 
 block content
     h1 Create Event
-    form(action="http://localhost:3000/organizations/#{org_id}/events/create", method="post")
+    form(action="http://localhost:3000/organizations/#{orgId}/events/create", method="post")
         p Event title:
-        input(type="text", name="new_event_title")
+        input(type="text", name="newEventTitle")
         p Event description:
-        input(type="text", name="new_event_desc")
+        input(type="text", name="newEventDesc")
         p Start date (defaults to all day for one day):
-        input(type="date", name="start_date")
+        input(type="date", name="startDate")
         input(type="submit", value="Submit")

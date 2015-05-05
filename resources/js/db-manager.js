@@ -1,3 +1,7 @@
+//AUTHOR'S NOTE
+//Considering altering this class so that it only has a few methods such as: selectFrom, insertInto, updateWhere, and so on
+//How hard would it be to implement this and how much easier would it make my life?
+
 //Manage DB connection and check for potentially malicious input with this DB manager
 var mysql = require('mysql');
 var bcrypt = require('bcrypt');
@@ -23,8 +27,8 @@ var getConnection = function(callback) {
 
 //Check for potentially malicious input
 //Does not currently protect against SQL injection
-var checkInvalidInput = function(input_string) {
-    if(input_string.indexOf('<script') > -1) {
+var checkInvalidInput = function(inputString) {
+    if(inputString.indexOf('<script') > -1) {
         console.log("Potentially malicious content found");
         throw {
             name: "InvalidInputException",
@@ -32,7 +36,7 @@ var checkInvalidInput = function(input_string) {
         };
     }
     else {
-        return input_string;
+        return inputString;
     }
 }
 
@@ -276,8 +280,58 @@ var retrieveAllEventsByOrgID = function(requested_org_id, callback) {
             });
         }
         else {            
-            throw err;
-            //callback(err);
+            //Should I callback with the error?
+            callback(err, null);
+        }
+    });
+}
+
+//Get a single event's details based on requested ID
+var retrieveSingleEventDetails = function(requestedEventId, callback) {
+    getConnection(function onConnect(err, connection) {
+        if(!err) {
+            connection.query('SELECT * FROM events where event_id=\'' + requestedEventId + '\' LIMIT 1', function(err, rows, fields) {
+                callback(err, rows[0]);
+            
+                connection.release();
+            }); 
+        }
+        else {
+            //Should I callback with the error?
+            callback(err, null);
+        }
+    });
+}
+
+var addNewComment = function(commentMessage, authorUsername, eventIdPostingTo, callback) {
+    getConnection(function onConnect(err, connection) {
+        if(!err) {
+            var currentDate = Date.now();
+            connection.query('INSERT INTO `comments`(`message`, `time_posted`, `author_username`, `event_id`) VALUES (\'' 
+                             + commentMessage + '\', \'' + currentDate + '\', \'' + authorUsername + '\', \'' + eventIdPostingTo + '\')', function(err, rows, fields) {
+                callback(err);
+                
+                console.log('Added new comment');
+                connection.release();
+            });
+        }
+        else {
+            callback(err);
+        }
+    });
+}
+
+var retrieveAllCommentsWhere = function(eventIdPostedTo, callback) {
+    getConnection(function onConnect(err, connection) {
+        if(!err) {
+            connection.query('SELECT * FROM comments where event_id=\'' + eventIdPostedTo + '\'', function(err, rows, fields) {
+                callback(err, rows);
+                
+                connection.release();
+            });
+        }
+        else {
+            callback(err, null);
         }
     });
 }
@@ -287,7 +341,8 @@ var retrieveAllEventsByOrgID = function(requested_org_id, callback) {
 //Add a new member of an organization
 var addNewMemberToOrg = function(org_id, new_member_id, is_admin, callback) {
     getConnection(function onConnect(err, connection) {
-        connection.query('INSERT INTO `members`(`org_id`, `member_id`, `is_admin`) VALUES (\'' + org_id + '\', \'' + new_member_id + '\', \'' + is_admin + '\')', function(err, rows, fields) {
+        connection.query('INSERT INTO `members`(`org_id`, `member_id`, `is_admin`) VALUES (\'' 
+                         + org_id + '\', \'' + new_member_id + '\', \'' + is_admin + '\')', function(err, rows, fields) {
             callback(err);
 
             connection.release();
@@ -315,10 +370,11 @@ var retrieveMembersOfOrg = function(org_id, callback) {
 var retrieveIsMemberAdmin = function(org_id, member_id, callback) {
     getConnection(function onConnect(err, connection) {
         if(!err) {
-            connection.query('SELECT is_admin FROM members where member_id=\'' + member_id + '\' AND org_id=\'' + org_id + '\'', function(err, rows, fields) {
-                var isMemberAdmin = rows[0].is_admin ? true : false;
-
-                callback(err, isMemberAdmin);
+            connection.query('SELECT is_admin FROM members where member_id=\'' + member_id + '\' AND org_id=\'' + org_id + '\' LIMIT 1', function(err, rows, fields) {
+                console.log('is admin before ternary ' + rows);
+                var isMemberAdmin = rows ? true : false;
+                
+                callback(isMemberAdmin);
 
                 connection.release();
             });
@@ -349,6 +405,9 @@ module.exports.alterOrganizationInfo = alterOrganizationInfo;
 module.exports.addNewEvent = addNewEvent;
 module.exports.retrieveAllEvents = retrieveAllEvents;
 module.exports.retrieveAllEventsByOrgID = retrieveAllEventsByOrgID;
+module.exports.retrieveSingleEventDetails = retrieveSingleEventDetails;
+module.exports.addNewComment = addNewComment;
+module.exports.retrieveAllCommentsWhere = retrieveAllCommentsWhere;
 module.exports.addNewMemberToOrg = addNewMemberToOrg;
 module.exports.retrieveMembersOfOrg = retrieveMembersOfOrg;
 module.exports.retrieveIsMemberAdmin = retrieveIsMemberAdmin;

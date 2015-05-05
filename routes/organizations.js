@@ -35,13 +35,10 @@ router.get(/^\/(\d+)\/?$/, function(req, res, next) {
                     if(!err) {
                         retrieveMemberDetails(members, function(err, memberDetails) {
                             if(!err) {
-                                retrieveEventDetails(orgId, function(err, eventDetails) {
+                                retrieveListOfEventDetails(orgId, function(err, eventDetails) {
                                     if(!err) {
         //                                req.session.eventDetails = eventDetails;
-                                        console.log('Member details inside retrieveEventDetails: ' + memberDetails);
                                         req.session.lastOrgVisited = { orgId: orgId, orgName: orgName, orgDesc: orgDesc, memberDetails: memberDetails, eventDetails: eventDetails };
-                                        console.log('Last org visited ID: ' + req.session.lastOrgVisited.orgId);
-                                        console.log('Last org visited event details: ' + req.session.lastOrgVisited['eventDetails']);
                                         res.render('organization', { orgId: orgId, orgName: orgName, orgDesc: orgDesc, members: memberDetails, events: eventDetails });
                                     }
                                     else {
@@ -92,19 +89,33 @@ router.get(/(\d+)\/edit/, function(req, res, next) {
 
 //Get an event's page with details
 router.get(/\/(\d+)\/events\/(\d+)/, function(req, res, next) {
-    console.log('get event details');
-    if(req.session.lastOrgVisited) {
-        console.log('found stuff in session');
-        var eventDetails = req.session.lastVisitedOrg['eventDetails'];
-        res.render('event', { title: eventDetails.title, description: eventDetails.description });
-    }
-//    res.render('event', { title: title, description: desc });
-//    res.render('event', { 
+    var orgId = req.params[0];
+    var requestedEventId = req.params[1];
+//    var sessionEventDetails = req.session.lastOrgVisited.eventDetails;
+    
+    retrieveSingleEventDetails(requestedEventId, function(err, eventDetails) {
+        retrieveComments(requestedEventId, function(err, listOfComments) {
+            res.render('event', { eventId: requestedEventId, orgId: orgId, title: eventDetails.title, description: eventDetails.description, startDate: eventDetails.start_date, comments: listOfComments });
+        });
+        
+    });
 });
 
 //Get event creation form
 router.get(/(\d+)\/events\/create/, function(req, res, next) {
-    res.render('create_event', { orgId: req.params[0] });
+    var orgId = req.params[0];
+    var userId = req.session.userId;
+    
+    console.log('User ID: ' + userId);
+    retrieveIsMemberAdmin(orgId, userId, function(isAdmin) {
+        console.log('Is the member an admin? ' + isAdmin);
+        if(isAdmin) {
+            res.render('create_event', { orgId: orgId });
+        }
+        else {
+            res.render('organization', { orgId: orgId, message: 'You are not an admin of this orgnaization' });
+        }
+    });
 });
 
 //Get organization creation form
@@ -117,17 +128,27 @@ router.get('/create', function(req, res, next) {
 
 //Create new event
 router.post(/(\d+)\/events\/create/, function(req, res, next) {
+    var orgId = req.params[0];
     var eventTitle = dbManager.checkInvalidInput(req.body.newEventTitle);
     var eventDesc = dbManager.checkInvalidInput(req.body.newEventDesc);
-    var startDate = req.body.eventStartDate;
+    var startDate = req.body.startDate;
     
-    dbManager.addNewEvent(req.params[0], eventTitle, eventDesc, startDate, function(err) {
-        if(err) {
-            throw err;
+    retrieveIsMemberAdmin(orgId, req.session.userId, function(isAdmin) {
+        console.log('Is the member an admin?' + isAdmin);
+        if(isAdmin) {
+            dbManager.addNewEvent(orgId, eventTitle, eventDesc, startDate, function(err) {
+                if(!err) {
+                    console.log('Success adding new event');
+                    res.redirect('/organizations/' + orgId);
+                }
+                else {
+                    console.log('Error adding new event');
+                    throw err;
+                }
+            });
         }
         else {
-            console.log("Success adding new event");
-            res.redirect('/organizations/' + req.params[0]);
+            res.render('organization', { orgId: orgId, message: 'You are not an admin of this organization' });
         }
     });
 });
@@ -138,7 +159,7 @@ router.post(/(\d+)\/edit/, function(req, res, next) {
     var newOrgName = dbManager.checkInvalidInput(req.body.newOrgName);
     var newOrgDesc = dbManager.checkInvalidInput(req.body.newOrgDesc);
     
-    dbManager.retrieveIsMemberAdmin(orgId, req.session.userId, function(isAdmin) {
+    retrieveIsMemberAdmin(orgId, req.session.userId, function(isAdmin) {
         if(isAdmin) {
             dbManager.alterOrganizationInfo(orgId, newOrgName, newOrgDesc, function(err) {
                 if(!err) {
@@ -183,6 +204,17 @@ router.post('/create', function(req, res, next) {
     }
 });
 
+router.post(/\/(\d+)\/events\/(\d+)\/comment/, function(req, res, next) {
+    var eventId = req.params[1];
+    var commentMessage = dbManager.checkInvalidInput(req.body.comment_message);
+    
+    dbManager.addNewComment(commentMessage, req.session.username, eventId, function(err) {
+        if(!err) {
+            res.redirect('/organizations/' + req.params[0] + '/events/' + eventId);
+        }
+    });
+});
+
 
 //Misc methods to get myself out of callback hell
 
@@ -206,8 +238,8 @@ var retrieveMembersOfOrg = function(orgId, callback) {
 }
 
 var retrieveIsMemberAdmin = function(orgId, memberId, callback) {
-    dbManager.retrieveIsMemberAdmin(orgId, memberId, function(err, isAdmin) {
-        callback(err, isAdmin);
+    dbManager.retrieveIsMemberAdmin(orgId, memberId, function(isAdmin) {
+        callback(isAdmin);
     });
 }
 
@@ -238,14 +270,20 @@ var retrieveMemberDetails = function(membersList, callback) {
     });
 }
 
-var retrieveEventDetails = function(requestedOrgId, callback) {
-    dbManager.retrieveAllEventsByOrgID(requestedOrgId, function(err, eventDetails) {
+var retrieveListOfEventDetails = function(requestedOrgId, callback) {
+    dbManager.retrieveAllEventsByOrgID(requestedOrgId, function(err, listOfEventDetails) {
         if(!err) {
-            console.log('After retrieving all events by org ID');
-            console.log('Event title: ' + eventDetails[0].title);
-            console.log('Event description: ' + eventDetails[0].description);
-            console.log('Event start date: ' + eventDetails[0].start_date);
-            
+            callback(null, listOfEventDetails);
+        }
+        else {
+            throw err;
+        }
+    });
+}
+
+var retrieveSingleEventDetails = function(requestedEventId, callback) {
+    dbManager.retrieveSingleEventDetails(requestedEventId, function(err, eventDetails) {
+        if(!err) {
             callback(null, eventDetails);
         }
         else {
@@ -253,6 +291,26 @@ var retrieveEventDetails = function(requestedOrgId, callback) {
         }
     });
 }
+
+var retrieveComments = function(eventIdPostedTo, callback) {
+    dbManager.retrieveAllCommentsWhere(eventIdPostedTo, function(err, listOfComments) {
+        if(!err) {
+            callback(null, listOfComments);
+        }
+        else {
+            throw err;   
+        }
+    });
+}
+
+//var renderPage = function(viewName, params, message) {
+//    var paramObject = {};
+//    if(params) {
+//        for(param in params) {
+//            //Push into object
+//        }
+//    }
+//}
 
 ////Implement this method for ease of use later?
 //var renderPage = function(viewName, params, message) {
@@ -269,5 +327,26 @@ var retrieveEventDetails = function(requestedOrgId, callback) {
 ////    res.render(, { 
 //}
 
+////If the session holds some events
+//    if(sessionEventDetails) {
+//        //For every event in the session's list of events
+//        console.log('Session holds some event details, searching through details now');
+//        for(event in sessionEventDetails) {
+//            var sessionEventId = sessionEventDetails[event].event_id;
+//            console.log('inside for in loop');
+//            console.log('Session event ID: ' + sessionEventId);
+//            console.log('Requested event ID: ' + requestedEventId);
+//            if(sessionEventId === requestedEventId) {
+//                console.log('found event in session');
+//                var eventDetails = sessionEventDetails[event];
+//                res.render('event', { title: eventDetails[eventId].title, description: eventDetails[eventId].description });
+//            }
+//        }
+//    }
+//    else {
+//        getSingleEventDetails(requestedEventId, function(err, eventDetails) {
+//            res.render('event', { event_id: requestedEventId, title: eventDetails.title, description: eventDetails.description, startDate: eventDetails.start_date });
+//        });
+//    }
 
 module.exports = router;
