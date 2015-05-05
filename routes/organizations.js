@@ -106,7 +106,6 @@ router.get(/(\d+)\/events\/create/, function(req, res, next) {
     var orgId = req.params[0];
     var userId = req.session.userId;
     
-    console.log('User ID: ' + userId);
     retrieveIsMemberAdmin(orgId, userId, function(isAdmin) {
         console.log('Is the member an admin? ' + isAdmin);
         if(isAdmin) {
