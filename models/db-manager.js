@@ -1,8 +1,4 @@
-//AUTHOR'S NOTE
-//Considering altering this class so that it only has a few methods such as: selectFrom, insertInto, updateWhere, and so on
-//How hard would it be to implement this and how much easier would it make my life?
-
-//Manage DB connection and check for potentially malicious input with this DB manager
+//Manage database connections and perform operations
 var mysql = require('mysql');
 var bcrypt = require('bcrypt');
 
@@ -16,7 +12,7 @@ var pool = mysql.createPool({
 });
 
 
-//Utility
+// =========== Utility ===========
 
 //Get a DB connection from the pool and give it to a callback
 var getConnection = function(callback) {
@@ -32,302 +28,80 @@ var generateNewHash = function(password_to_hash) {
 }
 
 
-//Sign In/Registration
+// =========== Sign In/Registration ===========
 
 //Register a new user
 exports.registerNewUser = function(username, password, email, callback) {
     var hashedPassword = generateNewHash(password);
     
     getConnection(function onConnect(err, connection) {
-        connection.query('INSERT INTO `users`(`username`, `password`, `email`) VALUES (\'' + username + '\', \'' + hashedPassword + '\', \'' + email + '\')', function(err, result) {
-            callback(err, result.insertId);
-            connection.release();
-        });
+        if(!err) {
+            connection.query('INSERT INTO `users`(`username`, `password`, `email`) VALUES (\'' + username + '\', \'' + hashedPassword + '\', \'' + email + '\')', function onDBInsertUser(err, result) {
+                callback(err, result.insertId);
+                connection.release();
+            });
+        }
+        else {
+            callback(err, null);
+        }
     });
 }
 
 //Authenticate a user
 exports.authenticate = function(username, password, callback) {
     getConnection(function onConnect(err, connection) {
-        connection.query('SELECT * FROM users where username=\'' + username + '\' LIMIT 1', function(err, rows, fields) {
-            if(!err) {
-                if(bcrypt.compareSync(password, rows[0].password)) {
-                    user = { userId: rows[0].user_id, username: username, email: rows[0].email };
-                }
-                else {
-                    user = null;
-                }
-            
-                callback(null, user);
-            }
-            else {
-                callback(err, null);
-            }
-                
-            connection.release();
-        });
-    });
-}
-
-////Sign a user in
-//var signIn = function(username, callback) {
-//    getConnection(function onConnect(err, connection) {
-//        connection.query('SELECT * FROM users where username=\'' + username + '\' LIMIT 1', function(err, rows, fields) {
-//            var userCredentials = { userId: rows[0].user_id, password: rows[0].password };
-//            callback(err, userCredentials);
-//            
-//            connection.release();
-//        });
-//    });
-//}
-
-
-//Users
-
-//Get a user's user ID and username based off requested user ID
-var retrieveUser = function(requested_id, callback) {
-    getConnection(function(err, connection) {
         if(!err) {
-            connection.query('SELECT * FROM users where user_id=\'' + requested_id + '\' LIMIT 1', function(err, rows, fields) {
-                var user = { userId: rows[0].user_id, username: rows[0].username };
-                callback(err, user);
-
-                connection.release();
-            });
-        }
-        else {
-            throw err;
-        }
-    }); 
-}
-
-//Get all users
-var retrieveAllUsers = function(callback) {
-    getConnection(function(err, connection) {
-        if(!err) {
-            connection.query('SELECT * FROM users', function(err, rows, fields) {
-                if(err) {
-                    callback(err, null);
-                }
-                else {
-                    var user_details = [];
-
-                    for(var i = 0; i < rows.length; i++) {
-                        user_details.push({ user_id: rows[i].user_id, username: rows[i].username });
+            connection.query('SELECT * FROM users where username=\'' + username + '\' LIMIT 1', function onDBUserRetrieval(err, rows, fields) {
+                if(!err) {
+                    var user;
+                    
+                    if(bcrypt.compareSync(password, rows[0].password)) {
+                        user = { userId: rows[0].user_id, username: username, email: rows[0].email };
+                    }
+                    else {
+                        user = null;
                     }
 
-                    callback(null, user_details);
+                    callback(null, user);
+                }
+                else {
+                    callback(err, null);
                 }
 
                 connection.release();
             });
         }
         else {
-            throw err;
-        }
-    });
-}
-
-//Get a user ID by username
-var retrieveUserIdByUsername = function(username, callback) {
-    getConnection(function(err, connection) {
-        if(!err) {
-            connection.query('SELECT `user_id` FROM users where username=\'' + username + '\' LIMIT 1', function(err, rows, fields) {
-                callback(err, rows[0].user_id);
-
-                connection.release();
-            });
-        }
-        else {
-            throw err;
-        }
-    });
-}
-
-//Get a username by user ID
-var retrieveUsernameByID = function(user_id, callback) {
-    getConnection(function(err, connection) {
-        if(!err) {
-            connection.query('SELECT `username` FROM users where user_id=\'' + user_id + '\' LIMIT 1', function(err, rows, fields) {
-                callback(err, rows[0].username);
-
-                connection.release();
-            });
-        }
-        else {
-            throw err;
+            callback(err, null);
         }
     });
 }
 
 
-//Organizations
+// =========== Organizations ===========
 
 //Get an organization's information based off of ID
-var getOrganization = function(requested_id, callback) {
-    getConnection(function(err, connection) {
+exports.getOrganization = function(requestedId, callback) {
+    getConnection(function onConnect(err, connection) {
         if(!err) {
-            connection.query('SELECT * FROM organizations where organization_id=\'' + requested_id + '\' LIMIT 1', function(err, rows, fields) {
+            connection.query('SELECT * FROM organizations where organization_id=\'' + requestedId + '\' LIMIT 1', function onDBOrgRetrieval(err, rows, fields) {
                 callback(err, rows[0]);
 
                 connection.release();
-        //        callback(null, rows[0].organization_id, rows[0].name, rows[0].description);
             });
         }
         else {
-            throw err;
-        }
-    });
-}
-
-//Get an organization's ID by name
-var getOrgIDByName = function(requested_org_name, callback) {
-    getConnection(function(err, connection) {
-        if(!err) {
-            connection.query('SELECT organization_id FROM organizations where name=\'' + requested_org_name + '\' LIMIT 1', function(err, rows, fields) {
-                callback(err, rows[0].organization_id);
-
-                connection.release();
-            });
-        }
-        else {
-            throw err;
+            callback(err, null);
         }
     });
 }
 
 //Add a new organization
-var addNewOrganization = function(org_name, org_desc, callback) {
+exports.addNewOrganization = function(orgName, orgDesc, callback) {
     getConnection(function onConnect(err, connection) {
         if(!err) {
-            connection.query('INSERT INTO `organizations`(`name`, `description`) VALUES (\'' + org_name + '\', \'' + org_desc + '\')', function(err, rows, fields) {
-                callback(err);
-                
-                connection.release();
-            });
-        }
-        else {
-            throw err;
-        }
-    });
-}
-
-//Edit an organization's information
-var alterOrganizationInfo = function(org_id, new_org_name, new_org_desc, callback) {
-    getConnection(function onConnect(err, connection) {
-        if(!err) {
-            connection.query('UPDATE `organizations` SET `name` = \'' + 
-                          new_org_name + '\', `description` = \'' + new_org_desc + '\' WHERE `organization_id` = \'' + org_id + '\'', function(err, rows, fields) {
-                callback(err);
-
-                connection.release();
-            });
-        }
-        else {
-            throw err;
-        }
-    });
-}
-
-
-//Events
-
-var addNewEvent = function(org_id, new_event_title, new_event_desc, new_event_date, can_users_comment, callback) {
-    getConnection(function onConnect(err, connection) {
-        if(!err) {
-            connection.query('INSERT INTO `events`(`org_id`, `title`, `description`, `start_date`, `can_users_comment`) VALUES (\'' +
-                                org_id + '\', \'' + new_event_title + '\', \'' + new_event_desc + '\', \'' + new_event_date 
-                                    + '\', \'' + can_users_comment + '\')', function(err, rows, fields) {
-                if(err) {
-                    callback(err);
-                }
-                else {
-                    callback(null);
-                }
-                
-                connection.release();
-            });
-        }
-        else {
-            throw err;
-        }
-    });
-}
-
-//Get all events
-var retrieveAllEvents = function(callback) {
-    getConnection(function onConnect(err, connection) {
-        if(!err) {
-            connection.query('SELECT * FROM events', function(err, rows, fields) {
-                callback(err, rows);
-                
-                connection.release();
-            });
-        }
-        else {
-            //Maybe I should just throw an error.. or should I callback with the error?
-            throw err;
-        }
-    });
-}
-
-//Get all events based on one organization's ID
-var retrieveAllEventsByOrgID = function(requested_org_id, callback) {
-    getConnection(function onConnect(err, connection) {
-        if(!err) {
-            connection.query('SELECT * FROM events where org_id=\'' + requested_org_id + '\'', function(err, rows, fields) {
-                callback(err, rows);
-                
-                connection.release();
-            });
-        }
-        else {            
-            //Should I callback with the error?
-            callback(err, null);
-        }
-    });
-}
-
-//Get a single event's details based on requested ID
-var retrieveSingleEventDetails = function(requestedEventId, callback) {
-    getConnection(function onConnect(err, connection) {
-        if(!err) {
-            connection.query('SELECT * FROM events where event_id=\'' + requestedEventId + '\' LIMIT 1', function(err, rows, fields) {
-                callback(err, rows[0]);
-            
-                connection.release();
-            }); 
-        }
-        else {
-            //Should I callback with the error?
-            callback(err, null);
-        }
-    });
-}
-
-var addNewComment = function(commentMessage, authorUsername, eventIdPostingTo, callback) {
-    getConnection(function onConnect(err, connection) {
-        if(!err) {
-            var currentDate = Date.now();
-            connection.query('INSERT INTO `comments`(`message`, `time_posted`, `author_username`, `event_id`) VALUES (\'' 
-                             + commentMessage + '\', \'' + currentDate + '\', \'' + authorUsername + '\', \'' + eventIdPostingTo + '\')', function(err, rows, fields) {
-                callback(err);
-                
-                console.log('Added new comment');
-                connection.release();
-            });
-        }
-        else {
-            callback(err);
-        }
-    });
-}
-
-var retrieveAllCommentsWhere = function(eventIdPostedTo, callback) {
-    getConnection(function onConnect(err, connection) {
-        if(!err) {
-            connection.query('SELECT * FROM comments where event_id=\'' + eventIdPostedTo + '\'', function(err, rows, fields) {
-                callback(err, rows);
+            connection.query('INSERT INTO `organizations`(`name`, `description`) VALUES (\'' + orgName + '\', \'' + orgDesc + '\')', function onDBInsertOrg(err, result) {
+                callback(err, result);
                 
                 connection.release();
             });
@@ -338,25 +112,14 @@ var retrieveAllCommentsWhere = function(eventIdPostedTo, callback) {
     });
 }
 
-//Members
 
-//Add a new member of an organization
-var addNewMemberToOrg = function(org_id, new_member_id, is_admin, callback) {
-    getConnection(function onConnect(err, connection) {
-        connection.query('INSERT INTO `members`(`org_id`, `member_id`, `is_admin`) VALUES (\'' 
-                         + org_id + '\', \'' + new_member_id + '\', \'' + is_admin + '\')', function(err, rows, fields) {
-            callback(err);
-
-            connection.release();
-        });
-    });
-}
+// =========== Members ===========
 
 //Get all members of an organization based on organization ID
-var retrieveMembersOfOrg = function(org_id, callback) {
+exports.getOrgMembers = function(orgId, callback) {
     getConnection(function onConnect(err, connection) {
         if(!err) {
-            connection.query('SELECT * FROM members where org_id = \'' + org_id + '\'', function(err, rows, fields) {
+            connection.query('SELECT * FROM members where org_id = \'' + orgId + '\'', function onDBMembersRetrieval(err, rows, fields) {
                 callback(err, rows);
 
                 connection.release();
@@ -364,32 +127,262 @@ var retrieveMembersOfOrg = function(org_id, callback) {
         }
         else {
             throw err;
+        }
+    });
+}
+
+//Add a new member of an organization
+exports.addNewOrgMember = function(orgId, userId, isAdmin, callback) {
+    getConnection(function onConnect(err, connection) {
+        if(!err) {
+            isAdmin = (isAdmin === true) ? 1 : 0;
+            
+            connection.query('INSERT INTO `members`(`org_id`, `member_id`, `is_admin`) VALUES (\'' 
+                             + orgId + '\', \'' + userId + '\', \'' + isAdmin + '\')', function onInsert(err, result) {
+                callback(err, result);
+
+                connection.release();
+            });
+        }
+        else {
+            callback(err, null);
         }
     });
 }
 
 //Get a member's admin status
-var retrieveIsMemberAdmin = function(org_id, member_id, callback) {
+exports.getIsMemberAdmin = function(orgId, userId, callback) {
     getConnection(function onConnect(err, connection) {
         if(!err) {
-            connection.query('SELECT is_admin FROM members where member_id=\'' + member_id + '\' AND org_id=\'' + org_id + '\' LIMIT 1', function(err, rows, fields) {
+            connection.query('SELECT is_admin FROM members where member_id=\'' + userId + '\' AND org_id=\'' + orgId + '\' LIMIT 1', function onRetrieval(err, rows, fields) {
                 if(rows) {
                     var isMemberAdmin = rows.is_admin ? true : false;
 
-                    callback(isMemberAdmin);
+                    callback(null, isMemberAdmin);
                 }
                 else {
-                    callback(false);
+                    callback(null, false);
                 }
 
                 connection.release();
             });
         }
         else {
-            throw err;   
+            callback(err, null);
         }
     });
 }
+
+
+////Edit an organization's information
+//exports.alterOrganizationInfo = function(orgId, newOrgName, newOrgDesc, callback) {
+//    getConnection(function onConnect(err, connection) {
+//        if(!err) {
+//            connection.query('UPDATE `organizations` SET `name`=\'' + 
+//                             newOrgDesc + '\', `description`=\'' + newOrgDesc + '\' WHERE `organization_id`=\'' + orgId + '\'', function(err, result) {
+//                callback(err, result);
+//
+//                connection.release();
+//            });
+//        }
+//        else {
+//            callback(err, null);
+//        }
+//    });
+//}
+
+
+//// =========== Users ===========
+//
+////Get a user's user ID and username based off requested user ID
+//var retrieveUser = function(requested_id, callback) {
+//    getConnection(function(err, connection) {
+//        if(!err) {
+//            connection.query('SELECT * FROM users where user_id=\'' + requested_id + '\' LIMIT 1', function(err, rows, fields) {
+//                var user = { userId: rows[0].user_id, username: rows[0].username };
+//                callback(err, user);
+//
+//                connection.release();
+//            });
+//        }
+//        else {
+//            throw err;
+//        }
+//    }); 
+//}
+//
+////Get all users
+//var retrieveAllUsers = function(callback) {
+//    getConnection(function(err, connection) {
+//        if(!err) {
+//            connection.query('SELECT * FROM users', function(err, rows, fields) {
+//                if(err) {
+//                    callback(err, null);
+//                }
+//                else {
+//                    var user_details = [];
+//
+//                    for(var i = 0; i < rows.length; i++) {
+//                        user_details.push({ user_id: rows[i].user_id, username: rows[i].username });
+//                    }
+//
+//                    callback(null, user_details);
+//                }
+//
+//                connection.release();
+//            });
+//        }
+//        else {
+//            throw err;
+//        }
+//    });
+//}
+//
+////Get a user ID by username
+//var retrieveUserIdByUsername = function(username, callback) {
+//    getConnection(function(err, connection) {
+//        if(!err) {
+//            connection.query('SELECT `user_id` FROM users where username=\'' + username + '\' LIMIT 1', function(err, rows, fields) {
+//                callback(err, rows[0].user_id);
+//
+//                connection.release();
+//            });
+//        }
+//        else {
+//            throw err;
+//        }
+//    });
+//}
+//
+////Get a username by user ID
+//var retrieveUsernameByID = function(user_id, callback) {
+//    getConnection(function(err, connection) {
+//        if(!err) {
+//            connection.query('SELECT `username` FROM users where user_id=\'' + user_id + '\' LIMIT 1', function(err, rows, fields) {
+//                callback(err, rows[0].username);
+//
+//                connection.release();
+//            });
+//        }
+//        else {
+//            throw err;
+//        }
+//    });
+//}
+//
+//
+//// =========== Events ===========
+//
+//var addNewEvent = function(org_id, new_event_title, new_event_desc, new_event_date, can_users_comment, callback) {
+//    getConnection(function onConnect(err, connection) {
+//        if(!err) {
+//            connection.query('INSERT INTO `events`(`org_id`, `title`, `description`, `start_date`, `can_users_comment`) VALUES (\'' +
+//                                org_id + '\', \'' + new_event_title + '\', \'' + new_event_desc + '\', \'' + new_event_date 
+//                                    + '\', \'' + can_users_comment + '\')', function(err, rows, fields) {
+//                if(err) {
+//                    callback(err);
+//                }
+//                else {
+//                    callback(null);
+//                }
+//                
+//                connection.release();
+//            });
+//        }
+//        else {
+//            throw err;
+//        }
+//    });
+//}
+//
+////Get all events
+//var retrieveAllEvents = function(callback) {
+//    getConnection(function onConnect(err, connection) {
+//        if(!err) {
+//            connection.query('SELECT * FROM events', function(err, rows, fields) {
+//                callback(err, rows);
+//                
+//                connection.release();
+//            });
+//        }
+//        else {
+//            //Maybe I should just throw an error.. or should I callback with the error?
+//            throw err;
+//        }
+//    });
+//}
+//
+////Get all events based on one organization's ID
+//var retrieveAllEventsByOrgID = function(requested_org_id, callback) {
+//    getConnection(function onConnect(err, connection) {
+//        if(!err) {
+//            connection.query('SELECT * FROM events where org_id=\'' + requested_org_id + '\'', function(err, rows, fields) {
+//                callback(err, rows);
+//                
+//                connection.release();
+//            });
+//        }
+//        else {            
+//            //Should I callback with the error?
+//            callback(err, null);
+//        }
+//    });
+//}
+//
+////Get a single event's details based on requested ID
+//var retrieveSingleEventDetails = function(requestedEventId, callback) {
+//    getConnection(function onConnect(err, connection) {
+//        if(!err) {
+//            connection.query('SELECT * FROM events where event_id=\'' + requestedEventId + '\' LIMIT 1', function(err, rows, fields) {
+//                callback(err, rows[0]);
+//            
+//                connection.release();
+//            }); 
+//        }
+//        else {
+//            //Should I callback with the error?
+//            callback(err, null);
+//        }
+//    });
+//}
+//
+//// =========== Comments ===========
+//
+////Add a new comment
+//var addNewComment = function(commentMessage, authorUsername, eventIdPostingTo, callback) {
+//    getConnection(function onConnect(err, connection) {
+//        if(!err) {
+//            var currentDate = Date.now();
+//            connection.query('INSERT INTO `comments`(`message`, `time_posted`, `author_username`, `event_id`) VALUES (\'' 
+//                             + commentMessage + '\', \'' + currentDate + '\', \'' + authorUsername + '\', \'' + eventIdPostingTo + '\')', function(err, rows, fields) {
+//                callback(err);
+//                
+//                console.log('Added new comment');
+//                connection.release();
+//            });
+//        }
+//        else {
+//            callback(err);
+//        }
+//    });
+//}
+//
+////Retrieve all comments posted on a particular event
+//var retrieveAllCommentsWhere = function(eventIdPostedTo, callback) {
+//    getConnection(function onConnect(err, connection) {
+//        if(!err) {
+//            connection.query('SELECT * FROM comments where event_id=\'' + eventIdPostedTo + '\'', function(err, rows, fields) {
+//                callback(err, rows);
+//                
+//                connection.release();
+//            });
+//        }
+//        else {
+//            callback(err, null);
+//        }
+//    });
+//}
+//
 
 
 //How can I clean this up?

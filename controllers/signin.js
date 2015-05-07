@@ -1,6 +1,5 @@
 var express = require('express');
 var router = express.Router();
-var dbManager = require('../models/db-manager.js');
 var inputValidator = require('../models/input-validator.js');
 var user = require('../models/user.js');
 
@@ -12,11 +11,19 @@ router.post('/', function(req, res, next) {
     var inputs = [ username, password ];
     var inputError = inputValidator.validateInput(inputs);
 
+    //If no invalid input found, authenticate, and if no errors while authenticating, redirect the user home or to the url they last requested
     if(!inputError) {
         user.authenticate(username, password, function(err, user) {
             if(!err) {
                 req.session.user = user;
-                res.redirect('/');
+                
+                if(req.session.lastAction) {
+                    console.log("Redirecting user to last page requested..");
+                    res.redirect(req.session.lastAction);
+                }
+                else {
+                    res.redirect('/');
+                }
             }
             else {
                 res.render('index', { errorMessage: 'Invalid username or password' });

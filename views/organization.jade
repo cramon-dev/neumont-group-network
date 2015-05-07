@@ -1,18 +1,18 @@
 extends layout
 
 block content
-    h1 #{orgName}
+    h1 #{name}
     
-    p #{orgDesc}
+    p #{description}
     
     h4 Members
-    if locals.members
-        each val in members
+    if locals.listOfMembers
+        each val in listOfMembers
             li= val.username
             
     h4 Events
-    if locals.events
-        each val in events
+    if locals.listOfEvents
+        each val in listOfEvents
             li 
                 a(href="http://localhost:3000/organizations/#{orgId}/events/#{val.event_id}")= val.title
     

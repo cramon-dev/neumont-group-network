@@ -1,6 +1,5 @@
 var express = require('express');
 var router = express.Router();
-var dbManager = require('../models/db-manager.js');
 var inputValidator = require('../models/input-validator.js');
 var user = require('../models/user.js');
 

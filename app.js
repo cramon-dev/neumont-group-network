@@ -11,6 +11,12 @@ var sessions = require('express-session');
 var app = express();
 var hour = 1000 * 60 * 60;
 
+var index = require('./controllers/index');
+var signin = require('./controllers/signin');
+var signout = require('./controllers/signout');
+var registration = require('./controllers/registration');
+var organizations = require('./controllers/organizations');
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
@@ -29,8 +35,27 @@ app.use(sessions({
     saveUninitialized: true
 }));
 
-app.use('/', require('./controllers/index'));
+//Catch all routes except sign in and register and check if user is logged in
+app.all(/\/(?!signin)(?!register)(\w+)/, function(req, res, next) {
+    if(req.session.user) {
+        console.log("Found valid session");
+        next();
+    }
+    else {
+        console.log("Could not find session or session has expired, sending user to sign in screen");
+        //Should probably check for certain actions, like sign out, so as to prevent them from signing out accidentally
+        req.session.lastAction = req.path;
+        console.log('Last action taken: ' + req.session.lastAction);
+        res.render('index', { message: 'You need to be logged in to do that' });
+    }
+});
 
+//All other routes
+app.use('/', index);
+app.use('/signin', signin);
+app.use('/signout', signout);
+app.use('/register', registration);
+app.use('/organizations', organizations);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
