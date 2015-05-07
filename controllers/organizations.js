@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-var dbManager = require('../resources/js/db-manager.js');
+var dbManager = require('../models/db-manager.js');
 
 
 // ======== GET ========
@@ -95,7 +95,7 @@ router.get(/\/(\d+)\/events\/(\d+)/, function(req, res, next) {
     
     retrieveSingleEventDetails(requestedEventId, function(err, eventDetails) {
         retrieveComments(requestedEventId, function(err, listOfComments) {
-            res.render('event', { eventId: requestedEventId, orgId: orgId, title: eventDetails.title, description: eventDetails.description, startDate: eventDetails.start_date, comments: listOfComments });
+            res.render('event', { eventId: requestedEventId, orgId: orgId, title: eventDetails.title, description: eventDetails.description, startDate: eventDetails.start_date, canUsersComment: eventDetails.can_users_comment, comments: listOfComments });
         });
         
     });
@@ -107,7 +107,6 @@ router.get(/(\d+)\/events\/create/, function(req, res, next) {
     var userId = req.session.userId;
     
     retrieveIsMemberAdmin(orgId, userId, function(isAdmin) {
-        console.log('Is the member an admin? ' + isAdmin);
         if(isAdmin) {
             res.render('create_event', { orgId: orgId });
         }
@@ -131,11 +130,12 @@ router.post(/(\d+)\/events\/create/, function(req, res, next) {
     var eventTitle = dbManager.checkInvalidInput(req.body.newEventTitle);
     var eventDesc = dbManager.checkInvalidInput(req.body.newEventDesc);
     var startDate = req.body.startDate;
+    var canUsersComment = req.body.canUsersComment ? true : false;
     
     retrieveIsMemberAdmin(orgId, req.session.userId, function(isAdmin) {
         console.log('Is the member an admin?' + isAdmin);
         if(isAdmin) {
-            dbManager.addNewEvent(orgId, eventTitle, eventDesc, startDate, function(err) {
+            dbManager.addNewEvent(orgId, eventTitle, eventDesc, startDate, canUsersComment, function(err) {
                 if(!err) {
                     console.log('Success adding new event');
                     res.redirect('/organizations/' + orgId);
@@ -150,6 +150,10 @@ router.post(/(\d+)\/events\/create/, function(req, res, next) {
             res.render('organization', { orgId: orgId, message: 'You are not an admin of this organization' });
         }
     });
+});
+
+router.post(/(\d+)\/events\/edit/, function(req, res, next) {
+    
 });
 
 //Update organization's info

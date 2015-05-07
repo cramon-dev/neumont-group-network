@@ -5,7 +5,7 @@ html
         link(rel='stylesheet', href='/stylesheets/style.min.css')
     body
         header
-            if locals.username
+            if locals.userId
                 p= username
                 a(href="http://localhost:3000/signout") Sign Out
         h4(class="message") #{message}

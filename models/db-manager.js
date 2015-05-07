@@ -20,24 +20,9 @@ var pool = mysql.createPool({
 
 //Get a DB connection from the pool and give it to a callback
 var getConnection = function(callback) {
-    pool.getConnection(function(err, conn) {
+    pool.getConnection(function onConnectionRetrieval(err, conn) {
         callback(err, conn);
     });
-}
-
-//Check for potentially malicious input
-//Does not currently protect against SQL injection
-var checkInvalidInput = function(inputString) {
-    if(inputString.indexOf('<script') > -1) {
-        console.log("Potentially malicious content found");
-        throw {
-            name: "InvalidInputException",
-            message: "Invalid input"
-        };
-    }
-    else {
-        return inputString;
-    }
 }
 
 //Generate a new hash for a password
@@ -46,39 +31,55 @@ var generateNewHash = function(password_to_hash) {
     return bcrypt.hashSync(password_to_hash, salt);
 }
 
-////Most queries executed will invoke a given callback?
-////I was thinking instead of having connection.query('query', function(err, rows, fields) { .. }); I could use this method and reduce the number of identical lines of code
-//
-//var sendDataToCallback = function(err, rows, fields) {
-//    callback(err, rows);
-//}
 
 //Sign In/Registration
 
 //Register a new user
-var registerNewUser = function(username, password, email, callback) {
-    var hashed_password = generateNewHash(password);
+exports.registerNewUser = function(username, password, email, callback) {
+    var hashedPassword = generateNewHash(password);
     
     getConnection(function onConnect(err, connection) {
-        connection.query('INSERT INTO `users`(`username`, `password`, `email`) VALUES (\'' + username + '\', \'' + hashed_password + '\', \'' + email + '\')', function(err, rows, fields) {
-            callback(err);
-            
+        connection.query('INSERT INTO `users`(`username`, `password`, `email`) VALUES (\'' + username + '\', \'' + hashedPassword + '\', \'' + email + '\')', function(err, result) {
+            callback(err, result.insertId);
             connection.release();
         });
     });
 }
 
-//Sign a user in
-var signIn = function(username, callback) {
+//Authenticate a user
+exports.authenticate = function(username, password, callback) {
     getConnection(function onConnect(err, connection) {
         connection.query('SELECT * FROM users where username=\'' + username + '\' LIMIT 1', function(err, rows, fields) {
-            var userCredentials = { userId: rows[0].user_id, password: rows[0].password };
-            callback(err, userCredentials);
+            if(!err) {
+                if(bcrypt.compareSync(password, rows[0].password)) {
+                    user = { userId: rows[0].user_id, username: username, email: rows[0].email };
+                }
+                else {
+                    user = null;
+                }
             
+                callback(null, user);
+            }
+            else {
+                callback(err, null);
+            }
+                
             connection.release();
         });
     });
 }
+
+////Sign a user in
+//var signIn = function(username, callback) {
+//    getConnection(function onConnect(err, connection) {
+//        connection.query('SELECT * FROM users where username=\'' + username + '\' LIMIT 1', function(err, rows, fields) {
+//            var userCredentials = { userId: rows[0].user_id, password: rows[0].password };
+//            callback(err, userCredentials);
+//            
+//            connection.release();
+//        });
+//    });
+//}
 
 
 //Users
@@ -231,11 +232,12 @@ var alterOrganizationInfo = function(org_id, new_org_name, new_org_desc, callbac
 
 //Events
 
-var addNewEvent = function(org_id, new_event_title, new_event_desc, new_event_date, callback) {
+var addNewEvent = function(org_id, new_event_title, new_event_desc, new_event_date, can_users_comment, callback) {
     getConnection(function onConnect(err, connection) {
         if(!err) {
-            connection.query('INSERT INTO `events`(`event_org_id`, `title`, `description`, `start_date`) VALUES (\'' +
-                                org_id + '\', \'' + new_event_title + '\', \'' + new_event_desc + '\', \'' + new_event_date + '\')', function(err, rows, fields) {
+            connection.query('INSERT INTO `events`(`org_id`, `title`, `description`, `start_date`, `can_users_comment`) VALUES (\'' +
+                                org_id + '\', \'' + new_event_title + '\', \'' + new_event_desc + '\', \'' + new_event_date 
+                                    + '\', \'' + can_users_comment + '\')', function(err, rows, fields) {
                 if(err) {
                     callback(err);
                 }
@@ -273,7 +275,7 @@ var retrieveAllEvents = function(callback) {
 var retrieveAllEventsByOrgID = function(requested_org_id, callback) {
     getConnection(function onConnect(err, connection) {
         if(!err) {
-            connection.query('SELECT * FROM events where event_org_id=\'' + requested_org_id + '\'', function(err, rows, fields) {
+            connection.query('SELECT * FROM events where org_id=\'' + requested_org_id + '\'', function(err, rows, fields) {
                 callback(err, rows);
                 
                 connection.release();
@@ -371,10 +373,14 @@ var retrieveIsMemberAdmin = function(org_id, member_id, callback) {
     getConnection(function onConnect(err, connection) {
         if(!err) {
             connection.query('SELECT is_admin FROM members where member_id=\'' + member_id + '\' AND org_id=\'' + org_id + '\' LIMIT 1', function(err, rows, fields) {
-                console.log('is admin before ternary ' + rows);
-                var isMemberAdmin = rows ? true : false;
-                
-                callback(isMemberAdmin);
+                if(rows) {
+                    var isMemberAdmin = rows.is_admin ? true : false;
+
+                    callback(isMemberAdmin);
+                }
+                else {
+                    callback(false);
+                }
 
                 connection.release();
             });
@@ -390,27 +396,27 @@ var retrieveIsMemberAdmin = function(org_id, member_id, callback) {
 //Should I not export mysql connections to other classes?
 //Should I just let the db manager handle connections?
 
-module.exports.getConnection = getConnection;
-module.exports.checkInvalidInput = checkInvalidInput;
-module.exports.registerNewUser = registerNewUser;
-module.exports.signIn = signIn;
-module.exports.retrieveUser = retrieveUser;
-module.exports.retrieveAllUsers = retrieveAllUsers;
-module.exports.retrieveUserIdByUsername = retrieveUserIdByUsername;
-module.exports.retrieveUsernameByID = retrieveUsernameByID;
-module.exports.getOrganization = getOrganization;
-module.exports.getOrgIDByName = getOrgIDByName;
-module.exports.addNewOrganization = addNewOrganization;
-module.exports.alterOrganizationInfo = alterOrganizationInfo;
-module.exports.addNewEvent = addNewEvent;
-module.exports.retrieveAllEvents = retrieveAllEvents;
-module.exports.retrieveAllEventsByOrgID = retrieveAllEventsByOrgID;
-module.exports.retrieveSingleEventDetails = retrieveSingleEventDetails;
-module.exports.addNewComment = addNewComment;
-module.exports.retrieveAllCommentsWhere = retrieveAllCommentsWhere;
-module.exports.addNewMemberToOrg = addNewMemberToOrg;
-module.exports.retrieveMembersOfOrg = retrieveMembersOfOrg;
-module.exports.retrieveIsMemberAdmin = retrieveIsMemberAdmin;
+//module.exports.getConnection = getConnection;
+//module.exports.checkInvalidInput = checkInvalidInput;
+//module.exports.registerNewUser = registerNewUser;
+//module.exports.signIn = signIn;
+//module.exports.retrieveUser = retrieveUser;
+//module.exports.retrieveAllUsers = retrieveAllUsers;
+//module.exports.retrieveUserIdByUsername = retrieveUserIdByUsername;
+//module.exports.retrieveUsernameByID = retrieveUsernameByID;
+//module.exports.getOrganization = getOrganization;
+//module.exports.getOrgIDByName = getOrgIDByName;
+//module.exports.addNewOrganization = addNewOrganization;
+//module.exports.alterOrganizationInfo = alterOrganizationInfo;
+//module.exports.addNewEvent = addNewEvent;
+//module.exports.retrieveAllEvents = retrieveAllEvents;
+//module.exports.retrieveAllEventsByOrgID = retrieveAllEventsByOrgID;
+//module.exports.retrieveSingleEventDetails = retrieveSingleEventDetails;
+//module.exports.addNewComment = addNewComment;
+//module.exports.retrieveAllCommentsWhere = retrieveAllCommentsWhere;
+//module.exports.addNewMemberToOrg = addNewMemberToOrg;
+//module.exports.retrieveMembersOfOrg = retrieveMembersOfOrg;
+//module.exports.retrieveIsMemberAdmin = retrieveIsMemberAdmin;
 
 
 //connection.query('INSERT INTO `users`(`username`, `password`, `email`) VALUES (\'' + username + '\', \'' + password + '\', \'' + email + '\')', function(err, rows, fields) {

@@ -1,8 +1,9 @@
 extends layout
 
 block content
-    h1= title
-    p Welcome to #{title}
+    h1 Neumont Group Network
+    p Welcome to the Neumont Group Network!
+    p Sign In
     form(action='http://localhost:3000/signin/', method='post')
             input(type='text', name='username', placeholder='Username')
             input(type='password', name='password', placeholder='Password')

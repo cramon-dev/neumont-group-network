@@ -14,10 +14,13 @@ block content
         
     br
     h3 Comments
-    if locals.comments
-        each comment in comments
-            li
-                h3= comment.author_username
-                p= comment.message
+    if locals.canUsersComment
+        if locals.comments
+            each comment in comments
+                li
+                    h3= comment.author_username
+                    p= comment.message
+        else
+            p No comments found for this event
     else
-        p No comments found for this event
+        p Comments are currently disabled for this event

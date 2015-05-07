@@ -1,8 +1,8 @@
 extends layout
 
 block content
-    h1 Create Event
-    form(action="http://localhost:3000/organizations/#{orgId}/events/create", method="post")
+    h1 Edit Event
+    form(action="http://localhost:3000/organizations/#{orgId}/events/edit", method="post")
         p Event title:
         input(type="text", name="newEventTitle")
         p Event description:

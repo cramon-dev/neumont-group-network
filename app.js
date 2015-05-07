@@ -8,13 +8,6 @@ var sessions = require('express-session');
 //var redis = require('redis');
 //var client = redis.createClient();
 
-var routes = require('./routes/index');
-var users = require('./routes/users');
-var signin = require('./routes/signin');
-var signout = require('./routes/signout');
-var registration = require('./routes/registration');
-var organizations = require('./routes/organizations');
-
 var app = express();
 var hour = 1000 * 60 * 60;
 
@@ -36,28 +29,7 @@ app.use(sessions({
     saveUninitialized: true
 }));
 
-//Catch all routes except GET/POST sign in and check if user has a session
-//If session doesn't exist, kick them back to sign in screen
-app.all(/\/(?!signin)(?!register)(\w+)/, function(req, res, next) {
-    if(req.session.username) {
-        console.log("Found valid session");
-        next();
-    }
-    else {
-        console.log("Could not find session or session has expired, sending user to sign in screen");
-        //Should probably check for certain actions, like sign out, so as to prevent them from signing out accidentally
-        req.session.lastAction = req.path;
-        res.render('index', { message: 'You need to be logged in to do that' });
-    }
-});
-
-//Routes
-app.use('/', routes);
-app.use('/users', users);
-app.use('/signin', signin);
-app.use('/signout', signout);
-app.use('/register', registration);
-app.use('/organizations', organizations);
+app.use('/', require('./controllers/index'));
 
 
 // catch 404 and forward to error handler
