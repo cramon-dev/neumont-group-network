@@ -36,8 +36,15 @@ exports.registerNewUser = function(username, password, email, callback) {
     
     getConnection(function onConnect(err, connection) {
         if(!err) {
-            connection.query('INSERT INTO `users`(`username`, `password`, `email`) VALUES (\'' + username + '\', \'' + hashedPassword + '\', \'' + email + '\')', function onDBInsertUser(err, result) {
-                callback(err, result.insertId);
+            connection.query('INSERT INTO `users`(`username`, `password`, `email`) VALUES (\'' 
+                             + username + '\', \'' + hashedPassword + '\', \'' + email + '\')', function onDBInsertUser(err, result) {
+                if(!err) {
+                    callback(null, result.insertId);
+                }
+                else {
+                    callback(err, null);
+                }
+                
                 connection.release();
             });
         }
@@ -53,18 +60,25 @@ exports.authenticate = function(username, password, callback) {
         if(!err) {
             connection.query('SELECT * FROM users where username=\'' + username + '\' LIMIT 1', function onDBUserRetrieval(err, rows, fields) {
                 if(!err) {
-                    var user;
-                    
-                    if(bcrypt.compareSync(password, rows[0].password)) {
-                        user = { userId: rows[0].user_id, username: username, email: rows[0].email };
+                    //if user exists
+                    if(rows[0]) {
+                        var user;
+
+                        if(bcrypt.compareSync(password, rows[0].password)) {
+                            user = { userId: rows[0].user_id, username: username, email: rows[0].email };
+                        }
+                        else {
+                            user = null;
+                        }
+
+                        callback(null, user);
                     }
                     else {
-                        user = null;
+                        callback(null, null);
                     }
-
-                    callback(null, user);
                 }
                 else {
+                    console.log('Callback with error and null user');
                     callback(err, null);
                 }
 

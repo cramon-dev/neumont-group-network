@@ -23,8 +23,12 @@ router.post('/', function(req, res, next) {
                 res.redirect('/');
             }
             else {
-                console.log('Error registering new user, redirecting to register page');
-                res.render('register', { errorMessage: err.message });
+                if(err.message.match('ER_DUP_ENTRY')) {
+                    res.render('register', { errorMessage: 'That username or email has already been taken' });
+                }
+                else {
+                    res.render('register', { errorMessage: err.message });
+                }
             }
         });
     }

@@ -43,9 +43,10 @@ app.all(/\/(?!signin)(?!register)(\w+)/, function(req, res, next) {
     }
     else {
         console.log("Could not find session or session has expired, sending user to sign in screen");
-        //Should probably check for certain actions, like sign out, so as to prevent them from signing out accidentally
-        req.session.lastAction = req.path;
-        console.log('Last action taken: ' + req.session.lastAction);
+        if(!req.path.indexOf('/favicon.ico' || '/signout') > -1) {
+            console.log('Recording last action taken: ' + req.path);
+            req.session.lastAction = req.path;
+        }
         res.render('index', { message: 'You need to be logged in to do that' });
     }
 });

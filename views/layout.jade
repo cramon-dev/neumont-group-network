@@ -7,9 +7,9 @@ html
         header
             if locals.userId
                 p= username
-                a(href="http://localhost:3000/signout") Sign Out
+                a(href='http://localhost:3000/signout') Sign Out
         h4(class="message") #{message}
-        h4(class="errorMessage") #{error_message}
+        h4(class="errorMessage") #{errorMessage}
         block content
         footer
             p Created 2015, Christian Ramon

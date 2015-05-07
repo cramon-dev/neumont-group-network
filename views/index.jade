@@ -4,7 +4,8 @@ block content
     h1 Neumont Group Network
     p Welcome to the Neumont Group Network!
     p Sign In
-    form(action='http://localhost:3000/signin/', method='post')
+    form(action='http://localhost:3000/signin', method='post')
             input(type='text', name='username', placeholder='Username')
             input(type='password', name='password', placeholder='Password')
             input(type='submit', value='Sign in')
+    a(href='http://localhost:3000/register') Register for a new Account

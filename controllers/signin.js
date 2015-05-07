@@ -11,27 +11,32 @@ router.post('/', function(req, res, next) {
     var inputs = [ username, password ];
     var inputError = inputValidator.validateInput(inputs);
 
-    //If no invalid input found, authenticate, and if no errors while authenticating, redirect the user home or to the url they last requested
+    //If no invalid input found, authenticate, no errors while authenticating, and the user was authenticated, redirect the user home or to the url they last requested
     if(!inputError) {
         user.authenticate(username, password, function(err, user) {
             if(!err) {
-                req.session.user = user;
-                
-                if(req.session.lastAction) {
-                    console.log("Redirecting user to last page requested..");
-                    res.redirect(req.session.lastAction);
+                if(user) {
+                    req.session.user = user;
+
+                    if(req.session.lastAction) {
+                        console.log("Redirecting user to last page requested..");
+                        res.redirect(req.session.lastAction);
+                    }
+                    else {
+                        res.redirect('/');
+                    }
                 }
                 else {
-                    res.redirect('/');
+                    res.render('index', { errorMessage: 'Invalid username or password' });
                 }
             }
             else {
-                res.render('index', { errorMessage: 'Invalid username or password' });
+                res.render('index', { errorMessage: 'Error while signing in, try again' });
             }
         });
     }
     else {
-        res.render('index', { message: inputError.message });
+        res.render('index', { errorMessage: inputError.message });
     }
 });
 

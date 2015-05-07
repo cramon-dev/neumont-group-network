@@ -2,10 +2,10 @@
 exports.validateInput = function(inputStringList) {
     for(string in inputStringList) {
         var item = inputStringList[string]
-        if(item.indexOf(/[~!@#$%^&*='"(){}\[\]\\\/\<\>]/) > -1) {
+        if(item.match(/[~!#$%^&*='"(){}\[\]\\\/\<\>]/ || /\s*/)) {
             var err = {
                 name: "InvalidInputException",
-                message: "Invalid input"
+                message: "Invalid input, please refrain from using prohibited characters"
             };
             
             return err;
