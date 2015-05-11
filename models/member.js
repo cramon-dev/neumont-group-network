@@ -14,6 +14,7 @@ exports.addNewOrgMember = function(orgId, userId, isAdmin, callback) {
 
 exports.getIsMemberAdmin = function(orgId, userId, callback) {
     dbManager.getIsMemberAdmin(orgId, userId, function onRetrieval(err, isAdmin) {
-        callback(err, isAdmin);
+        var isMemberAdmin = isAdmin ? true : false;
+        callback(err, isMemberAdmin);
     });
 }

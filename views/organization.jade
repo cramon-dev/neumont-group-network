@@ -14,16 +14,20 @@ block content
     if locals.listOfEvents
         each val in listOfEvents
             li 
-                a(href="http://localhost:3000/organizations/#{orgId}/events/#{val.event_id}")= val.title
+                a(href="http://localhost:3000/events/#{val.event_id}")= val.title
+    else
+        p No events posted
     
+    if !locals.isMember
+        a(href="http://localhost:3000/organizations/#{organization_id}/join") Join this Organization
     
-    a(href="http://localhost:3000/organizations/#{orgId}/edit") Edit Information
+    a(href="http://localhost:3000/organizations/#{organization_id}/edit") Edit Information
     
-    a(href="http://localhost:3000/organizations/#{orgId}/events/create") Add Event
+    a(href="http://localhost:3000/events/create") Add Event
     
     //
         DON'T FORGET TO ADD A BUTTON THAT ALLOWS USERS TO BECOME A MEMBER OF AN ORGANIZATION
         Also some logic in the controllers that checks if the user is already a member
         Another also, pass the view a boolean that dictates whether the current user is an admin or not and if not an admin, don't show the last two links
         
-        a(href="http://localhost:3000/organizations/#{orgId}/join") Join Organization
+        a(href="http://localhost:3000/organizations/#{organization_id}/join") Join Organization

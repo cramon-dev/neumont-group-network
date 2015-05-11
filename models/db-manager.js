@@ -59,26 +59,20 @@ exports.authenticate = function(username, password, callback) {
     getConnection(function onConnect(err, connection) {
         if(!err) {
             connection.query('SELECT * FROM users where username=\'' + username + '\' LIMIT 1', function onDBUserRetrieval(err, rows, fields) {
-                if(!err) {
-                    //if user exists
-                    if(rows[0]) {
-                        var user;
+                //if user exists
+                if(rows[0]) {
+                    var user;
 
-                        if(bcrypt.compareSync(password, rows[0].password)) {
-                            user = { userId: rows[0].user_id, username: username, email: rows[0].email };
-                        }
-                        else {
-                            user = null;
-                        }
-
-                        callback(null, user);
+                    if(bcrypt.compareSync(password, rows[0].password)) {
+                        user = { userId: rows[0].user_id, username: username, email: rows[0].email };
                     }
                     else {
-                        callback(null, null);
+                        user = null;
                     }
+
+                    callback(err, user);
                 }
                 else {
-                    console.log('Callback with error and null user');
                     callback(err, null);
                 }
 
@@ -87,6 +81,61 @@ exports.authenticate = function(username, password, callback) {
         }
         else {
             callback(err, null);
+        }
+    });
+}
+
+// =========== Users ===========
+
+//Get a single user's details
+exports.getUserDetails = function(requestedId, callback) {
+    getConnection(function onConnect(err, connection) {
+        if(!err) {
+            connection.query('SELECT * FROM users where user_id=\'' + requestedId + '\' LIMIT 1', function onDBUserRetrieval(err, rows, fields) {
+                //If user exists
+                if(rows[0]) {
+                    var user = { userId: rows[0].user_id, username: rows[0].username, email: rows[0].email };
+                    
+                    callback(err, user);
+                }
+                else {
+                    callback(err, null);
+                }
+            });
+        }
+        else {
+            callback(err, null);
+            
+            connection.release();
+        }
+    });
+}
+
+exports.getListOfUserDetails = function(requestedIDs, callback) {
+    getConnection(function onConnect(err, connection) {
+        if(!err) {
+            connection.query('SELECT * FROM users', function onDBUserListRetrieval(err, rows, fields) {
+                //If user exists
+                if(rows) {
+                    var listOfUsers = [];
+                    for(var id in requestedIDs) {
+                        //won't work because I have to iterate over both requested IDs list and database results
+                        if(rows[0].user_id === requestedIDs[id]) {
+                            listOfUsers.push({ userId: rows[0].user_id, username: rows[0].username, email: rows[0].email });
+                        }
+                    }
+
+                    callback(err, listOfUsers);
+                }
+                else {
+                    callback(err, null);
+                }
+            });
+        }
+        else {
+            callback(err, null);
+            
+            connection.release();
         }
     });
 }
@@ -115,7 +164,37 @@ exports.addNewOrganization = function(orgName, orgDesc, callback) {
     getConnection(function onConnect(err, connection) {
         if(!err) {
             connection.query('INSERT INTO `organizations`(`name`, `description`) VALUES (\'' + orgName + '\', \'' + orgDesc + '\')', function onDBInsertOrg(err, result) {
-                callback(err, result);
+                //If insert was successful
+                if(result) {
+                    callback(err, result.insertId);
+                }
+                else {
+                    callback(err, null);
+                }
+                
+                connection.release();
+            });
+        }
+        else {
+            callback(err, null);
+        }
+    });
+}
+
+
+//Edit an organization's information
+exports.editOrganization = function(orgId, newOrgName, newOrgDesc, callback) {
+    getConnection(function onConnect(err, connection) {
+        if(!err) {
+            connection.query('UPDATE `organizations` SET `name`=\'' + 
+                             newOrgDesc + '\', `description`=\'' + newOrgDesc + '\' WHERE `organization_id`=\'' + orgId + '\'', function(err, result) {
+                //If update was successful
+                if(result) {
+                    callback(err, result.insertId);
+                }
+                else {
+                    callback(err, null);
+                }
                 
                 connection.release();
             });
@@ -169,10 +248,8 @@ exports.getIsMemberAdmin = function(orgId, userId, callback) {
     getConnection(function onConnect(err, connection) {
         if(!err) {
             connection.query('SELECT is_admin FROM members where member_id=\'' + userId + '\' AND org_id=\'' + orgId + '\' LIMIT 1', function onRetrieval(err, rows, fields) {
-                if(rows) {
-                    var isMemberAdmin = rows.is_admin ? true : false;
-
-                    callback(null, isMemberAdmin);
+                if(rows[0]) {
+                    callback(null, rows[0].is_admin);
                 }
                 else {
                     callback(null, false);
@@ -188,103 +265,7 @@ exports.getIsMemberAdmin = function(orgId, userId, callback) {
 }
 
 
-////Edit an organization's information
-//exports.alterOrganizationInfo = function(orgId, newOrgName, newOrgDesc, callback) {
-//    getConnection(function onConnect(err, connection) {
-//        if(!err) {
-//            connection.query('UPDATE `organizations` SET `name`=\'' + 
-//                             newOrgDesc + '\', `description`=\'' + newOrgDesc + '\' WHERE `organization_id`=\'' + orgId + '\'', function(err, result) {
-//                callback(err, result);
-//
-//                connection.release();
-//            });
-//        }
-//        else {
-//            callback(err, null);
-//        }
-//    });
-//}
 
-
-//// =========== Users ===========
-//
-////Get a user's user ID and username based off requested user ID
-//var retrieveUser = function(requested_id, callback) {
-//    getConnection(function(err, connection) {
-//        if(!err) {
-//            connection.query('SELECT * FROM users where user_id=\'' + requested_id + '\' LIMIT 1', function(err, rows, fields) {
-//                var user = { userId: rows[0].user_id, username: rows[0].username };
-//                callback(err, user);
-//
-//                connection.release();
-//            });
-//        }
-//        else {
-//            throw err;
-//        }
-//    }); 
-//}
-//
-////Get all users
-//var retrieveAllUsers = function(callback) {
-//    getConnection(function(err, connection) {
-//        if(!err) {
-//            connection.query('SELECT * FROM users', function(err, rows, fields) {
-//                if(err) {
-//                    callback(err, null);
-//                }
-//                else {
-//                    var user_details = [];
-//
-//                    for(var i = 0; i < rows.length; i++) {
-//                        user_details.push({ user_id: rows[i].user_id, username: rows[i].username });
-//                    }
-//
-//                    callback(null, user_details);
-//                }
-//
-//                connection.release();
-//            });
-//        }
-//        else {
-//            throw err;
-//        }
-//    });
-//}
-//
-////Get a user ID by username
-//var retrieveUserIdByUsername = function(username, callback) {
-//    getConnection(function(err, connection) {
-//        if(!err) {
-//            connection.query('SELECT `user_id` FROM users where username=\'' + username + '\' LIMIT 1', function(err, rows, fields) {
-//                callback(err, rows[0].user_id);
-//
-//                connection.release();
-//            });
-//        }
-//        else {
-//            throw err;
-//        }
-//    });
-//}
-//
-////Get a username by user ID
-//var retrieveUsernameByID = function(user_id, callback) {
-//    getConnection(function(err, connection) {
-//        if(!err) {
-//            connection.query('SELECT `username` FROM users where user_id=\'' + user_id + '\' LIMIT 1', function(err, rows, fields) {
-//                callback(err, rows[0].username);
-//
-//                connection.release();
-//            });
-//        }
-//        else {
-//            throw err;
-//        }
-//    });
-//}
-//
-//
 //// =========== Events ===========
 //
 //var addNewEvent = function(org_id, new_event_title, new_event_desc, new_event_date, can_users_comment, callback) {

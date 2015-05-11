@@ -5,9 +5,7 @@ html
         link(rel='stylesheet', href='/stylesheets/style.min.css')
     body
         header
-            if locals.userId
-                p= username
-                a(href='http://localhost:3000/signout') Sign Out
+            include ./partials/header-signedin.jade
         h4(class="message") #{message}
         h4(class="errorMessage") #{errorMessage}
         block content

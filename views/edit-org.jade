@@ -1,0 +1,10 @@
+extends layout
+
+block content
+    h1 Edit Organization Information
+    form(action="http://localhost:3000/organizations/#{orgId}/edit", method="post")
+        p Organization Name:
+        input(type="text", name="newOrgName")
+        p Description:
+        input(type="text", name="newOrgDesc")
+        input(type="submit", value="Submit")
