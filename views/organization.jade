@@ -19,11 +19,13 @@ block content
         p No events posted
     
     if !locals.isMember
-        a(href="http://localhost:3000/organizations/#{organization_id}/join") Join this Organization
+        a(script="./public/scripts/join-org.js") Join this Organization
     
     a(href="http://localhost:3000/organizations/#{organization_id}/edit") Edit Information
     
     a(href="http://localhost:3000/events/create") Add Event
+    
+    script(href="./public/scripts/join-org.js")
     
     //
         DON'T FORGET TO ADD A BUTTON THAT ALLOWS USERS TO BECOME A MEMBER OF AN ORGANIZATION

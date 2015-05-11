@@ -18,3 +18,9 @@ exports.getIsMemberAdmin = function(orgId, userId, callback) {
         callback(err, isMemberAdmin);
     });
 }
+
+exports.isMemberOfOrg = function(orgId, userId, callback) {
+    dbManager.isMemberOfOrg(orgId, userId, function onRetrieval(err, isMember) {
+        callback(err, isMember);
+    });
+}

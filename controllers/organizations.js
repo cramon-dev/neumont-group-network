@@ -6,7 +6,7 @@ var users = require('../models/user.js');
 var inputValidator = require('../models/input-validator.js');
 
 
-// =========== View Organization ===========
+// =========== View and Join Organization ===========
 
 //Retrieve an organization and display their information
 router.get(/^\/(\d+)\/?$/, function(req, res, next) {
@@ -19,16 +19,19 @@ router.get(/^\/(\d+)\/?$/, function(req, res, next) {
                     if(!err) {
                         //Somehow get a list of users to display on the organization's home page
 //                        users.getUserDetails(listOfMemberIDs
-                        if(req.session.errorMessage) {
+                        if(req.session.errorMessage || req.session.message) {
                             orgData.errorMessage = req.session.errorMessage;
+                            orgData.message = req.session.message;
                             req.session.errorMessage = null;
+                            req.session.message = null;
                         }
                         
                         orgData.listOfMembers = listOfMembers;
                         res.render('organization', orgData);
                     }
                     else {
-                        res.render('home', { errorMessage: err.message });
+                        req.session.errorMessage = err.message;
+                        res.redirect('/');
                     }
                 });
             }
@@ -39,9 +42,26 @@ router.get(/^\/(\d+)\/?$/, function(req, res, next) {
             }
         }
         else {
-//            res.locals.errorMessage = 'Something went wrong displaying that organization, please try again';
-//            res.redirect('/');
-            res.render('home', { errorMessage: 'Something went wrong displaying that organization, please try again' });
+            req.session.errorMessage = 'Something went wrong displaying that organization, please try again later';
+            res.redirect('/');
+        }
+    });
+});
+
+router.get(/(\d+)\/join/, function(req, res, next) {
+    var orgId = req.params[0];
+    var userId = req.session.user.userId;
+    
+    members.isMemberOfOrg(orgId, userId, function(err, result) {
+        if(!err && result) {
+            req.session.errorMessage = 'You are already a member of this organization';
+            res.redirect('/organizations/' + orgId);
+        }
+        else {
+            members.addNewOrgMember(orgId, userId, false, function(err, result) {
+                req.session.message = 'You are now a member of this organization';
+                res.redirect('/organizations/' + orgId);
+            });
         }
     });
 });
@@ -86,25 +106,24 @@ router.post('/create', function(req, res, next) {
 
 // =========== Edit ===========
 
+//Check if the current user is an admin
 router.all(/(\d+)\/edit/, function(req, res, next) {
     var orgId = req.params[0];
-    var userId = req.session.userId;
+    var userId = req.session.user.userId;
     
+    //If no errors and they are an admin, send them to the proper route they requested
+    //Otherwise, kick them back to organization's home page
     members.getIsMemberAdmin(orgId, userId, function onRetrieveAdminStatus(err, result) {
         if(!err) {
             if(result) {
-                console.log('Member is an admin, sending them to their proper route');
                 next();
             }
             else {
-                //Somehow set an error message saying they're not an admin
-                console.log('Inside catch all edit routes, member is not an admin');
                 req.session.errorMessage = 'You are not an admin of this organization';
                 res.redirect('/organizations/' + orgId);
             }
         }
         else {
-            //Somehow set an error message saying something went wrong, try again
             req.session.errorMessage = 'Something went wrong, please try again';
             res.redirect('/organizations/' + orgId);
         }
@@ -113,60 +132,27 @@ router.all(/(\d+)\/edit/, function(req, res, next) {
 
 //Retrieve the 'edit organization' form
 router.get(/(\d+)\/edit/, function(req, res, next) {
-    var orgId = req.params[0];
-    var userId = req.session.user.userId;
-    
-    console.log('Inside get edit org form');
-    members.getIsMemberAdmin(orgId, userId, function onRetrieveAdminStatus(err, result) {
-        if(!err) {
-            if(result) {
-                res.render('edit-org');
-            }
-            else {
-                //Somehow set an error message saying they're not an admin
-                req.session.errorMessage = 'You are not an admin of this organization';
-                res.redirect('/organizations/' + orgId);
-            }
-        }
-        else {
-            //Somehow set an error message saying something went wrong, try again
-            req.session.errorMessage = 'Something went wrong, please try again';
-            res.redirect('/organizations/' + orgId);
-        }
-    });
+    res.render('edit-org');
 });
 
 
 //Update organization's info
 router.post(/(\d+)\/edit/, function(req, res, next) {
     var orgId = req.params[0];
-    var userId = req.session.userId;
+    var userId = req.session.user.userId;
     var newOrgName = req.body.newOrgName;
     var newOrgDesc = req.body.newOrgDesc;
     var inputError = inputValidator.validateOrganizationInput([ newOrgName, newOrgDesc ]);
     
     if(!inputError) {
-        members.getIsMemberAdmin(orgId, req.session.userId, function(err, isAdmin) {
+        organization.editOrganization(orgId, newOrgName, newOrgDesc, function(err, result) {
             if(!err) {
-                if(isAdmin) {
-                    organization.editOrganization(orgId, newOrgName, newOrgDesc, function(err, result) {
-                        if(!err) {
-                            req.session.message = 'Organization successfully updated';
-                            res.redirect('/organization/' + orgId);
-                        }
-                        else {
-                            req.session.errorMessage = 'Error updating organization, please try again';
-                            res.redirect('/organization/' + orgId);
-                        }
-                    });
-                }
-                else {
-                    req.session.errorMessage = 'You are not an admin of this organization';
-                    res.redirect('/organization/' + orgId);
-                }
+                req.session.message = 'Organization successfully updated';
+                res.redirect('/organization/' + orgId);
             }
             else {
-                res.render('edit-org', { orgId: orgId, errorMessage: inputError.message });
+                req.session.errorMessage = 'Error updating organization, please try again';
+                res.redirect('/organization/' + orgId);
             }
         });
     }
@@ -174,8 +160,6 @@ router.post(/(\d+)\/edit/, function(req, res, next) {
         res.render('edit-org', { orgId: orgId, errorMessage: inputError.message });
     }
 });
-
-
 
 
 module.exports = router;

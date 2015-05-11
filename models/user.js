@@ -18,5 +18,5 @@ exports.getSingleUserDetails = function(userId, callback) {
 }
 
 exports.getListOfUserDetails = function(listOfMembers, callback) {
-    dbManager.get
+//    dbManager.get
 }

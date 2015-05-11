@@ -231,7 +231,7 @@ exports.addNewOrgMember = function(orgId, userId, isAdmin, callback) {
             isAdmin = (isAdmin === true) ? 1 : 0;
             
             connection.query('INSERT INTO `members`(`org_id`, `member_id`, `is_admin`) VALUES (\'' 
-                             + orgId + '\', \'' + userId + '\', \'' + isAdmin + '\')', function onInsert(err, result) {
+                             + orgId + '\', \'' + userId + '\', \'' + isAdmin + '\')', function onOrgMemberInsert(err, result) {
                 callback(err, result);
 
                 connection.release();
@@ -247,7 +247,7 @@ exports.addNewOrgMember = function(orgId, userId, isAdmin, callback) {
 exports.getIsMemberAdmin = function(orgId, userId, callback) {
     getConnection(function onConnect(err, connection) {
         if(!err) {
-            connection.query('SELECT is_admin FROM members where member_id=\'' + userId + '\' AND org_id=\'' + orgId + '\' LIMIT 1', function onRetrieval(err, rows, fields) {
+            connection.query('SELECT is_admin FROM members where member_id=\'' + userId + '\' AND org_id=\'' + orgId + '\' LIMIT 1', function onIsAdminRetrieval(err, rows, fields) {
                 if(rows[0]) {
                     callback(null, rows[0].is_admin);
                 }
@@ -264,6 +264,25 @@ exports.getIsMemberAdmin = function(orgId, userId, callback) {
     });
 }
 
+exports.isMemberOfOrg = function(orgId, userId, callback) {
+    getConnection(function onConnect(err, connection) {
+        if(!err) {
+            connection.query('SELECT member_id FROM members where member_id=\'' + userId + '\' AND org_id=\'' + orgId + '\' LIMIT 1', function onRetrieval(err, rows, fields) {
+                if(rows[0]) {
+                    callback(null, true);
+                }
+                else {
+                    callback(null, false);
+                }
+
+                connection.release();
+            });
+        }
+        else {
+            callback(err, null);
+        }
+    });
+}
 
 
 //// =========== Events ===========
