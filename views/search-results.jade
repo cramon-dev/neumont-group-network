@@ -2,11 +2,10 @@ extends layout
 
 block content
     h1 Search Results
-    if locals
-        p locals exists
-        
-    if locals
-        ul
-            for result in locals
-                li
-                    a(href="http://localhost:3000/organizations/")= result[0].name
+    if searchResults
+        for result in searchResults
+            - var orgId = result.orgId
+            a(href="http://localhost:3000/organizations/#{orgId}")= result.orgName
+            br
+    else
+        p No results found

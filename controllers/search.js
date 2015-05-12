@@ -22,9 +22,7 @@ router.get('/', function(req, res, next) {
                         var propValue = searchResults[propName];
                         console.log('Key: ' + propName + ', Value: ' + propValue);
                     }
-//                    res.render('search-results', searchResults);
-                    var newResults = [ { name: 'result 1' }, { name: 'result 2' }, { name: 'result 3' } ];
-                    res.render('search-results', { locals: newResults });
+                    res.render('search-results', { searchResults: searchResults });
                 }
                 else {
                     res.render('search-results', { errorMessage: err.message });
