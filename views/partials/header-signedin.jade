@@ -3,6 +3,6 @@ if locals.session.user
     p= session.user.username
     a(href='http://localhost:3000/signout') Sign Out
     section(class="search_form_section")
-        form(action="http://localhost:3000/search", method="get", name="search_form")
-            input(type="text", placeholder="Search for groups..")
+        form(action="http://localhost:3000/search", method="get")
+            input(type="text", name="userQuery", placeholder="Search for groups..")
             input(type="submit" value="Search")

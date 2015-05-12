@@ -5,11 +5,15 @@ var bcrypt = require('bcrypt');
 //Connection pool
 var pool = mysql.createPool({
     host: 'localhost',
-    user: 'ngn-user',
-    password: 'zJ7m9cdujSGrSvAq',
+    user: 'ngn-admin',
+    password: 'QFpExCtT8zS5MnuZ',
     database: 'ngn-db',
     connectionLimit: 10
 });
+
+
+//user: 'ngn-user',
+//password: 'zJ7m9cdujSGrSvAq'
 
 
 // =========== Utility ===========
@@ -142,6 +146,39 @@ exports.getListOfUserDetails = function(requestedIDs, callback) {
     });
 }
 
+exports.editUserDetails = function(newPassword, newEmail, userId, callback) {
+    getConnection(function onConnect(err, connection) {
+        if(!err) {
+            var hashedPassword = generateNewHash(newPassword);
+            connection.query('UPDATE `users` SET `password`=\'' + 
+                             hashedPassword + '\', `email`=\'' + newEmail + '\' WHERE `user_id`=\'' + userId + '\'', function(err, result) {
+                callback(err, result);
+
+                connection.release();
+            });
+        }
+        else {
+            callback(err, null);
+        }
+    });
+}
+
+exports.deleteUser = function(userId, callback) {
+    getConnection(function onConnect(err, connection) {
+        if(!err) {
+            connection.query('DELETE FROM users where user_id=\'' + userId + '\'', function(err, result) {
+                console.log('Deleted ' + result.affectedRows + ' rows');
+                callback(err, result);
+
+                connection.release();
+            });
+        }
+        else {
+            callback(err, null);
+        }
+    });
+}
+
 
 // =========== Organizations ===========
 
@@ -193,6 +230,38 @@ exports.editOrganization = function(orgId, newOrgName, newOrgDesc, callback) {
                 //If update was successful
                 if(result) {
                     callback(err, result.insertId);
+                }
+                else {
+                    callback(err, null);
+                }
+                
+                connection.release();
+            });
+        }
+        else {
+            callback(err, null);
+        }
+    });
+}
+
+//To be implemented: pass in multiple keywords or tags
+//Get a list of organizations based on a keyword
+exports.getListOfOrgsByOneKeyword = function(keyword, callback) {
+    getConnection(function onConnect(err, connection) {
+        if(!err) {
+            connection.query('SELECT * FROM organizations where name like \'\%' + keyword + '\%\'', function(err, rows, fields) {
+                if(!err) {
+                    if(rows) {
+                        var searchResults = [];
+                        for(var key in rows) {
+                            searchResults.push({ orgId: rows[key].organization_id, orgName: rows[key].name, orgDesc: rows[key].description });
+                        }
+                        
+                        callback(null, searchResults);
+                    }
+                    else {
+                        callback(null, null);
+                    }
                 }
                 else {
                     callback(err, null);

@@ -17,6 +17,8 @@ var signout = require('./controllers/signout');
 var registration = require('./controllers/registration');
 var organizations = require('./controllers/organizations');
 var events = require('./controllers/events');
+var search = require('./controllers/search');
+var profiles = require('./controllers/profiles');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -64,6 +66,8 @@ app.use('/signout', signout);
 app.use('/register', registration);
 app.use('/organizations', organizations);
 app.use('/events', events);
+app.use('/search', search);
+app.use('/profiles', profiles);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

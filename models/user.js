@@ -21,3 +21,15 @@ exports.getListOfUserDetails = function(listOfUserIds, callback) {
         callback(err, listOfUsers);
     });
 }
+
+exports.editUserDetails = function(newPassword, newEmail, userId, callback) {
+    dbManager.editUserDetails(newPassword, newEmail, userId, function onQuery(err, result) {
+        callback(err, result);
+    });
+}
+
+exports.deleteUser = function(userId, callback) {
+    dbManager.deleteUser(userId, function onQuery(err, result) {
+        callback(err, result);
+    });
+}
