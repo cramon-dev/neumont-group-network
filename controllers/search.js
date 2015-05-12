@@ -13,15 +13,10 @@ router.get('/', function(req, res, next) {
     }
     var inputError = inputValidator.validateInput(keywords);
     
-    console.log('Keywords length: ' + keywords.length);
     if(!inputError) {
         if(keywords.length === 1) {
             searchModel.getListOfOrgsByOneKeyword(keywords, function(err, searchResults) {
                 if(!err) {
-                    for(var propName in searchResults) {
-                        var propValue = searchResults[propName];
-                        console.log('Key: ' + propName + ', Value: ' + propValue);
-                    }
                     res.render('search-results', { searchResults: searchResults });
                 }
                 else {
@@ -36,7 +31,6 @@ router.get('/', function(req, res, next) {
         }
     }
     else {
-        //redirect to a blank search page that says 'invalid input'?
         res.render('search-results', { errorMessage: inputError.message });
     }
 });
