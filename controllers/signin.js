@@ -16,7 +16,9 @@ router.post('/', function(req, res, next) {
         user.authenticate(username, password, function(err, user) {
             if(!err) {
                 if(user) {
+                    //While signing in, get a list of all the groups the user is a member of and attach it to the session object?
                     req.session.user = user;
+                    res.locals.user = user;
 
                     if(req.session.lastAction) {
                         console.log("Redirecting user to last page requested..");

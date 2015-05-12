@@ -1,8 +1,9 @@
 var dbManager = require('./db-manager.js');
 
+
 exports.getOrgMembers = function(orgId, callback) {
-    dbManager.getOrgMembers(orgId, function onRetrieval(err, data) {
-        callback(err, data);
+    dbManager.getOrgMembers(orgId, function onRetrieval(err, listOfMembers) {
+        callback(err, listOfMembers);
     });
 }
 

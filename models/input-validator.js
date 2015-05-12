@@ -15,7 +15,7 @@ exports.validateInput = function(inputStringList) {
     return null;
 }
 
-exports.validateOrganizationInput = function(inputStringList) {
+exports.validateOrgAndEventInput = function(inputStringList) {
     for(string in inputStringList) {
         var item = inputStringList[string];
         if(item.match(/['"(){}\[\]\\\/\<\>]/)) {

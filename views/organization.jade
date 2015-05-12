@@ -6,8 +6,8 @@ block content
     p #{description}
     
     h4 Members
-    if locals.listOfMembers
-        each val in listOfMembers
+    if locals.listOfUsers
+        each val in listOfUsers
             li= val.username
             
     h4 Events
@@ -18,12 +18,14 @@ block content
     else
         p No events posted
     
-    if !locals.isMember
-        a(script="./public/scripts/join-org.js") Join this Organization
+    if locals.isMember
+        a(href="http://localhost:3000/organizations/#{organization_id}/leave") Leave this Organization
+    else
+        a(href="http://localhost:3000/organizations/#{organization_id}/join") Join this Organization
     
     a(href="http://localhost:3000/organizations/#{organization_id}/edit") Edit Information
     
-    a(href="http://localhost:3000/events/create") Add Event
+    a(href="http://localhost:3000/events/create?orgId=#{organization_id}") Add Event
     
     script(href="./public/scripts/join-org.js")
     
@@ -33,3 +35,7 @@ block content
         Another also, pass the view a boolean that dictates whether the current user is an admin or not and if not an admin, don't show the last two links
         
         a(href="http://localhost:3000/organizations/#{organization_id}/join") Join Organization
+        
+        if locals.session.user.userId
+        p Found user ID in session
+        p= session.user.userId

@@ -3,10 +3,11 @@ var router = express.Router();
 var organization = require('../models/organization.js');
 var members = require('../models/member.js');
 var users = require('../models/user.js');
+var events = require('../models/event.js');
 var inputValidator = require('../models/input-validator.js');
 
 
-// =========== View and Join Organization ===========
+// =========== View/Join Organization ===========
 
 //Retrieve an organization and display their information
 router.get(/^\/(\d+)\/?$/, function(req, res, next) {
@@ -18,16 +19,20 @@ router.get(/^\/(\d+)\/?$/, function(req, res, next) {
                 members.getOrgMembers(orgId, function onMembersRetrieval(err, listOfMembers) {
                     if(!err) {
                         //Somehow get a list of users to display on the organization's home page
-//                        users.getUserDetails(listOfMemberIDs
-                        if(req.session.errorMessage || req.session.message) {
+                        var listOfMemberIds = [];
+                        for(var key in listOfMembers) {
+                            listOfMemberIds.push(listOfMembers[key].member_id);
+                        }
+                        
+                        users.getListOfUserDetails(listOfMemberIds, function(err, listOfUsers) {
+                            orgData.listOfUsers = listOfUsers;
                             orgData.errorMessage = req.session.errorMessage;
                             orgData.message = req.session.message;
                             req.session.errorMessage = null;
                             req.session.message = null;
-                        }
-                        
-                        orgData.listOfMembers = listOfMembers;
-                        res.render('organization', orgData);
+
+                            res.render('organization', orgData);
+                        });
                     }
                     else {
                         req.session.errorMessage = err.message;
@@ -53,15 +58,15 @@ router.get(/(\d+)\/join/, function(req, res, next) {
     var userId = req.session.user.userId;
     
     members.isMemberOfOrg(orgId, userId, function(err, result) {
-        if(!err && result) {
-            req.session.errorMessage = 'You are already a member of this organization';
-            res.redirect('/organizations/' + orgId);
-        }
-        else {
+        if(!err && !result) {
             members.addNewOrgMember(orgId, userId, false, function(err, result) {
                 req.session.message = 'You are now a member of this organization';
                 res.redirect('/organizations/' + orgId);
             });
+        }
+        else {
+            req.session.errorMessage = 'You are already a member of this organization';
+            res.redirect('/organizations/' + orgId);
         }
     });
 });
@@ -79,7 +84,7 @@ router.post('/create', function(req, res, next) {
     var orgName = req.body.orgName;
     var orgDesc = req.body.orgDesc;
     var inputs = [ orgName, orgDesc ];
-    var inputError = inputValidator.validateOrganizationInput(inputs);
+    var inputError = inputValidator.validateOrgAndEventInput(inputs);
 
     if(!inputError) {
         organization.addNewOrganization(orgName, orgDesc, function onOrgInsert(err, result) {
@@ -132,7 +137,8 @@ router.all(/(\d+)\/edit/, function(req, res, next) {
 
 //Retrieve the 'edit organization' form
 router.get(/(\d+)\/edit/, function(req, res, next) {
-    res.render('edit-org');
+    var orgId = req.params[0];
+    res.render('edit-org', { orgId: orgId });
 });
 
 
@@ -142,17 +148,17 @@ router.post(/(\d+)\/edit/, function(req, res, next) {
     var userId = req.session.user.userId;
     var newOrgName = req.body.newOrgName;
     var newOrgDesc = req.body.newOrgDesc;
-    var inputError = inputValidator.validateOrganizationInput([ newOrgName, newOrgDesc ]);
+    var inputError = inputValidator.validateOrgAndEventInput([ newOrgName, newOrgDesc ]);
     
     if(!inputError) {
-        organization.editOrganization(orgId, newOrgName, newOrgDesc, function(err, result) {
+        organization.editOrganization(orgId, newOrgName, newOrgDesc, function onEditOrg(err, result) {
             if(!err) {
                 req.session.message = 'Organization successfully updated';
-                res.redirect('/organization/' + orgId);
+                res.redirect('/organizations/' + orgId);
             }
             else {
                 req.session.errorMessage = 'Error updating organization, please try again';
-                res.redirect('/organization/' + orgId);
+                res.redirect('/organizations/' + orgId);
             }
         });
     }
@@ -161,5 +167,14 @@ router.post(/(\d+)\/edit/, function(req, res, next) {
     }
 });
 
+
+// =========== Helper Functions ===========
+
+//How to implement this?
+var getCurrentUserAdminStatus = function(orgId, userId, callback) {
+    members.getIsMemberAdmin(orgId, userId, function onIsUserAdminRetrieval(err, isUserAdmin) {
+        callback(err, isUserAdmin);
+    });
+}
 
 module.exports = router;

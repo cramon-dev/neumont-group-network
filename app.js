@@ -16,6 +16,7 @@ var signin = require('./controllers/signin');
 var signout = require('./controllers/signout');
 var registration = require('./controllers/registration');
 var organizations = require('./controllers/organizations');
+var events = require('./controllers/events');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -34,6 +35,11 @@ app.use(sessions({
     resave: false,
     saveUninitialized: true
 }));
+
+app.use(function(req, res, next) {
+    res.locals.session = req.session;
+    next();
+});
 
 //Catch all routes except sign in and register and check if user is logged in
 app.all(/\/(?!signin)(?!register)(\w+)/, function(req, res, next) {
@@ -57,6 +63,7 @@ app.use('/signin', signin);
 app.use('/signout', signout);
 app.use('/register', registration);
 app.use('/organizations', organizations);
+app.use('/events', events);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

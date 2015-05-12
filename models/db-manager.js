@@ -119,9 +119,11 @@ exports.getListOfUserDetails = function(requestedIDs, callback) {
                 if(rows) {
                     var listOfUsers = [];
                     for(var id in requestedIDs) {
-                        //won't work because I have to iterate over both requested IDs list and database results
-                        if(rows[0].user_id === requestedIDs[id]) {
-                            listOfUsers.push({ userId: rows[0].user_id, username: rows[0].username, email: rows[0].email });
+                        for(var i = 0; i < rows.length; i++) {
+                            if(rows[i].user_id === requestedIDs[id]) {
+                                listOfUsers.push({ userId: rows[i].user_id, username: rows[i].username, email: rows[i].email });
+                                i = rows.length; //Break out of loop early in a "safe" way 
+                            }
                         }
                     }
 
@@ -187,7 +189,7 @@ exports.editOrganization = function(orgId, newOrgName, newOrgDesc, callback) {
     getConnection(function onConnect(err, connection) {
         if(!err) {
             connection.query('UPDATE `organizations` SET `name`=\'' + 
-                             newOrgDesc + '\', `description`=\'' + newOrgDesc + '\' WHERE `organization_id`=\'' + orgId + '\'', function(err, result) {
+                             newOrgName + '\', `description`=\'' + newOrgDesc + '\' WHERE `organization_id`=\'' + orgId + '\'', function(err, result) {
                 //If update was successful
                 if(result) {
                     callback(err, result.insertId);
@@ -264,15 +266,16 @@ exports.getIsMemberAdmin = function(orgId, userId, callback) {
     });
 }
 
+//Check if user is a member of an organization
 exports.isMemberOfOrg = function(orgId, userId, callback) {
     getConnection(function onConnect(err, connection) {
         if(!err) {
             connection.query('SELECT member_id FROM members where member_id=\'' + userId + '\' AND org_id=\'' + orgId + '\' LIMIT 1', function onRetrieval(err, rows, fields) {
                 if(rows[0]) {
-                    callback(null, true);
+                    callback(err, true);
                 }
                 else {
-                    callback(null, false);
+                    callback(err, false);
                 }
 
                 connection.release();
@@ -285,30 +288,84 @@ exports.isMemberOfOrg = function(orgId, userId, callback) {
 }
 
 
-//// =========== Events ===========
-//
-//var addNewEvent = function(org_id, new_event_title, new_event_desc, new_event_date, can_users_comment, callback) {
-//    getConnection(function onConnect(err, connection) {
-//        if(!err) {
-//            connection.query('INSERT INTO `events`(`org_id`, `title`, `description`, `start_date`, `can_users_comment`) VALUES (\'' +
-//                                org_id + '\', \'' + new_event_title + '\', \'' + new_event_desc + '\', \'' + new_event_date 
-//                                    + '\', \'' + can_users_comment + '\')', function(err, rows, fields) {
-//                if(err) {
-//                    callback(err);
-//                }
-//                else {
-//                    callback(null);
-//                }
-//                
-//                connection.release();
-//            });
-//        }
-//        else {
-//            throw err;
-//        }
-//    });
-//}
-//
+// =========== Events ===========
+
+//Get an event's details
+exports.getEventDetails = function(eventId, callback) {
+    getConnection(function onConnect(err, connection) {
+        if(!err) {
+            connection.query('SELECT * FROM events where event_id=\'' + eventId + '\' LIMIT 1', function onDBEventInsert(err, rows, fields) {
+                if(rows[0]) {
+                    var canUsersComment = rows[0].can_users_comment ? true : false;
+                    rows[0].can_users_comment = canUsersComment;
+                    callback(err, rows[0]);
+                }
+                else {
+                    callback(err, null);
+                }
+                
+                connection.release();
+            });
+        }
+        else {
+            callback(err, null);
+        }
+    });
+}
+
+//Add a new event
+exports.addNewEvent = function(eventTitle, eventDesc, eventStartDate, orgId, canUsersComment, callback) {
+    getConnection(function onConnect(err, connection) {
+        if(!err) {
+            var convertedCanUsersComment = canUsersComment ? 1 : 0;
+            connection.query('INSERT INTO `events`(`title`, `description`, `start_date`, `org_id`, `can_users_comment`) VALUES (\'' +
+                                eventTitle + '\', \'' + eventDesc + '\', \'' + eventStartDate + '\', \'' + orgId + '\', \'' + canUsersComment + '\')', function onDBEventInsert(err, result) {
+                callback(err, result.insertId);
+                
+                connection.release();
+            });
+        }
+        else {
+            throw err;
+        }
+    });
+}
+
+//Edit an event
+exports.editEventDetails = function(newEventTitle, newEventDesc, newEventStartDate, eventId, canUsersComment, callback) {
+    getConnection(function onConnect(err, connection) {
+        if(!err) {
+            var convertedCanUsersComment = canUsersComment ? 1 : 0;
+            connection.query('UPDATE `events` SET `title`=\'' + newEventTitle + '\', `description`=\'' + 
+                             newEventDesc + '\', `start_date`=\'' + newEventStartDate + '\', `can_users_comment`=\'' +
+                                convertedCanUsersComment + '\' WHERE `event_id`=\'' + eventId + '\'', function onUpdateEvent(err, result) {
+                callback(err, result);
+                
+                connection.release();
+            });
+        }
+        else {
+            callback(err, null);
+        }
+    });
+}
+
+//Get all events posted to a specific organization
+exports.retrieveAllEventsByOrgID = function(orgId, callback) {
+    getConnection(function onConnect(err, connection) {
+        if(!err) {
+            connection.query('SELECT * FROM events where org_id=\'' + orgId + '\'', function(err, rows, fields) {
+                callback(err, rows);
+                
+                connection.release();
+            });
+        }
+        else {
+            callback(err, null);
+        }
+    });
+}
+
 ////Get all events
 //var retrieveAllEvents = function(callback) {
 //    getConnection(function onConnect(err, connection) {
@@ -326,22 +383,6 @@ exports.isMemberOfOrg = function(orgId, userId, callback) {
 //    });
 //}
 //
-////Get all events based on one organization's ID
-//var retrieveAllEventsByOrgID = function(requested_org_id, callback) {
-//    getConnection(function onConnect(err, connection) {
-//        if(!err) {
-//            connection.query('SELECT * FROM events where org_id=\'' + requested_org_id + '\'', function(err, rows, fields) {
-//                callback(err, rows);
-//                
-//                connection.release();
-//            });
-//        }
-//        else {            
-//            //Should I callback with the error?
-//            callback(err, null);
-//        }
-//    });
-//}
 //
 ////Get a single event's details based on requested ID
 //var retrieveSingleEventDetails = function(requestedEventId, callback) {
@@ -359,7 +400,8 @@ exports.isMemberOfOrg = function(orgId, userId, callback) {
 //        }
 //    });
 //}
-//
+
+
 //// =========== Comments ===========
 //
 ////Add a new comment
@@ -397,34 +439,6 @@ exports.isMemberOfOrg = function(orgId, userId, callback) {
 //    });
 //}
 //
-
-
-//How can I clean this up?
-//Should I not export mysql connections to other classes?
-//Should I just let the db manager handle connections?
-
-//module.exports.getConnection = getConnection;
-//module.exports.checkInvalidInput = checkInvalidInput;
-//module.exports.registerNewUser = registerNewUser;
-//module.exports.signIn = signIn;
-//module.exports.retrieveUser = retrieveUser;
-//module.exports.retrieveAllUsers = retrieveAllUsers;
-//module.exports.retrieveUserIdByUsername = retrieveUserIdByUsername;
-//module.exports.retrieveUsernameByID = retrieveUsernameByID;
-//module.exports.getOrganization = getOrganization;
-//module.exports.getOrgIDByName = getOrgIDByName;
-//module.exports.addNewOrganization = addNewOrganization;
-//module.exports.alterOrganizationInfo = alterOrganizationInfo;
-//module.exports.addNewEvent = addNewEvent;
-//module.exports.retrieveAllEvents = retrieveAllEvents;
-//module.exports.retrieveAllEventsByOrgID = retrieveAllEventsByOrgID;
-//module.exports.retrieveSingleEventDetails = retrieveSingleEventDetails;
-//module.exports.addNewComment = addNewComment;
-//module.exports.retrieveAllCommentsWhere = retrieveAllCommentsWhere;
-//module.exports.addNewMemberToOrg = addNewMemberToOrg;
-//module.exports.retrieveMembersOfOrg = retrieveMembersOfOrg;
-//module.exports.retrieveIsMemberAdmin = retrieveIsMemberAdmin;
-
 
 //connection.query('INSERT INTO `users`(`username`, `password`, `email`) VALUES (\'' + username + '\', \'' + password + '\', \'' + email + '\')', function(err, rows, fields) {
 //    if (err) {
