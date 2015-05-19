@@ -16,23 +16,24 @@ router.get(/^\/(\d+)\/?$/, function(req, res, next) {
     organization.getOrganization(orgId, function onOrgRetrieval(err, orgData) {
         if(!err) {
             if(orgData) {
-                members.getOrgMembers(orgId, function onMembersRetrieval(err, listOfMembers) {
+                members.getOrgMemberDetails(orgId, function onMemberDetailsRetrieval(err, listOfMemberDetails) {
                     if(!err) {
-                        //Somehow get a list of users to display on the organization's home page
-                        var listOfMemberIds = [];
-                        for(var key in listOfMembers) {
-                            listOfMemberIds.push(listOfMembers[key].member_id);
-                        }
+                        orgData.listOfUsers = listOfMemberDetails;
+                        orgData.errorMessage = req.session.errorMessage;
+                        orgData.message = req.session.message;
+                        req.session.errorMessage = null;
+                        req.session.message = null;
                         
-                        users.getListOfUserDetails(listOfMemberIds, function(err, listOfUsers) {
-                            orgData.listOfUsers = listOfUsers;
-                            orgData.errorMessage = req.session.errorMessage;
-                            orgData.message = req.session.message;
-                            req.session.errorMessage = null;
-                            req.session.message = null;
-
-                            res.render('organization', orgData);
-                        });
+                        res.render('organization', orgData);
+//                        users.getListOfUserDetails(listOfMemberIds, function(err, listOfUsers) {
+//                            orgData.listOfUsers = listOfUsers;
+//                            orgData.errorMessage = req.session.errorMessage;
+//                            orgData.message = req.session.message;
+//                            req.session.errorMessage = null;
+//                            req.session.message = null;
+//
+//                            res.render('organization', orgData);
+//                        });
                     }
                     else {
                         req.session.errorMessage = err.message;
@@ -83,11 +84,12 @@ router.get('/create', function(req, res, next) {
 router.post('/create', function(req, res, next) {
     var orgName = req.body.orgName;
     var orgDesc = req.body.orgDesc;
+    var userId = req.session.user.userId;
     var inputs = [ orgName, orgDesc ];
     var inputError = inputValidator.validateOrgAndEventInput(inputs);
 
     if(!inputError) {
-        organization.addNewOrganization(orgName, orgDesc, function onOrgInsert(err, result) {
+        organization.addNewOrganization(orgName, orgDesc, userId, function onOrgInsert(err, result) {
             if(!err) {
                 var orgId = result;
                 var userId = req.session.user.userId;
@@ -137,8 +139,8 @@ router.all(/(\d+)\/edit/, function(req, res, next) {
 
 //Retrieve the 'edit organization' form
 router.get(/(\d+)\/edit/, function(req, res, next) {
-    var orgId = req.params[0];
-    res.render('edit-org', { orgId: orgId });
+    //Is passing the ID really necessary?
+    res.render('edit-org', { orgId: req.params[0] });
 });
 
 
@@ -170,11 +172,13 @@ router.post(/(\d+)\/edit/, function(req, res, next) {
 
 // =========== Helper Functions ===========
 
-//How to implement this?
+//How can I improve/implement this?
 var getCurrentUserAdminStatus = function(orgId, userId, callback) {
     members.getIsMemberAdmin(orgId, userId, function onIsUserAdminRetrieval(err, isUserAdmin) {
         callback(err, isUserAdmin);
     });
 }
+
+
 
 module.exports = router;

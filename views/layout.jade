@@ -1,7 +1,10 @@
 doctype html
 html
     head
-        title= title
+        if title
+            title= title
+        else
+            title Neumont Group Network
         link(rel='stylesheet', href='/stylesheets/style.min.css')
     body
         header

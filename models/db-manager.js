@@ -199,10 +199,11 @@ exports.getOrganization = function(requestedId, callback) {
 }
 
 //Add a new organization
-exports.addNewOrganization = function(orgName, orgDesc, callback) {
+exports.addNewOrganization = function(orgName, orgDesc, authorId, callback) {
     getConnection(function onConnect(err, connection) {
         if(!err) {
-            connection.query('INSERT INTO `organizations`(`name`, `description`) VALUES (\'' + orgName + '\', \'' + orgDesc + '\')', function onDBInsertOrg(err, result) {
+            connection.query('INSERT INTO `organizations`(`name`, `description`, `original_author_id`) VALUES (\'' + 
+                             orgName + '\', \'' + orgDesc + '\', \'' + authorId + '\')', function onDBInsertOrg(err, result) {
                 //If insert was successful
                 if(result) {
                     callback(err, result.insertId);
@@ -284,6 +285,22 @@ exports.getOrgMembers = function(orgId, callback) {
     getConnection(function onConnect(err, connection) {
         if(!err) {
             connection.query('SELECT * FROM members where org_id = \'' + orgId + '\'', function onDBMembersRetrieval(err, rows, fields) {
+                callback(err, rows);
+
+                connection.release();
+            });
+        }
+        else {
+            throw err;
+        }
+    });
+}
+
+//Get list of usernames, user IDs, and user emails from org ID
+exports.getOrgMemberDetails = function(orgId, callback) {
+    getConnection(function onConnect(err, connection) {
+        if(!err) {
+            connection.query('SELECT users.member_id, users.username, users.email inner join users on members.member_id = users.user_id where members.org_id = \'' + orgId + '\'', function onDBMembersRetrieval(err, rows, fields) {
                 callback(err, rows);
 
                 connection.release();

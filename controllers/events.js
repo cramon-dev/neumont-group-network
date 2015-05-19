@@ -124,9 +124,7 @@ router.post('/create', function(req, res, next) {
 
 //Get the 'edit event' form
 router.get(/(\d+)\/edit/, function(req, res, next) {
-    var eventId = req.params[0];
-    
-    res.render('edit-event', { eventId: eventId });
+    res.render('edit-event', { eventId: req.params[0] });
 });
 
 //Edit the event details
@@ -161,6 +159,20 @@ router.post(/(\d+)\/edit/, function(req, res, next) {
         req.session.errorMessage = inputError.message;
         res.render('edit-event', { eventId: eventId });
     }
+});
+
+// =========== Comments ===========
+
+//Get comments for an event
+router.get(/(\d+)\/comment/, function(req, res, next) {
+    console.log('Get some comments');
+    res.redirect('/events/' + req.params[0]);
+});
+
+//Post a comment
+router.post(/(\d+)\/comment/, function(req, res, next) {
+    console.log('Post a comment');
+    res.redirect('/events/' + req.params[0]);
 });
 
 module.exports = router;

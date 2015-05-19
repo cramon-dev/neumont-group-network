@@ -13,6 +13,7 @@ router.post('/', function(req, res, next) {
     var username = req.body.username;
     var password = req.body.password;
     var email = req.body.email;
+    console.log('Username length: ' + username.length);
     var inputs = [ username, password, email ];
     var inputError = inputValidator.validateInput(inputs);
 

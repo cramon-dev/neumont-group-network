@@ -1,9 +1,27 @@
 var dbManager = require('./db-manager.js');
 
+var memberId, orgMemberIsPartOf, isAdmin;
 
 exports.getOrgMembers = function(orgId, callback) {
-    dbManager.getOrgMembers(orgId, function onRetrieval(err, listOfMembers) {
+    dbManager.getOrgMembers(orgId, function onMembersRetrieval(err, listOfMembers) {
         callback(err, listOfMembers);
+    });
+}
+
+exports.getOrgMemberIds = function(orgId, callback) {
+    dbManager.getOrgMembers(orgId, function onMemberIDsRetrieval(err, listOfMembers) {
+        var listOfMemberIds = [];
+        for(var key in listOfMembers) {
+            listOfMemberIds.push(listOfMembers[key].member_id);
+        }
+        
+        callback(err, listOfMemberIds);
+    });
+}
+
+exports.getOrgMemberDetails = function(orgId, callback) {
+    dbManager.getOrgMemberDetails(orgId, function onMemberDetailsRetrieval(err, listOfMemberDetails) {
+        callback(err, listOfMemberDetails);
     });
 }
 

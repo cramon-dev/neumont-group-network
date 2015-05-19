@@ -19,6 +19,7 @@ var organizations = require('./controllers/organizations');
 var events = require('./controllers/events');
 var search = require('./controllers/search');
 var profiles = require('./controllers/profiles');
+var messages = require('./controllers/messages');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -68,6 +69,7 @@ app.use('/organizations', organizations);
 app.use('/events', events);
 app.use('/search', search);
 app.use('/profiles', profiles);
+app.use('/mailbox', messages);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
