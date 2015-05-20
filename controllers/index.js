@@ -4,7 +4,12 @@ var router = express.Router();
 /* GET home page. */
 router.get('/', function(req, res, next) {
     if(req.session.user) {
-        res.render('home', { userId: req.session.user.userId, username: req.session.user.username });
+        var message = req.session.message;
+        var errorMessage = req.session.errorMessage;
+        req.session.message = null;
+        req.session.errorMessage = null;
+        
+        res.render('home', { userId: req.session.user.userId, username: req.session.user.username, message: message, errorMessage: errorMessage });
     }
     else {
         res.render('index');

@@ -2,10 +2,12 @@ var express = require('express');
 var router = express.Router();
 
 router.get('/', function(req, res, next) {
+    var message = req.session.message;
+    
     req.session.destroy(function(err) {
         if(!err) {
-            if(req.session.message) {
-                res.render('index', { message: req.session.message });
+            if(message) {
+                res.render('index', { message: message });
             }
             else {
                 res.render('index', { message: 'Successfully signed out, see you soon!' });

@@ -25,15 +25,6 @@ router.get(/^\/(\d+)\/?$/, function(req, res, next) {
                         req.session.message = null;
                         
                         res.render('organization', orgData);
-//                        users.getListOfUserDetails(listOfMemberIds, function(err, listOfUsers) {
-//                            orgData.listOfUsers = listOfUsers;
-//                            orgData.errorMessage = req.session.errorMessage;
-//                            orgData.message = req.session.message;
-//                            req.session.errorMessage = null;
-//                            req.session.message = null;
-//
-//                            res.render('organization', orgData);
-//                        });
                     }
                     else {
                         req.session.errorMessage = err.message;
@@ -54,6 +45,7 @@ router.get(/^\/(\d+)\/?$/, function(req, res, next) {
     });
 });
 
+//Join an organization
 router.get(/(\d+)\/join/, function(req, res, next) {
     var orgId = req.params[0];
     var userId = req.session.user.userId;
@@ -67,6 +59,25 @@ router.get(/(\d+)\/join/, function(req, res, next) {
         }
         else {
             req.session.errorMessage = 'You are already a member of this organization';
+            res.redirect('/organizations/' + orgId);
+        }
+    });
+});
+
+//Join an organization
+router.get(/(\d+)\/leave/, function(req, res, next) {
+    var orgId = req.params[0];
+    var userId = req.session.user.userId;
+    
+    members.isMemberOfOrg(orgId, userId, function(err, result) {
+        if(!err && !result) {
+            members.removeOrgMember(orgId, userId, function(err, result) {
+                req.session.message = 'You are no longer a member of this organization';
+                res.redirect('/organizations/' + orgId);
+            });
+        }
+        else {
+            req.session.errorMessage = 'You aren\'t a member of this organization';
             res.redirect('/organizations/' + orgId);
         }
     });

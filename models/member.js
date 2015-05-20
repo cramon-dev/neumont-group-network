@@ -31,6 +31,12 @@ exports.addNewOrgMember = function(orgId, userId, isAdmin, callback) {
     });
 }
 
+exports.removeOrgMember = function(orgId, userId, callback) {
+    dbManager.removeOrgMember(orgId, userId, function onDelete(err, result) {
+        callback(err, result);
+    });
+}
+
 exports.getIsMemberAdmin = function(orgId, userId, callback) {
     dbManager.getIsMemberAdmin(orgId, userId, function onRetrieval(err, isAdmin) {
         var isMemberAdmin = isAdmin ? true : false;

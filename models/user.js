@@ -13,12 +13,20 @@ exports.authenticate = function(username, password, callback) {
 }
 
 exports.getSingleUserDetails = function(userId, callback) {
-    console.log('getSingleUserDetails not implemented yet');
+    dbManager.getUserDetails(userId, function onQuery(err, userDetails) {
+        callback(err, userDetails);
+    });
 }
 
 exports.getListOfUserDetails = function(listOfUserIds, callback) {
     dbManager.getListOfUserDetails(listOfUserIds, function onQuery(err, listOfUsers) {
         callback(err, listOfUsers);
+    });
+}
+
+exports.getUserByName = function(username, callback) {
+    dbManager.getUserByName(username, function onQuery(err, user) {
+        callback(err, user);
     });
 }
 

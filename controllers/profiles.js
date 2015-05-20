@@ -3,16 +3,28 @@ var router = express.Router();
 var user = require('../models/user.js');
 var inputValidator = require('../models/input-validator.js');
 
-//router.get(/^\/(\d+)\/?$/, function(req, res, next) {
-//    var userId = req.params[0];
-//    
-//    
-//});
 
+//Show a user's basic information
+router.get(/^\/(\d+)\/?$/, function(req, res, next) {
+    var requestedUserId = req.params[0];
+    
+    user.getSingleUserDetails(requestedUserId, function(err, userDetails) {
+        if(!err && userDetails) {
+            res.render('profile', { userDetails: userDetails });
+        }
+        else {
+            req.session.errorMessage = err.message;
+            res.redirect('/');
+        }
+    });
+});
+
+//Get form to edit user settings
 router.get('/edit', function(req, res, next) {
     res.render('edit-user-settings');
 });
 
+//Make changes to user settings
 router.post('/edit', function(req, res, next) {
     var userId = req.session.user.userId;
     var newPassword = req.body.newPassword;

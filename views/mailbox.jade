@@ -1,4 +1,18 @@
-extends layout
+ h1 Inbox
 
-block content
-    h1 Your mailbox
+if inbox
+    p Messages: 
+    for val in inbox
+        p val
+else
+    p Your inbox is empty
+    
+form(action="http://localhost:3000/mailbox/send", method="post")
+    p To:
+    input(type="text", name="userToSendTo")
+    p Message:
+    input(type="text", name="messageContent")
+    input(type="submit", value="Send")
+
+//
+    Ideally, I would want the messages to load as the user logs in and store them in the session so that a call wouldn't have to be made on every page to get a list of messages the user has received or sent. How should I tackle this?

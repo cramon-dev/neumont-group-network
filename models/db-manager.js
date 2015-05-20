@@ -146,6 +146,24 @@ exports.getListOfUserDetails = function(requestedIDs, callback) {
     });
 }
 
+//Get a user by username
+exports.getUserByName = function(username, callback) {
+    getConnection(function onConnect(err, connection) {
+        if(!err) {
+            connection.query('SELECT * FROM users where username=\'' + username + '\'', function onUserRetrieval(err, rows, fields) {
+                callback(err, rows[0]);
+                
+                connection.release();
+            });
+        }
+        else {
+            callback(err, null);
+            
+            connection.release();
+        }
+    });
+}
+
 exports.editUserDetails = function(newPassword, newEmail, userId, callback) {
     getConnection(function onConnect(err, connection) {
         if(!err) {
@@ -296,11 +314,11 @@ exports.getOrgMembers = function(orgId, callback) {
     });
 }
 
-//Get list of usernames, user IDs, and user emails from org ID
+//Get list of usernames, user IDs, and user emails from org ID in members table
 exports.getOrgMemberDetails = function(orgId, callback) {
     getConnection(function onConnect(err, connection) {
         if(!err) {
-            connection.query('SELECT users.member_id, users.username, users.email inner join users on members.member_id = users.user_id where members.org_id = \'' + orgId + '\'', function onDBMembersRetrieval(err, rows, fields) {
+            connection.query('SELECT users.user_id, users.username FROM users INNER JOIN members ON members.member_id = users.user_id WHERE members.org_id = \'' + orgId + '\'', function onDBMembersRetrieval(err, rows, fields) {
                 callback(err, rows);
 
                 connection.release();
@@ -320,6 +338,22 @@ exports.addNewOrgMember = function(orgId, userId, isAdmin, callback) {
             
             connection.query('INSERT INTO `members`(`org_id`, `member_id`, `is_admin`) VALUES (\'' 
                              + orgId + '\', \'' + userId + '\', \'' + isAdmin + '\')', function onOrgMemberInsert(err, result) {
+                callback(err, result);
+
+                connection.release();
+            });
+        }
+        else {
+            callback(err, null);
+        }
+    });
+}
+
+//Remove a user from an organization's list of members
+exports.removeOrgMember = function(orgId, userId, callback) {
+    getConnection(function onConnect(err, connection) {
+        if(!err) {
+            connection.query('DELETE FROM members where member_id=\'' + userId + '\' AND org_id=\'' + orgId + '\'', function onMemberRemoval(err, result) {
                 callback(err, result);
 
                 connection.release();
@@ -452,69 +486,119 @@ exports.retrieveAllEventsByOrgID = function(orgId, callback) {
     });
 }
 
-////Get all events
-//var retrieveAllEvents = function(callback) {
+
+// =========== Messages ===========
+
+exports.createConversation = function(senderId, receiverId, callback) {
+    getConnection(function onConnect(err, connection) {
+        if(!err) {
+            connection.query('INSERT INTO `conversations`(`sender_id`, `receiver_id`) VALUES (\'' + senderId + '\', \'' + receiverId + '\')', function onConversationCreation(err, result) {
+                callback(err, result.insertId);
+                
+                connection.release();
+            });
+        }
+        else {
+            callback(err, null);
+        }
+    });
+}
+
+exports.replyToConversation = function(senderId, receiverId, conversationId, messageReply, timeSent, callback) {
+    getConnection(function onConnect(err, connection) {
+        if(!err) {
+            connection.query('INSERT INTO `message_replies`(`conversation_id`, `content`, `sender_id`, `receiver_id`, `time_sent`) VALUES (\'' 
+                             + conversationId + '\', \'' + messageReply + '\', \'' 
+                                + senderId + '\', \'' + receiverId + '\', \'' + timeSent + '\')', function onConversationReplyInsert(err, result) {
+                callback(err, result.insertId);
+                
+                connection.release();
+            });
+        }
+        else {
+            callback(err, null);
+        }
+    });
+}
+
+exports.getConversation = function(senderId, receiverId, callback) {
+    getConnection(function onConnect(err, connection) {
+        if(!err) {
+            connection.query('SELECT * FROM conversations where sender_id=\'' 
+                             + senderId + '\' AND receiver_id=\'' + receiverId + '\' LIMIT 1', function onRetrieveConversation(err, rows, fields) {
+                if(rows[0]) {
+                    callback(err, rows[0]);
+                }
+                else {
+                    callback(err, null);
+                }
+                
+                connection.release();
+            });
+        }
+        else {
+            callback(err, null);
+        }
+    });
+}
+
+exports.getConvosAndReplies = function(conversationId, callback) {
+    getConnection(function onConnect(err, connection) {
+        if(!err) {
+            connection.query('SELECT * FROM message_replies INNER JOIN conversations ON '
+                            + 'conversations.conversation_id = message_replies.conversation_id '
+                             + 'WHERE message_replies.conversation_id = \'' + conversationId + '\'', function(err, rows, fields) {
+                if(rows) {
+                    var toReturn = [];
+                    for(var row in rows) {
+                        var convo = { conversation_id: rows[row].conversation_id, content: rows[row.content], sender_id: rows[row].sender_id, receiver_id: rows[row].receiver_id, time_sent: rows[row].time_sent };
+                        toReturn.push(convo);
+                    }
+                    callback(err, toReturn);
+                }
+                else {
+                    callback(err, null);
+                }
+                
+                connection.release();
+            });
+        }
+        else {
+            callback(err, null);
+        }
+    });
+}
+
+//exports.getListOfReplies = function(conversationId, callback) {
 //    getConnection(function onConnect(err, connection) {
 //        if(!err) {
-//            connection.query('SELECT * FROM events', function(err, rows, fields) {
-//                callback(err, rows);
+//            connection.query('SELECT * FROM message_replies where conversation_id=\'' + conversationId + '\'', function(err, rows, fields) {
+//                if(rows) {
+//                    callback(err, rows);
+//                }
+//                else {
+//                    callback(err, null);
+//                }
 //                
 //                connection.release();
 //            });
 //        }
 //        else {
-//            //Maybe I should just throw an error.. or should I callback with the error?
-//            throw err;
-//        }
-//    });
-//}
-//
-//
-////Get a single event's details based on requested ID
-//var retrieveSingleEventDetails = function(requestedEventId, callback) {
-//    getConnection(function onConnect(err, connection) {
-//        if(!err) {
-//            connection.query('SELECT * FROM events where event_id=\'' + requestedEventId + '\' LIMIT 1', function(err, rows, fields) {
-//                callback(err, rows[0]);
-//            
-//                connection.release();
-//            }); 
-//        }
-//        else {
-//            //Should I callback with the error?
 //            callback(err, null);
 //        }
 //    });
 //}
-
-
-//// =========== Comments ===========
 //
-////Add a new comment
-//var addNewComment = function(commentMessage, authorUsername, eventIdPostingTo, callback) {
+//exports.getListOfConversations = function(userId, callback) {
 //    getConnection(function onConnect(err, connection) {
 //        if(!err) {
-//            var currentDate = Date.now();
-//            connection.query('INSERT INTO `comments`(`message`, `time_posted`, `author_username`, `event_id`) VALUES (\'' 
-//                             + commentMessage + '\', \'' + currentDate + '\', \'' + authorUsername + '\', \'' + eventIdPostingTo + '\')', function(err, rows, fields) {
-//                callback(err);
-//                
-//                console.log('Added new comment');
-//                connection.release();
-//            });
-//        }
-//        else {
-//            callback(err);
-//        }
-//    });
-//}
-//
-////Retrieve all comments posted on a particular event
-//var retrieveAllCommentsWhere = function(eventIdPostedTo, callback) {
-//    getConnection(function onConnect(err, connection) {
-//        if(!err) {
-//            connection.query('SELECT * FROM comments where event_id=\'' + eventIdPostedTo + '\'', function(err, rows, fields) {
-//                callback(err, rows);
+//            connection.query('SELECT * FROM conversations where sender_id=\'' + userId + '\' OR receiver_id=\'' + userId + '\'', function(err, rows, fields) {
+//                if(rows) {
+//                    callback(err, rows);
+//                }
+//                else {
+//                    callback(err, null);
+//                }
 //                
 //                connection.release();
 //            });
@@ -524,21 +608,3 @@ exports.retrieveAllEventsByOrgID = function(orgId, callback) {
 //        }
 //    });
 //}
-//
-
-//connection.query('INSERT INTO `users`(`username`, `password`, `email`) VALUES (\'' + username + '\', \'' + password + '\', \'' + email + '\')', function(err, rows, fields) {
-//    if (err) {
-//        console.log("throwing error");
-//        throw err;
-//    }
-//    else {
-//        console.log("User successfully recorded in database");
-//    }
-//});
-
-//console.log("==== Retrieved user from database ====");
-//console.log("==== Fields[0]: " + fields[0] + " ====");
-//console.log("==== Rows[0]: " + rows[0] + " ====");
-//console.log("==== Retrieved user ID: " + rows[0].user_id + " ====");
-//console.log("==== Retrieved username: " + rows[0].username + " ====");
-//console.log("==== Retrieved password: " + rows[0].password + " ====");

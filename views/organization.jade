@@ -10,7 +10,8 @@ block content
     h4 Members
     if locals.listOfUsers
         each val in listOfUsers
-            li= val.username
+            li
+                a(href="http://localhost:3000/profiles/#{val.user_id}")= val.username
             
     h4 Events
     if locals.listOfEvents
