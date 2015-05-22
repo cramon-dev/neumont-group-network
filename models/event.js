@@ -1,4 +1,4 @@
-var dbManager = require('./db-manager.js');
+ var dbManager = require('./db-manager.js');
 
 
 exports.addNewEvent = function(eventTitle, eventDesc, eventStartDate, orgId, canUsersComment, callback) {
@@ -9,7 +9,6 @@ exports.addNewEvent = function(eventTitle, eventDesc, eventStartDate, orgId, can
 
 exports.editEventDetails = function(newEventTitle, newEventDesc, newEventStartDate, eventId, canUsersComment, callback) {
     dbManager.editEventDetails(newEventTitle, newEventDesc, newEventStartDate, eventId, canUsersComment, function onEditEvent(err, result) {
-        console.log('Inside model, can users comment? ' + canUsersComment);
         callback(err, result);
     });
 }

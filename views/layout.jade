@@ -9,8 +9,8 @@ html
     body
         header
             include ./partials/header-signedin.jade
-        h4(class="message") #{message}
-        h4(class="errorMessage") #{errorMessage}
+        p(class="message") #{message}
+        p(class="errorMessage") #{errorMessage}
         block content
         footer
             p Created 2015, Christian Ramon

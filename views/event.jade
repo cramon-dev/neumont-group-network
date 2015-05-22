@@ -8,8 +8,8 @@ block content
     p #{eventDetails.start_date}
     
     a(href="http://localhost:3000/events/#{eventDetails.event_id}/edit") Edit Event
-        
     br
+    a(href="http://localhost:3000/events/#{eventDetails.event_id}/optin") Attend this Event
     h3 Comments
     if locals.eventDetails.can_users_comment
         form(action="http://localhost:3000/events/#{eventDetails.event_id}/comment", method="post")
@@ -25,3 +25,8 @@ block content
             p No comments found for this event
     else
         p Comments are currently disabled for this event
+        
+    script(src="/scripts/attend-event.js")
+    
+    //
+        button(onclick="attendEvent(#{eventDetails.event_id})") Attend this Event

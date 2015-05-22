@@ -439,7 +439,7 @@ exports.addNewEvent = function(eventTitle, eventDesc, eventStartDate, orgId, can
         if(!err) {
             var convertedCanUsersComment = canUsersComment ? 1 : 0;
             connection.query('INSERT INTO `events`(`title`, `description`, `start_date`, `org_id`, `can_users_comment`) VALUES (\'' +
-                                eventTitle + '\', \'' + eventDesc + '\', \'' + eventStartDate + '\', \'' + orgId + '\', \'' + canUsersComment + '\')', function onDBEventInsert(err, result) {
+                                eventTitle + '\', \'' + eventDesc + '\', \'' + eventStartDate + '\', \'' + orgId + '\', \'' + convertedCanUsersComment + '\')', function onDBEventInsert(err, result) {
                 callback(err, result.insertId);
                 
                 connection.release();
@@ -475,6 +475,21 @@ exports.retrieveAllEventsByOrgID = function(orgId, callback) {
     getConnection(function onConnect(err, connection) {
         if(!err) {
             connection.query('SELECT * FROM events where org_id=\'' + orgId + '\'', function(err, rows, fields) {
+                callback(err, rows);
+                
+                connection.release();
+            });
+        }
+        else {
+            callback(err, null);
+        }
+    });
+}
+
+exports.changeAttendanceStatus = function(userId, eventId, isAttending, callback) {
+    getConnection(function onConnect(err, connection) {
+        if(!err) {
+            connection.query('INSERT INTO `attendees`(`is_attending`, `user_id`, `event_id`) VALUES (\'' + isAttending + '\', \'' + userId + '\', \'' + eventId + '\')', function(err, rows, fields) {
                 callback(err, rows);
                 
                 connection.release();

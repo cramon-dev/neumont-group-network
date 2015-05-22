@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var events = require('../models/event.js');
 var members = require('../models/member.js');
+var attendees = require('../models/attendee.js');
 var inputValidator = require('../models/input-validator.js');
 
 // =========== View Event Details ===========
@@ -32,49 +33,6 @@ router.get(/^\/(\d+)\/?$/, function(req, res, next) {
     });
 });
 
-// =========== Create/Edit Admin Check ===========
-
-////Check if the user is an admin of the organization they're trying to create/edit an event for
-//router.all(/(((\d+)\/edit) || (\/create))/, function(req, res, next) {
-//    var orgId = req.query.orgId;
-//    var eventId = req.params[0];
-//    var userId = req.session.user.userId;
-//    
-//    if(orgId) {
-//        members.getIsMemberAdmin(orgId, userId, function onRetrieveAdminStatus(err, result) {
-//            if(!err) {
-//                if(result) {
-//                    next();
-//                }
-//                else {
-//                    req.session.errorMessage = 'You are not an admin of this organization';
-//                    res.redirect('/organizations/' + orgId);
-//                }
-//            }
-//            else {
-//                req.session.errorMessage = 'Something went wrong, please try again';
-//                res.redirect('/organizations/' + orgId);
-//            }
-//        });
-//    }
-//    else if(eventId) {
-//        members.getIsMemberAdmin(orgId, userId, function onRetrieveAdminStatus(err, result) {
-//            if(!err) {
-//                if(result) {
-//                    next();
-//                }
-//                else {
-//                    req.session.errorMessage = 'You are not an admin of this organization';
-//                    res.redirect('/organizations/' + orgId);
-//                }
-//            }
-//            else {
-//                req.session.errorMessage = 'Something went wrong, please try again';
-//                res.redirect('/organizations/' + orgId);
-//            }
-//        });
-//    }
-//});
 
 // =========== Create ===========
 
@@ -161,6 +119,7 @@ router.post(/(\d+)\/edit/, function(req, res, next) {
     }
 });
 
+
 // =========== Comments ===========
 
 //Get comments for an event
@@ -174,5 +133,87 @@ router.post(/(\d+)\/comment/, function(req, res, next) {
     console.log('Post a comment');
     res.redirect('/events/' + req.params[0]);
 });
+
+
+// =========== Opt In / Opt Out of Event ===========
+
+router.get(/((\d+)\/optin)/, function(req, res, next) {
+    var userId = req.session.user.userId;
+    var eventId = req.params[0];
+    
+    attendees.changeAttendanceStatus(userId, eventId, true, function(err, result) {
+        if(!err) {
+            req.session.message = 'You are now attending this event';
+            res.redirect('/events/' + eventId);
+//            res.status(200).send('You are now attending this event');
+//            res.end();
+////            res.send('<p class="message">You are now attending this event</p>');
+        }
+        else {
+            req.session.errorMessage = 'Something went wrong attending this event';
+//            res.status(500).send('Something went wrong attending this event');
+        }
+    });
+});
+
+//router.get(/(\d+)\/optout/, function(req, res, next) {
+//    var userId = req.session.user.userId;
+//    var eventId = req.params[0];
+//    
+//    attendees.changeAttendanceStatus(userId, eventId, false, function(err, result) {
+//        if(!err) {
+//            res.send('<p class="message">You are no longer attending this event</p>');
+//        }
+//        else {
+//            res.send('<p class="errorMessage">Something went wrong with leaving this event</p>');
+//        }
+//    });
+//});
+
+
+// =========== Create/Edit Admin Check ===========
+
+////Check if the user is an admin of the organization they're trying to create/edit an event for
+//router.all(/(((\d+)\/edit) || (\/create))/, function(req, res, next) {
+//    var orgId = req.query.orgId;
+//    var eventId = req.params[0];
+//    var userId = req.session.user.userId;
+//    
+//    if(orgId) {
+//        members.getIsMemberAdmin(orgId, userId, function onRetrieveAdminStatus(err, result) {
+//            if(!err) {
+//                if(result) {
+//                    next();
+//                }
+//                else {
+//                    req.session.errorMessage = 'You are not an admin of this organization';
+//                    res.redirect('/organizations/' + orgId);
+//                }
+//            }
+//            else {
+//                req.session.errorMessage = 'Something went wrong, please try again';
+//                res.redirect('/organizations/' + orgId);
+//            }
+//        });
+//    }
+//    else if(eventId) {
+//        members.getIsMemberAdmin(orgId, userId, function onRetrieveAdminStatus(err, result) {
+//            if(!err) {
+//                if(result) {
+//                    next();
+//                }
+//                else {
+//                    req.session.errorMessage = 'You are not an admin of this organization';
+//                    res.redirect('/organizations/' + orgId);
+//                }
+//            }
+//            else {
+//                req.session.errorMessage = 'Something went wrong, please try again';
+//                res.redirect('/organizations/' + orgId);
+//            }
+//        });
+//    }
+//});
+
 
 module.exports = router;
