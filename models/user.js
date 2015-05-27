@@ -41,3 +41,9 @@ exports.deleteUser = function(userId, callback) {
         callback(err, result);
     });
 }
+
+exports.changeAvatar = function(userId, avatarPath, callback) {
+    dbManager.changeUserAvatar(userId, avatarPath, function onQuery(err, result) {
+        callback(err, result);
+    });
+}

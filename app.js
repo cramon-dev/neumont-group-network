@@ -4,6 +4,7 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+//var busboy = require('connect-busboy');
 var multer = require('multer');
 var sessions = require('express-session');
 //var redis = require('redis');
@@ -29,6 +30,8 @@ app.set('view engine', 'jade');
 // uncomment after placing your favicon in /public
 //app.use(favicon(__dirname + '/public/favicon.ico'));
 app.use(logger('dev'));
+//app.use(busboy());
+//app.use(bodyParser({ uploadDir: './uploads' }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -43,9 +46,9 @@ app.use(sessions({
 //Multer for image uploading
 app.use(multer({
     dest: './uploads/',
-    rename: function (fieldname, filename) {
-        return filename.replace(/\W+/g, '-').toLowerCase() + Date.now();
-    },
+//    rename: function (fieldname, filename) {
+//        return filename.replace(/\W+/g, '-').toLowerCase() + Date.now();
+//    },
     onFileUploadStart: function(file, req, res) {
         console.log(file.fieldname + ' is starting');
     },

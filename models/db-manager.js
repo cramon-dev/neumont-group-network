@@ -164,6 +164,7 @@ exports.getUserByName = function(username, callback) {
     });
 }
 
+//Edit a user's details
 exports.editUserDetails = function(newPassword, newEmail, userId, callback) {
     getConnection(function onConnect(err, connection) {
         if(!err) {
@@ -181,12 +182,28 @@ exports.editUserDetails = function(newPassword, newEmail, userId, callback) {
     });
 }
 
+//Remove a user from the database
 exports.deleteUser = function(userId, callback) {
     getConnection(function onConnect(err, connection) {
         if(!err) {
             connection.query('DELETE FROM users where user_id=\'' + userId + '\'', function(err, result) {
                 console.log('Deleted ' + result.affectedRows + ' rows');
                 callback(err, result);
+
+                connection.release();
+            });
+        }
+        else {
+            callback(err, null);
+        }
+    });
+}
+
+exports.changeUserAvatar = function(userId, avatarPath, callback) {
+    getConnection(function onConnect(err, connection) {
+        if(!err) {
+            connection.query('UPDATE `users` SET `avatar_path`=\'' + avatarPath + '\' WHERE `user_id`=\'' + userId + '\'', function(err, result) {
+                callback(err, result.insertId);
 
                 connection.release();
             });

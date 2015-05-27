@@ -41,15 +41,20 @@ header {
 }
 
 .logo {
-    display: block;
+    display: inline;
     width: 320px;
     height: 180px;
-    background-image: url(/images/logo_v1.png);
+    /* background-image: url(/images/logo_v1.png); */
 }
 
 .logo-text {
-    float: left;
+    /* float: left; */
     text-indent: -500px;
+}
+
+.signedInHeader {
+    display: inline-block;
+    float: right;
 }
 
 footer {

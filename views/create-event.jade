@@ -2,7 +2,7 @@ extends layout
 
 block content
     h1 Create Event
-    form(action="http://localhost:3000/events/create", method="post")
+    form(action="http://localhost:3000/events/create", method="post", enctype="multipart/formdata")
         p Event title:
         input(type="text", name="newEventTitle")
         p Event description:
@@ -12,4 +12,5 @@ block content
         p Can users comment? (This can be changed when editing this event's information.)
         input(type="checkbox", name="canUsersComment")
         input(type="hidden", name="orgId", value="#{orgId}")
+        input(type="file", name="eventImage")
         input(type="submit", value="Submit")

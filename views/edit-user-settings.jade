@@ -8,3 +8,8 @@ block content
             input(type='submit', value='Edit')
         
     a(href="http://localhost:3000/profiles/delete") Delete your Account
+    
+    p Change your Avatar
+    form(action="http://localhost:3000/profiles/upload", method="post", enctype="multipart/form-data")
+        input(type='file', name='userAvatar', accept='image/*')
+        input(type='submit', value='Upload')
