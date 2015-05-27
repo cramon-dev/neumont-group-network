@@ -95,12 +95,14 @@ router.get('/create', function(req, res, next) {
 router.post('/create', function(req, res, next) {
     var orgName = req.body.orgName;
     var orgDesc = req.body.orgDesc;
+    var orgImagePath = req.files.orgImage.path;
     var userId = req.session.user.userId;
     var inputs = [ orgName, orgDesc ];
     var inputError = inputValidator.validateOrgAndEventInput(inputs);
+    console.log('Org Image Path: ' + orgImagePath);
 
     if(!inputError) {
-        organization.addNewOrganization(orgName, orgDesc, userId, function onOrgInsert(err, result) {
+        organization.addNewOrganization(orgName, orgDesc, userId, orgImagePath, function onOrgInsert(err, result) {
             if(!err) {
                 var orgId = result;
                 var userId = req.session.user.userId;

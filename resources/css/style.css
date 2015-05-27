@@ -9,9 +9,12 @@ body {
     background-color: #DDDDDD; /* Alternatively, background color can be #CCCCCC */
     width: 960px; /* I usually go with 960px */
     margin: 0 auto;
+    font-family: 'Lato', sans-serif;
+    /* Tighter spacing between letters? */
+    /* letter-spacing: -0.5px; */
 }
 
-a { 
+a {
     text-decoration: none;
     color: inherit;
 }
@@ -32,7 +35,7 @@ a {
 }
 
 
-/* Header/Footer */
+/* Header */
 
 header {
     background-color: #FFCC00;
@@ -57,10 +60,8 @@ header {
     float: right;
 }
 
-footer {
-    border-top: 1px solid #343434;
-    background-color: #AAAAAA;
-    height: 90px;
+img.userAvatar {
+    max-width: 56px;
 }
 
 
@@ -85,4 +86,13 @@ footer {
     font-size: 32px;
     background-color: #5DBB11;
     box-shadow: 1px 1px 2px #222222;
+}
+
+
+/* Footer */
+
+footer {
+    border-top: 1px solid #343434;
+    background-color: #AAAAAA;
+    height: 90px;
 }

@@ -5,15 +5,16 @@ html
             title= title
         else
             title Neumont Group Network
-        link(rel='stylesheet', href='/stylesheets/style.min.css')
+        link(rel='stylesheet', type='text/css', href='/stylesheets/style.min.css')
+        link(rel='stylesheet', type='text/css', href='http://fonts.googleapis.com/css?family=Lato:400,700,900|Oswald:400,700')
     body
         header
             a(class='logo' href='http://localhost:3000/') 
                 span(class='logo-text') Neumont Group Network
             include ./partials/header-signedin.jade
-        p(class='message') #{message}
-        p(class='errorMessage') #{errorMessage}
         section(class="bodyContent")
+            p(class='message') #{message}
+            p(class='errorMessage') #{errorMessage}
             block content
         footer
             p Created 2015, Christian Ramon

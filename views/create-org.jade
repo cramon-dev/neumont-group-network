@@ -2,7 +2,7 @@ extends layout
 
 block content
     h1 Create Organization
-    form(action="http://localhost:3000/organizations/create", method="post", enctype="multipart/formdata")
+    form(action="http://localhost:3000/organizations/create", method="post", enctype="multipart/form-data")
         p Organization Name:
         input(type="text", name="orgName")
         p Description:

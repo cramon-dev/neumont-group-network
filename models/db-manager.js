@@ -68,7 +68,8 @@ exports.authenticate = function(username, password, callback) {
                     var user;
 
                     if(bcrypt.compareSync(password, rows[0].password)) {
-                        user = { userId: rows[0].user_id, username: username, email: rows[0].email };
+                        user = { userId: rows[0].user_id, username: username, email: rows[0].email, userAvatar: rows[0].avatar_path };
+                        console.log('Inside db avatar path: ' + rows[0].avatar_path);
                     }
                     else {
                         user = null;
@@ -98,8 +99,9 @@ exports.getUserDetails = function(requestedId, callback) {
             connection.query('SELECT * FROM users where user_id=\'' + requestedId + '\' LIMIT 1', function onDBUserRetrieval(err, rows, fields) {
                 //If user exists
                 if(rows[0]) {
-                    var user = { userId: rows[0].user_id, username: rows[0].username, email: rows[0].email };
+                    var user = { userId: rows[0].user_id, username: rows[0].username, email: rows[0].email, userAvatar: rows[0].avatar_path };
                     
+                    console.log('Inside db avatar path: ' + rows[0].avatar_path);
                     callback(err, user);
                 }
                 else {
@@ -202,7 +204,8 @@ exports.deleteUser = function(userId, callback) {
 exports.changeUserAvatar = function(userId, avatarPath, callback) {
     getConnection(function onConnect(err, connection) {
         if(!err) {
-            connection.query('UPDATE `users` SET `avatar_path`=\'' + avatarPath + '\' WHERE `user_id`=\'' + userId + '\'', function(err, result) {
+            var uploadPath = '../' + avatarPath;
+            connection.query('UPDATE `users` SET `avatar_path`=\'' + uploadPath + '\' WHERE `user_id`=\'' + userId + '\'', function(err, result) {
                 callback(err, result.insertId);
 
                 connection.release();
@@ -234,11 +237,14 @@ exports.getOrganization = function(requestedId, callback) {
 }
 
 //Add a new organization
-exports.addNewOrganization = function(orgName, orgDesc, authorId, callback) {
+exports.addNewOrganization = function(orgName, orgDesc, authorId, orgImagePath, callback) {
     getConnection(function onConnect(err, connection) {
         if(!err) {
-            connection.query('INSERT INTO `organizations`(`name`, `description`, `original_author_id`) VALUES (\'' + 
-                             orgName + '\', \'' + orgDesc + '\', \'' + authorId + '\')', function onDBInsertOrg(err, result) {
+            var uploadPath = '../' + orgImagePath;
+            console.log('Inside db manager, before final upload path: ' + orgImagePath);
+            console.log('Inside db manager, final upload path: ' + uploadPath);
+            connection.query('INSERT INTO `organizations`(`name`, `description`, `original_author_id`, `org_image_path`) VALUES (\'' + 
+                             orgName + '\', \'' + orgDesc + '\', \'' + authorId + '\', \'' + uploadPath + '\')', function onDBInsertOrg(err, result) {
                 //If insert was successful
                 if(result) {
                     callback(err, result.insertId);

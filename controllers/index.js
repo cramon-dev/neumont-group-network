@@ -9,7 +9,8 @@ router.get('/', function(req, res, next) {
         req.session.message = null;
         req.session.errorMessage = null;
         
-        res.render('home', { userId: req.session.user.userId, username: req.session.user.username, message: message, errorMessage: errorMessage });
+        res.render('home', { userId: req.session.user.userId, username: req.session.user.username, 
+                            userAvatar: req.session.user.userAvatar, message: message, errorMessage: errorMessage });
     }
     else {
         res.render('index');

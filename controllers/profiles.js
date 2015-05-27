@@ -82,28 +82,16 @@ router.get('/delete', function(req, res, next) {
 });
 
 router.post('/upload', function(req, res, next) {
-//    console.log('Request busboy: ' + req.busboy);
-//    console.log('Request busboy file: ' + req.busboy.userAvatar);
-//    var fstream;
-//    req.pipe(req.busboy);
-//    req.busboy.on('file', function (fieldname, file, filename) {
-//        console.log("Uploading: " + filename); 
-//        fstream = fs.createWriteStream(__dirname + '/uploads/' + filename);
-//        file.pipe(fstream);
-//        fstream.on('close', function () {
-//            res.send('success uploading');
-//            res.redirect('/');
-//        });
-//    });  
     if (req.files) { 
-		console.log(util.inspect(req.files));
 		if (req.files.size === 0) {
             return next(new Error("Select a file?"));
 		}
+        
 		fs.exists(req.files.userAvatar.path, function(exists) { 
 			if(exists) {
                 user.changeAvatar(req.session.user.userId, req.files.userAvatar.name, function(err, result) {
                     if(!err) {
+                        req.session.user.userAvatar = '../' + req.files.userAvatar.name;
                         req.session.message = 'Changed your avatar';
                         res.redirect('/');
                     }
@@ -112,16 +100,13 @@ router.post('/upload', function(req, res, next) {
                         res.redirect('/profiles/edit');
                     }
                 });
-                
-//				res.end("Got your file!"); 
 			} 
             else {
                 req.session.errorMessage = 'Your file doesn\'t exist';
                 res.redirect('/');
-//				res.end("Doesn't exist."); 
 			} 
-		}); 
-	} 
+		});
+	}
 });
 
 module.exports = router;

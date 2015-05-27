@@ -6,8 +6,8 @@ exports.getOrganization = function(orgId, callback) {
     });
 }
 
-exports.addNewOrganization = function(orgName, orgDesc, authorId, callback) {
-    dbManager.addNewOrganization(orgName, orgDesc, authorId, function onOrgInsert(err, result) {
+exports.addNewOrganization = function(orgName, orgDesc, authorId, orgImagePath, callback) {
+    dbManager.addNewOrganization(orgName, orgDesc, authorId, orgImagePath, function onOrgInsert(err, result) {
         callback(err, result);
     });
 }
