@@ -4,6 +4,7 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var multer = require('multer');
 var sessions = require('express-session');
 //var redis = require('redis');
 //var client = redis.createClient();
@@ -37,6 +38,23 @@ app.use(sessions({
     cookie: { expires: (Date.now() + hour), maxAge: hour }, //in milliseconds
     resave: false,
     saveUninitialized: true
+}));
+
+//Multer for image uploading
+app.use(multer({
+    dest: './uploads/',
+    rename: function (fieldname, filename) {
+        return filename.replace(/\W+/g, '-').toLowerCase() + Date.now();
+    },
+    onFileUploadStart: function(file, req, res) {
+        console.log(file.fieldname + ' is starting');
+    },
+    onFileUploadData: function (file, data, req, res) {
+        console.log(data.length + ' of ' + file.fieldname + ' arrived');
+    },
+    onFileUploadComplete: function (file, req, res) {
+        console.log(file.fieldname + ' uploaded to  ' + file.path);
+    }
 }));
 
 app.use(function(req, res, next) {

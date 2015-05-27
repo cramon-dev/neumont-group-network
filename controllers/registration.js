@@ -13,25 +13,26 @@ router.post('/', function(req, res, next) {
     var username = req.body.username;
     var password = req.body.password;
     var email = req.body.email;
-    console.log('Username length: ' + username.length);
     var inputs = [ username, password, email ];
     var inputError = inputValidator.validateInput(inputs);
 
     if(!inputError) {
-        user.registerNewUser(username, password, email, function(err, result) {
-            if(!err) {
-                req.session.user = { userId: result, username: username, email: email };
-                res.redirect('/');
-            }
-            else {
-                if(err.message.match('ER_DUP_ENTRY')) {
-                    res.render('register', { errorMessage: 'That username or email has already been taken' });
-                }
-                else {
-                    res.render('register', { errorMessage: err.message });
-                }
-            }
-        });
+//        user.registerNewUser(username, password, email, function(err, result) {
+//            if(!err) {
+//                req.session.user = { userId: result, username: username, email: email };
+//                res.redirect('/');
+//            }
+//            else {
+//                if(err.message.match('ER_DUP_ENTRY')) {
+//                    res.render('register', { errorMessage: 'That username or email has already been taken' });
+//                }
+//                else {
+//                    res.render('register', { errorMessage: err.message });
+//                }
+//            }
+//        });
+        console.log('Request body: ' + req.body);
+        res.send('success uploading');
     }
     else {
         res.render('register', { errorMessage: inputError.message });

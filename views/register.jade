@@ -2,9 +2,10 @@ extends layout
 
 block content
     h1 Register
-        form(action='http://localhost:3000/register', method='post')
+        form(action='http://localhost:3000/register', method='post', enctype='multipart/formdata')
             input(type='text', name='username', placeholder='Your username')
             input(type='password', name='password', placeholder='Your password')
             input(type='password', name='passwordConfirm', placeholder='Confirm password')
             input(type='text', name='email', placeholder='Your email')
+            input(type='file', name='userAvatar')
             input(type='submit', value='Register')

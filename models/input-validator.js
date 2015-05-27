@@ -19,8 +19,6 @@ exports.validateString = function(inputString) {
 exports.validateInput = function(inputStringList) {
     for(string in inputStringList) {
         var item = inputStringList[string];
-        console.log('Item: ' + item);
-        console.log('Item length: ' + item.length);
         //[~!#$%^&*='"(){}\[\]\\\/\<\>]/ || /\s*
         //[~!#$%^&*='"(){}\[\]\\\/\<\>] || (\s*)
         if(item.match(/[~!#$%^&*='"(){}\[\]\\\/\<\>]/ || /\s*/)) {

@@ -8,9 +8,12 @@ html
         link(rel='stylesheet', href='/stylesheets/style.min.css')
     body
         header
+            a(class='logo' href='http://localhost:3000/') 
+                span(class='logo-text') Neumont Group Network
             include ./partials/header-signedin.jade
-        p(class="message") #{message}
-        p(class="errorMessage") #{errorMessage}
-        block content
+        p(class='message') #{message}
+        p(class='errorMessage') #{errorMessage}
+        section(class="bodyContent")
+            block content
         footer
             p Created 2015, Christian Ramon

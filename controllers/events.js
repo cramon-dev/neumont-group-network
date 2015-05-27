@@ -137,38 +137,35 @@ router.post(/(\d+)\/comment/, function(req, res, next) {
 
 // =========== Opt In / Opt Out of Event ===========
 
-router.get(/((\d+)\/optin)/, function(req, res, next) {
+router.get(/((\d+)\/optin)/ || /(\d+)\/optout/, function(req, res, next) {
     var userId = req.session.user.userId;
     var eventId = req.params[0];
     
-    attendees.changeAttendanceStatus(userId, eventId, true, function(err, result) {
-        if(!err) {
-            req.session.message = 'You are now attending this event';
-            res.redirect('/events/' + eventId);
-//            res.status(200).send('You are now attending this event');
-//            res.end();
-////            res.send('<p class="message">You are now attending this event</p>');
-        }
-        else {
-            req.session.errorMessage = 'Something went wrong attending this event';
-//            res.status(500).send('Something went wrong attending this event');
-        }
-    });
+    if(req.url.match('optin')) {
+        attendees.changeAttendanceStatus(userId, eventId, true, function(err, result) {
+            if(!err) {
+                req.session.message = 'You are now attending this event';
+                res.redirect('/events/' + eventId);
+            }
+            else {
+                req.session.errorMessage = 'Something went wrong attending this event';
+                res.redirect('/events/' + eventId);
+            }
+        });
+    }
+    else {
+        attendees.changeAttendanceStatus(userId, eventId, false, function(err, result) {
+            if(!err) {
+                req.session.message = 'You are no longer attending this event';
+                res.redirect('/events/' + eventId);
+            }
+            else {
+                req.session.errorMessage = 'Something went wrong leaving this event';
+                res.redirect('/events/' + eventId);
+            }
+        });
+    }
 });
-
-//router.get(/(\d+)\/optout/, function(req, res, next) {
-//    var userId = req.session.user.userId;
-//    var eventId = req.params[0];
-//    
-//    attendees.changeAttendanceStatus(userId, eventId, false, function(err, result) {
-//        if(!err) {
-//            res.send('<p class="message">You are no longer attending this event</p>');
-//        }
-//        else {
-//            res.send('<p class="errorMessage">Something went wrong with leaving this event</p>');
-//        }
-//    });
-//});
 
 
 // =========== Create/Edit Admin Check ===========
