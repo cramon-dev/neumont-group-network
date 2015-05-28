@@ -3,8 +3,10 @@ var router = express.Router();
 var inputValidator = require('../models/input-validator.js');
 var user = require('../models/user.js');
 
-/* POST credentials */
-//Is this adhering to REST? How can I better authenticate a user and make sure their credentials are safe?
+router.get('/', function(req, res, next) {
+    res.render('signin');
+});
+
 router.post('/', function(req, res, next) {
     var username = req.body.username;
     var password = req.body.password;

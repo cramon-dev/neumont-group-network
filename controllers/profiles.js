@@ -87,6 +87,8 @@ router.post('/upload', function(req, res, next) {
             return next(new Error("Select a file?"));
 		}
         
+        console.log('User Image Path: ' + req.files.userAvatar.path);
+        console.log('User Image Name: ' + req.files.userAvatar.name);
 		fs.exists(req.files.userAvatar.path, function(exists) { 
 			if(exists) {
                 user.changeAvatar(req.session.user.userId, req.files.userAvatar.name, function(err, result) {

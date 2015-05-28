@@ -1,8 +1,10 @@
 if locals.session.user
     section(class="signedInHeader")
-        a(href="http://localhost:3000/") Home
         p= session.user.username
-        img(class="userAvatar", src= session.user.userAvatar)
+        if session.user.userAvatar
+            img(class="userAvatar", src= session.user.userAvatar)
+        else
+            img(class="userAvatar", src="../images/default_avatar.png")
         a(href='http://localhost:3000/signout') Sign Out
         section(class="searchFormSection")
             form(action="http://localhost:3000/search", method="get")

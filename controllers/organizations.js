@@ -13,18 +13,28 @@ var inputValidator = require('../models/input-validator.js');
 router.get(/^\/(\d+)\/?$/, function(req, res, next) {
     var orgId = req.params[0];
     
+    //Goddamn son. How did you let it get this bad.
     organization.getOrganization(orgId, function onOrgRetrieval(err, orgData) {
         if(!err) {
             if(orgData) {
                 members.getOrgMemberDetails(orgId, function onMemberDetailsRetrieval(err, listOfMemberDetails) {
                     if(!err) {
-                        orgData.listOfUsers = listOfMemberDetails;
-                        orgData.errorMessage = req.session.errorMessage;
-                        orgData.message = req.session.message;
-                        req.session.errorMessage = null;
-                        req.session.message = null;
-                        
-                        res.render('organization', orgData);
+                        events.getListOfEvents(orgId, function onListOfEventsRetrieval(err, listOfEvents) {
+                            if(!err && listOfEvents) {
+                                orgData.listOfEvents = listOfEvents;
+                                orgData.listOfUsers = listOfMemberDetails;
+                                orgData.errorMessage = req.session.errorMessage;
+                                orgData.message = req.session.message;
+                                req.session.errorMessage = null;
+                                req.session.message = null;
+
+                                res.render('organization', orgData);
+                            }
+                            else {
+                                orgData.errorMessage = 'Something went wrong displaying a list of events';
+                                res.render('organization', orgData);
+                            }
+                        });
                     }
                     else {
                         req.session.errorMessage = err.message;
@@ -95,11 +105,11 @@ router.get('/create', function(req, res, next) {
 router.post('/create', function(req, res, next) {
     var orgName = req.body.orgName;
     var orgDesc = req.body.orgDesc;
-    var orgImagePath = req.files.orgImage.path;
+    var orgImagePath = req.files.orgImage.name;
     var userId = req.session.user.userId;
     var inputs = [ orgName, orgDesc ];
     var inputError = inputValidator.validateOrgAndEventInput(inputs);
-    console.log('Org Image Path: ' + orgImagePath);
+    console.log('Org Image Name: ' + orgImagePath);
 
     if(!inputError) {
         organization.addNewOrganization(orgName, orgDesc, userId, orgImagePath, function onOrgInsert(err, result) {

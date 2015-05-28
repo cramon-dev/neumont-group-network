@@ -494,10 +494,10 @@ exports.editEventDetails = function(newEventTitle, newEventDesc, newEventStartDa
 }
 
 //Get all events posted to a specific organization
-exports.retrieveAllEventsByOrgID = function(orgId, callback) {
+exports.retrieveAllEventsByOrgId = function(orgId, callback) {
     getConnection(function onConnect(err, connection) {
         if(!err) {
-            connection.query('SELECT * FROM events where org_id=\'' + orgId + '\'', function(err, rows, fields) {
+            connection.query('SELECT * FROM events where org_id=\'' + orgId + '\'', function onRetrieveEventsByOrgId(err, rows, fields) {
                 callback(err, rows);
                 
                 connection.release();
@@ -509,11 +509,58 @@ exports.retrieveAllEventsByOrgID = function(orgId, callback) {
     });
 }
 
+//Change a user's attendance status to an event
 exports.changeAttendanceStatus = function(userId, eventId, isAttending, callback) {
     getConnection(function onConnect(err, connection) {
         if(!err) {
-            connection.query('INSERT INTO `attendees`(`is_attending`, `user_id`, `event_id`) VALUES (\'' + isAttending + '\', \'' + userId + '\', \'' + eventId + '\')', function(err, rows, fields) {
+            connection.query('INSERT INTO `attendees`(`is_attending`, `user_id`, `event_id`) VALUES (\'' 
+                             + isAttending + '\', \'' + userId + '\', \'' + eventId + '\')', function onChangeAttendanceStatus(err, rows, fields) {
                 callback(err, rows);
+                
+                connection.release();
+            });
+        }
+        else {
+            callback(err, null);
+        }
+    });
+}
+
+//Get a list of comments posted to a particular event
+exports.getComments = function(eventId, callback) {
+    getConnection(function onConnect(err, connection) {
+        if(!err) {
+            connection.query('SELECT * FROM comments INNER JOIN users ON '
+                             + 'comments.comment_author_id = users.user_id '
+                             + ' where event_id=\'' + eventId + '\'', function onRetrieveCommentList(err, rows, fields) {
+                var listOfComments = [];
+                for(var result in rows) {
+                    listOfComments.push({ userId: rows[result].user_id, username: rows[result].username, userAvatar: rows[result].avatar_path, 
+                                            message: rows[result].message, timePosted: rows[result].time_posted });
+                }
+                callback(err, listOfComments);
+                
+                connection.release();
+            });
+        }
+        else {
+            callback(err, null);
+        }
+    });
+}
+
+//Add a new comment
+exports.addComment = function(userId, eventId, comment, callback) { 
+    getConnection(function onConnect(err, connection) {
+        if(!err) {
+            connection.query('INSERT INTO `comments`(`comment_author_id`, `message`, `event_id`) VALUES (\'' 
+                             + userId + '\', \'' + comment + '\', \'' + eventId + '\')', function onAddComment(err, result) {
+                if(!err && result) {
+                    callback(null, result.insertId);
+                }
+                else {
+                    callback(err, null);
+                }
                 
                 connection.release();
             });
@@ -527,6 +574,7 @@ exports.changeAttendanceStatus = function(userId, eventId, isAttending, callback
 
 // =========== Messages ===========
 
+//Create a conversation between two people
 exports.createConversation = function(senderId, receiverId, callback) {
     getConnection(function onConnect(err, connection) {
         if(!err) {
@@ -542,6 +590,7 @@ exports.createConversation = function(senderId, receiverId, callback) {
     });
 }
 
+//Record a message between two people
 exports.replyToConversation = function(senderId, receiverId, conversationId, messageReply, timeSent, callback) {
     getConnection(function onConnect(err, connection) {
         if(!err) {

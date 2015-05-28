@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var events = require('../models/event.js');
+var comments = require('../models/comment.js');
 var members = require('../models/member.js');
 var attendees = require('../models/attendee.js');
 var inputValidator = require('../models/input-validator.js');
@@ -11,20 +12,23 @@ router.get(/^\/(\d+)\/?$/, function(req, res, next) {
     var eventId = req.params[0];
     
     events.getEventDetails(eventId, function(err, eventDetails) {
-        if(!err) {
-            if(eventDetails) {                
+        if(!err && eventDetails) {
+                comments.getComments(eventId, function(err, listOfComments) {
+                    if(!err && listOfComments) {
+                        eventDetails.listOfComments = listOfComments;
+                        eventDetails.message = req.session.message;
+                        eventDetails.errorMessage = req.session.errorMessage;
+                        req.session.message = null;
+                        req.session.errorMessage = null;
+
+                        res.render('event', { eventDetails: eventDetails });
+                    }
+                    else {
+                        req.session.errorMessage = 'Error displaying comments';
+                        res.render('event', { eventDetails: eventDetails });
+                    }
+                });
 //                var detailsToPush = { eventId: eventDetails.event_id, eventTitle: eventDetails. };
-                eventDetails.message = req.session.message;
-                eventDetails.errorMessage = req.session.errorMessage;
-                req.session.message = null;
-                req.session.errorMessage = null;
-                
-                res.render('event', { eventDetails: eventDetails });
-            }
-            else {
-                req.session.errorMessage = 'That event doesn\'t exist';
-                res.redirect('/');
-            }
         }
         else {
             req.session.errorMessage = err;
@@ -122,16 +126,21 @@ router.post(/(\d+)\/edit/, function(req, res, next) {
 
 // =========== Comments ===========
 
-//Get comments for an event
-router.get(/(\d+)\/comment/, function(req, res, next) {
-    console.log('Get some comments');
-    res.redirect('/events/' + req.params[0]);
-});
 
 //Post a comment
 router.post(/(\d+)\/comment/, function(req, res, next) {
-    console.log('Post a comment');
-    res.redirect('/events/' + req.params[0]);
+    var eventId = req.params[0];
+    var userId = req.session.user.userId;
+    
+    comments.addComment(eventId, userId, req.body.comment, function(err, result) {
+        if(!err && result) {
+            res.redirect('/events/' + eventId);
+        }
+        else {
+            req.session.errorMessage = err.message;
+            res.redirect('/events/' + eventId);
+        }
+    });
 });
 
 
@@ -144,10 +153,12 @@ router.get(/((\d+)\/optin)/ || /(\d+)\/optout/, function(req, res, next) {
     if(req.url.match('optin')) {
         attendees.changeAttendanceStatus(userId, eventId, true, function(err, result) {
             if(!err) {
+                console.log('Success attending event');
                 req.session.message = 'You are now attending this event';
                 res.redirect('/events/' + eventId);
             }
             else {
+                console.log('Error attending event');
                 req.session.errorMessage = 'Something went wrong attending this event';
                 res.redirect('/events/' + eventId);
             }
@@ -156,10 +167,12 @@ router.get(/((\d+)\/optin)/ || /(\d+)\/optout/, function(req, res, next) {
     else {
         attendees.changeAttendanceStatus(userId, eventId, false, function(err, result) {
             if(!err) {
+                console.log('Success leaving event');
                 req.session.message = 'You are no longer attending this event';
                 res.redirect('/events/' + eventId);
             }
             else {
+                console.log('Error leaving event');
                 req.session.errorMessage = 'Something went wrong leaving this event';
                 res.redirect('/events/' + eventId);
             }

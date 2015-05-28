@@ -20,3 +20,9 @@ exports.getEventDetails = function(eventId, callback) {
         callback(err, eventDetails);
     });
 }
+
+exports.getListOfEvents = function(orgId, callback) {
+    dbManager.retrieveAllEventsByOrgId(orgId, function onGetListOfEvents(err, listOfEvents) {
+        callback(err, listOfEvents);
+    });
+}

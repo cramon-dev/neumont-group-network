@@ -67,7 +67,7 @@ app.use(function(req, res, next) {
 });
 
 //Catch all routes except sign in and register and check if user is logged in
-app.all(/\/(?!signin)(?!register)(\w+)/, function(req, res, next) {
+app.all(/\/(?!signin)(?!signout)(?!register)(\w+)/, function(req, res, next) {
     if(req.session.user) {
         console.log("Found valid session");
         next();

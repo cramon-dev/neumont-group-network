@@ -4,7 +4,7 @@ block content
     h1 Neumont Group Network
     p Welcome to the Neumont Group Network! With this website, students of Neumont University finally have a centralized site where they can organize student-run events and keep up to date with their clubs and orders.
     p Sign In
-    form(action='http://localhost:3000/signin', method='post')
+    form(class='signInForm', action='http://localhost:3000/signin', method='post')
             input(type='text', name='username', placeholder='Username')
             input(type='password', name='password', placeholder='Password')
             input(type='submit', value='Sign in')

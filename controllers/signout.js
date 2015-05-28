@@ -10,7 +10,8 @@ router.get('/', function(req, res, next) {
                 res.render('index', { message: message });
             }
             else {
-                res.render('index', { message: 'Successfully signed out, see you soon!' });
+                res.redirect('/');
+//                res.render('index', { message: 'Successfully signed out, see you soon!' });
             }
         }
         else {

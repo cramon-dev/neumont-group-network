@@ -12,17 +12,19 @@ block content
     a(href="http://localhost:3000/events/#{eventDetails.event_id}/optin") Attend this Event
     h3 Comments
     if locals.eventDetails.can_users_comment
-        form(action="http://localhost:3000/events/#{eventDetails.event_id}/comment", method="post")
-            p Add a Comment
-            input(type="text", name="commentMessage")
-            input(type="submit", value="Add Comment")
-        if locals.eventDetails.comments
-            each comment in comments
-                li
-                    h3= comment.author_username
-                    p= comment.message
+        if locals.eventDetails.listOfComments
+            ul
+                each comment in eventDetails.listOfComments
+                    li
+                        img(class='userCommentAvatar', src= comment.userAvatar)
+                        h3= comment.username
+                        p= comment.message
         else
             p No comments found for this event
+        form(action="http://localhost:3000/events/#{eventDetails.event_id}/comment", method="post")
+            p Add a Comment
+            input(type="text", name="comment")
+            input(type="submit", value="Add Comment")
     else
         p Comments are currently disabled for this event
         
