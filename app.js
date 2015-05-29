@@ -4,11 +4,8 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-//var busboy = require('connect-busboy');
 var multer = require('multer');
 var sessions = require('express-session');
-//var redis = require('redis');
-//var client = redis.createClient();
 
 var app = express();
 var hour = 1000 * 60 * 60;
@@ -20,7 +17,7 @@ var registration = require('./controllers/registration');
 var organizations = require('./controllers/organizations');
 var events = require('./controllers/events');
 var search = require('./controllers/search');
-var profiles = require('./controllers/profiles');
+var users = require('./controllers/users');
 var messages = require('./controllers/messages');
 
 // view engine setup
@@ -30,8 +27,6 @@ app.set('view engine', 'jade');
 // uncomment after placing your favicon in /public
 //app.use(favicon(__dirname + '/public/favicon.ico'));
 app.use(logger('dev'));
-//app.use(busboy());
-//app.use(bodyParser({ uploadDir: './uploads' }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -90,7 +85,7 @@ app.use('/register', registration);
 app.use('/organizations', organizations);
 app.use('/events', events);
 app.use('/search', search);
-app.use('/profiles', profiles);
+app.use('/users', users);
 app.use('/mailbox', messages);
 
 // catch 404 and forward to error handler

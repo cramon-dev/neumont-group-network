@@ -99,7 +99,7 @@ router.post('/upload', function(req, res, next) {
                     }
                     else {
                         req.session.message = 'Something went wrong changing your avatar';
-                        res.redirect('/profiles/edit');
+                        res.redirect('/users/edit');
                     }
                 });
 			} 

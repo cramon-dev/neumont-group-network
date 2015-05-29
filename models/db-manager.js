@@ -629,12 +629,13 @@ exports.getConversation = function(senderId, receiverId, callback) {
     });
 }
 
+//Oh boy..
 exports.getConvosAndReplies = function(conversationId, callback) {
     getConnection(function onConnect(err, connection) {
         if(!err) {
             connection.query('SELECT * FROM message_replies INNER JOIN conversations ON '
                             + 'conversations.conversation_id = message_replies.conversation_id '
-                             + 'WHERE message_replies.conversation_id = \'' + conversationId + '\'', function(err, rows, fields) {
+                              + 'WHERE message_replies.conversation_id = \'' + conversationId + '\'', function(err, rows, fields) {
                 if(rows) {
                     var toReturn = [];
                     for(var row in rows) {

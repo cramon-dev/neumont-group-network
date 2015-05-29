@@ -1,3 +1,14 @@
+/* 
+    Colors:
+    
+    Yellow: #FFCC00
+    Orange: #FFC224
+    Blue: #104BA9
+    
+    Button Green(experimental, try something dull-ish?): #6FBA11;
+    Button Green(experimental): #5FDB11;
+*/
+
 /* Universal Styling */
 
 * {
@@ -16,7 +27,7 @@ body {
 
 a {
     text-decoration: none;
-    color: inherit;
+    color: #104BA9;
 }
 
 li {
@@ -88,7 +99,7 @@ img.userAvatar {
     padding: 10px 15px 10px 15px;
     margin: 0 auto;
     font-size: 32px;
-    background-color: #5DBB11;
+    background-color: #FFC224;
     box-shadow: 1px 1px 2px #222222;
 }
 

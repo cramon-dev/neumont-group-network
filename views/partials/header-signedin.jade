@@ -5,6 +5,8 @@ if locals.session.user
             img(class="userAvatar", src= session.user.userAvatar)
         else
             img(class="userAvatar", src="../images/default_avatar.png")
+        a(href="http://localhost:3000/users/edit") Edit your Settings
+        a(href="http://localhost:3000/mailbox") Your Inbox
         a(href='http://localhost:3000/signout') Sign Out
         section(class="searchFormSection")
             form(action="http://localhost:3000/search", method="get")
