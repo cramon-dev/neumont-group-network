@@ -2,7 +2,6 @@ var express = require('express');
 var router = express.Router();
 var organization = require('../models/organization.js');
 var members = require('../models/member.js');
-var users = require('../models/user.js');
 var events = require('../models/event.js');
 var inputValidator = require('../models/input-validator.js');
 
@@ -13,7 +12,7 @@ var inputValidator = require('../models/input-validator.js');
 router.get(/^\/(\d+)\/?$/, function(req, res, next) {
     var orgId = req.params[0];
     
-    //Goddamn son. How did you let it get this bad.
+    //Goddamn son. How did you let it get this bad. How the mighty have fallen.
     organization.getOrganization(orgId, function onOrgRetrieval(err, orgData) {
         if(!err) {
             if(orgData) {
@@ -105,11 +104,10 @@ router.get('/create', function(req, res, next) {
 router.post('/create', function(req, res, next) {
     var orgName = req.body.orgName;
     var orgDesc = req.body.orgDesc;
-    var orgImagePath = req.files.orgImage.name;
+    var orgImagePath = req.files.orgImage ? req.files.orgImageName : 'images/sample_group_avatar.png';
     var userId = req.session.user.userId;
     var inputs = [ orgName, orgDesc ];
     var inputError = inputValidator.validateOrgAndEventInput(inputs);
-    console.log('Org Image Name: ' + orgImagePath);
 
     if(!inputError) {
         organization.addNewOrganization(orgName, orgDesc, userId, orgImagePath, function onOrgInsert(err, result) {

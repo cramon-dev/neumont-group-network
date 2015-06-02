@@ -2,14 +2,15 @@ extends layout
 
 block content
     h1 Edit your Account
-        form(action="http://localhost:3000/profiles/edit", method='post')
-            input(type='password', name='newPassword', placeholder='New password')
-            input(type='text', name='newEmail', placeholder='New email')
-            input(type='submit', value='Edit')
+        form(class="editUserForm", action="http://localhost:3000/profiles/edit", method='post')
+            input(type="password", name="newPassword", placeholder="New password")
+            input(type="password", name="confirmNewPass", placeholder="Confirm new password")
+            input(type="text", name="newEmail", placeholder="New email")
+            input(type="submit", value="Edit Details")
         
     a(href="http://localhost:3000/profiles/delete") Delete your Account
     
     p Change your Avatar
     form(action="http://localhost:3000/profiles/upload", method="post", enctype="multipart/form-data")
-        input(type='file', name='userAvatar', accept='image/*')
-        input(type='submit', value='Upload')
+        input(type="file", name="userAvatar", accept="image/*")
+        input(type="submit", value="Upload")

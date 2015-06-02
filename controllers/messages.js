@@ -11,10 +11,10 @@ router.get('/', function(req, res, next) {
     
     messages.getConvosAndReplies(userId, function(err, listOfConversations) {
         if(!err && listOfConversations) {
-            for(var convo in conversations) {
-                
-            }
-//            res.render('mailbox', { inbox: listOfConversations });
+//            for(var convo in conversations) {
+//                
+//            }
+            res.render('mailbox', { inbox: listOfConversations });
         }
         else {
             res.render('mailbox', { errorMessage: err.message });
@@ -55,6 +55,8 @@ router.post('/send', function(req, res, next) {
             }
         }
         else {
+            console.log('Error getting user by name?');
+            console.log('Error sending message: ' + err);
             req.session.errorMessage = err.message;
             res.redirect('/mailbox');
         }

@@ -1,6 +1,10 @@
 extends layout
 
 block content
+    if locals.event_image_path
+        img(class="eventImage", src= event_image_path)
+    else
+        img(class="eventImage", src="../images/sample_group_avatar.png")
     h1 #{eventDetails.title}
     h4 Overview
     p #{eventDetails.description}
@@ -16,7 +20,7 @@ block content
             ul
                 each comment in eventDetails.listOfComments
                     li
-                        img(class='userCommentAvatar', src= comment.userAvatar)
+                        img(class="userCommentAvatar", src= comment.userAvatar)
                         h3= comment.username
                         p= comment.message
         else

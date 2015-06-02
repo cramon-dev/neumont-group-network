@@ -95,10 +95,8 @@ router.post(/(\d+)\/edit/, function(req, res, next) {
     var newTitle = req.body.newEventTitle;
     var newDesc = req.body.newEventDesc;
     var newStartDate = req.body.newEventStartDate;
-    var canUsersComment = false;
-    if(req.body.canUsersComment) {
-        canUsersComment = true;
-    }
+    var canUsersComment = req.body.canUsersComment ? true : false;
+    var eventImagePath = req.body.eventImage ? req.body.eventImage.name : 'images/sample_group_avatar.png';
     var inputError = inputValidator.validateOrgAndEventInput([ newTitle, newDesc ]);
     
     if(!inputError) {

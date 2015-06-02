@@ -241,8 +241,6 @@ exports.addNewOrganization = function(orgName, orgDesc, authorId, orgImagePath, 
     getConnection(function onConnect(err, connection) {
         if(!err) {
             var uploadPath = '../' + orgImagePath;
-            console.log('Inside db manager, before final upload path: ' + orgImagePath);
-            console.log('Inside db manager, final upload path: ' + uploadPath);
             connection.query('INSERT INTO `organizations`(`name`, `description`, `original_author_id`, `org_image_path`) VALUES (\'' + 
                              orgName + '\', \'' + orgDesc + '\', \'' + authorId + '\', \'' + uploadPath + '\')', function onDBInsertOrg(err, result) {
                 //If insert was successful
@@ -457,12 +455,13 @@ exports.getEventDetails = function(eventId, callback) {
 }
 
 //Add a new event
-exports.addNewEvent = function(eventTitle, eventDesc, eventStartDate, orgId, canUsersComment, callback) {
+exports.addNewEvent = function(eventTitle, eventDesc, eventStartDate, orgId, canUsersComment, eventImagePath, callback) {
     getConnection(function onConnect(err, connection) {
         if(!err) {
             var convertedCanUsersComment = canUsersComment ? 1 : 0;
-            connection.query('INSERT INTO `events`(`title`, `description`, `start_date`, `org_id`, `can_users_comment`) VALUES (\'' +
-                                eventTitle + '\', \'' + eventDesc + '\', \'' + eventStartDate + '\', \'' + orgId + '\', \'' + convertedCanUsersComment + '\')', function onDBEventInsert(err, result) {
+            connection.query('INSERT INTO `events`(`title`, `description`, `start_date`, `org_id`, `can_users_comment`, `event_image_path`)'
+                             + 'VALUES (\'' + eventTitle + '\', \'' + eventDesc + '\', \'' + eventStartDate + '\', \'' 
+                                + orgId + '\', \'' + convertedCanUsersComment + '\', \'' + eventImagePath + '\')', function onDBEventInsert(err, result) {
                 callback(err, result.insertId);
                 
                 connection.release();
@@ -629,7 +628,7 @@ exports.getConversation = function(senderId, receiverId, callback) {
     });
 }
 
-//Oh boy..
+//oh god oh man
 exports.getConvosAndReplies = function(conversationId, callback) {
     getConnection(function onConnect(err, connection) {
         if(!err) {

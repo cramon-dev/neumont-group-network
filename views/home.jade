@@ -1,22 +1,21 @@
 extends layout
 
 block content
-    h1 Welcome, #{username}!
+    section(class="memberOfOrgsSection")
+        h3 Organizations you're a member of:
+            if locals.listOfOrgs
+                p Member of some org
+                a(href="http://localhost:3000/organizations/create") Create an Organization
+            else
+                p You're not a member of any organizations! Why not 
+                span 
+                    a(href="http://localhost:3000/organizations/create") create one?
     
-    h3 Organizations you're a member of:
-        if locals.listOfOrgs
-            p Member of some org
-        else
-            p You're not a member of any organizations! Why not 
-            span 
-                a(href="http://localhost:3000/organizations/create") create one?
-    
-    a(href="http://localhost:3000/organizations/create") Create an Organization
-    
-    h3 Events you're attending:
-        if locals.listOfEvents
-            p Attending some event
-        else
-            p You don't seem to be attending any events. Why don't you 
-            span 
-                a(href="http://localhost:3000/events") check some out?
+    section(class="eventsAttendingSection")
+        h3 Events you're attending:
+            if locals.listOfEvents
+                p Attending some event
+            else
+                p You don't seem to be attending any events. Why don't you 
+                span 
+                    a(href="http://localhost:3000/events") check some out?

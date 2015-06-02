@@ -12,7 +12,7 @@ exports.authenticate = function(username, password, callback) {
     });
 }
 
-exports.getSingleUserDetails = function(userId, callback) {
+exports.getUserById = function(userId, callback) {
     dbManager.getUserDetails(userId, function onQuery(err, userDetails) {
         callback(err, userDetails);
     });

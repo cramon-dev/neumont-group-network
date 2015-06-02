@@ -1,38 +1,43 @@
 extends layout
 
 block content
-    img(class="orgImage", src= org_image_path)
+    section(class="orgInfoOverview")
+        if locals.org_image_path
+                img(class="orgImage", src= org_image_path)
+            else
+                img(class="orgImage", src="../images/sample_group_avatar.png")
+
+        h1 #{name}
+        p #{description}
+        p Created by: #{original_author_id}
     
-    h1 #{name}
+    section(class="membersSection")
+        h4 Members
+        if locals.listOfUsers
+            each val in listOfUsers
+                li
+                    a(href="http://localhost:3000/profiles/#{val.user_id}")= val.username
     
-    p #{description}
+    section(class="eventsSection")
+        h4 Events
+        if locals.listOfEvents
+            each val in listOfEvents
+                li 
+                    a(href="http://localhost:3000/events/#{val.event_id}")= val.title
+        else
+            p No events posted
     
-    p Original Author ID: #{original_author_id}
+    section(class="joinLeaveSection")
+        if locals.isMember
+            a(href="http://localhost:3000/organizations/#{organization_id}/leave") Leave this Organization
+        else
+            a(href="http://localhost:3000/organizations/#{organization_id}/join") Join this Organization
     
-    h4 Members
-    if locals.listOfUsers
-        each val in listOfUsers
-            li
-                a(href="http://localhost:3000/profiles/#{val.user_id}")= val.username
-            
-    h4 Events
-    if locals.listOfEvents
-        each val in listOfEvents
-            li 
-                a(href="http://localhost:3000/events/#{val.event_id}")= val.title
-    else
-        p No events posted
+    section(class="adminOnlySection")
+        a(href="http://localhost:3000/organizations/#{organization_id}/edit") Edit Information
+        a(href="http://localhost:3000/events/create?orgId=#{organization_id}") Add Event
     
-    if locals.isMember
-        a(href="http://localhost:3000/organizations/#{organization_id}/leave") Leave this Organization
-    else
-        a(href="http://localhost:3000/organizations/#{organization_id}/join") Join this Organization
     
-    a(href="http://localhost:3000/organizations/#{organization_id}/edit") Edit Information
-    
-    a(href="http://localhost:3000/events/create?orgId=#{organization_id}") Add Event
-    
-    script(href="./public/scripts/join-org.js")
     
     //
         DON'T FORGET TO ADD A BUTTON THAT ALLOWS USERS TO BECOME A MEMBER OF AN ORGANIZATION
@@ -42,5 +47,8 @@ block content
         a(href="http://localhost:3000/organizations/#{organization_id}/join") Join Organization
         
         if locals.session.user.userId
-        p Found user ID in session
-        p= session.user.userId
+            p Found user ID in session
+            p= session.user.userId
+        
+        
+        script(href="./public/scripts/join-org.js")

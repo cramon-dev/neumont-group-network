@@ -19,8 +19,8 @@ exports.validateString = function(inputString) {
 exports.validateInput = function(inputStringList) {
     for(string in inputStringList) {
         var item = inputStringList[string];
-        //[~!#$%^&*='"(){}\[\]\\\/\<\>]/ || /\s*
-        //[~!#$%^&*='"(){}\[\]\\\/\<\>] || (\s*)
+        //v1    [~!#$%^&*='"(){}\[\]\\\/\<\>] || /\s*
+        //v1.1  [~!#$%^&*='"(){}\[\]\\\/\<\>] || (\s*)
         if(item.match(/[~!#$%^&*='"(){}\[\]\\\/\<\>]/ || /\s*/)) {
             console.log('Found a match for potentially malicious input');
             var err = {
@@ -49,6 +49,21 @@ exports.validateOrgAndEventInput = function(inputStringList) {
     }
     
     return null;
+}
+
+exports.validateEmailAddress = function(inputString) {
+    if(inputString.match(/(\w+)\@(\w+\.)+(com|org|edu|mil|gov)/)) {
+        var err = { 
+            name: "InvalidEmailException",
+            message: "Please supply a valid email address"
+        };
+        
+        return err;
+    }
+}
+
+exports.doPasswordsMatch = function(pass1, pass2) {
+    return pass1 == pass2 ? true : false;
 }
 
 //Encode UTF-8 string to Base64

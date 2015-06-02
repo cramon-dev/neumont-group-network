@@ -12,11 +12,13 @@ router.get('/', function(req, res, next) {
 router.post('/', function(req, res, next) {
     var username = req.body.username;
     var password = req.body.password;
+    var passwordConfirm = req.body.passwordConfirm;
     var email = req.body.email;
-    var inputs = [ username, password, email ];
-    var inputError = inputValidator.validateInput(inputs);
+    var inputError = inputValidator.validateInput([ username, password, email ]);
+    var emailError = inputValidator.validateEmailAddress(email);
+    var passwordsMatch = inputValidator.doPasswordsMatch(password, passwordConfirm);
 
-    if(!inputError) {
+    if(!inputError && !emailError && passwordsMatch) {
         user.registerNewUser(username, password, email, function(err, result) {
             if(!err) {
                 req.session.user = { userId: result, username: username, email: email };
@@ -33,8 +35,17 @@ router.post('/', function(req, res, next) {
         });
     }
     else {
-        res.render('register', { errorMessage: inputError.message });
+        if(inputError) {
+            res.render('register', { errorMessage: inputError.message });
+        }
+        else if(emailError) {
+            res.render('register', { errorMessage: emailError.message });
+        }
+        else {
+            res.render('register', { errorMessage: 'The inputted passwords don\'t match' });
+        }
     }
 });
+
 
 module.exports = router;

@@ -2,7 +2,7 @@ extends layout
 
 block content
     h1 Edit Event
-    form(action="http://localhost:3000/events/#{eventId}/edit", method="post")
+    form(class="editEventForm", action="http://localhost:3000/events/#{eventId}/edit", method="post")
         p Event title:
         input(type="text", name="newEventTitle")
         p Event description:

@@ -20,9 +20,10 @@ body {
     background-color: #DDDDDD; /* Alternatively, background color can be #CCCCCC */
     width: 960px; /* I usually go with 960px */
     margin: 0 auto;
-    font-family: 'Lato', sans-serif;
+    font-family: 'Arial', sans-serif;
+    font-size: 16px;
     /* Tighter spacing between letters? */
-    /* letter-spacing: -0.5px; */
+    letter-spacing: -0.5px; 
 }
 
 a {
@@ -62,7 +63,7 @@ header {
     display: inline;
     width: 320px;
     height: 180px;
-    /* background-image: url(/images/logo_v1.png); */
+    background-image: url(/images/logo_v1.png); 
 }
 
 .logo-text {
@@ -70,13 +71,17 @@ header {
     text-indent: -500px;
 }
 
-.signedInHeader {
-    display: inline-block;
-    float: right;
-}
-
 img.userAvatar {
     max-width: 56px;
+}
+
+/* Signed In Header */
+
+.signedInHeader {
+    display: inline-block;
+    max-width: 300px;
+    max-height: 200px;
+    float: right;
 }
 
 
@@ -84,6 +89,7 @@ img.userAvatar {
 
 .bodyContent {
     display: block;
+    min-height: 655px;
     border-top: 1px solid #343434;
     border-bottom: 1px solid #000000;
     padding-top: 70px;
@@ -98,8 +104,13 @@ img.userAvatar {
     width: 110px;
     padding: 10px 15px 10px 15px;
     margin: 0 auto;
-    font-size: 32px;
+    text-align: center;
+    font-family: Arial, sans-serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: #000;
     background-color: #FFC224;
+    border-radius: 5px;
     box-shadow: 1px 1px 2px #222222;
 }
 

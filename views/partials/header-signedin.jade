@@ -1,13 +1,13 @@
 if locals.session.user
     section(class="signedInHeader")
-        p= session.user.username
+        p(class="headerUsername")= session.user.username
         if session.user.userAvatar
             img(class="userAvatar", src= session.user.userAvatar)
         else
             img(class="userAvatar", src="../images/default_avatar.png")
         a(href="http://localhost:3000/users/edit") Edit your Settings
         a(href="http://localhost:3000/mailbox") Your Inbox
-        a(href='http://localhost:3000/signout') Sign Out
+        a(href="http://localhost:3000/signout") Sign Out
         section(class="searchFormSection")
             form(action="http://localhost:3000/search", method="get")
                 input(type="text", name="userQuery", placeholder="Search for groups..")
