@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var inputValidator = require('../models/input-validator.js');
 var user = require('../models/user.js');
+var util = require('util');
 
 /* GET register page. */
 router.get('/', function(req, res, next) {
@@ -14,14 +15,15 @@ router.post('/', function(req, res, next) {
     var password = req.body.password;
     var passwordConfirm = req.body.passwordConfirm;
     var email = req.body.email;
+    var userAvatarPath = req.files.newUserAvatar ? req.files.newUserAvatar.name : 'images/default_avatar.png';
     var inputError = inputValidator.validateInput([ username, password, email ]);
     var emailError = inputValidator.validateEmailAddress(email);
     var passwordsMatch = inputValidator.doPasswordsMatch(password, passwordConfirm);
 
     if(!inputError && !emailError && passwordsMatch) {
-        user.registerNewUser(username, password, email, function(err, result) {
+        user.registerNewUser(username, password, email, userAvatarPath, function onRegisterNewUser(err, result) {
             if(!err) {
-                req.session.user = { userId: result, username: username, email: email };
+                req.session.user = { userId: result, username: username, email: email, userAvatar: userAvatarPath };
                 res.redirect('/');
             }
             else {
@@ -29,6 +31,7 @@ router.post('/', function(req, res, next) {
                     res.render('register', { errorMessage: 'That username or email has already been taken' });
                 }
                 else {
+                    throw err;
                     res.render('register', { errorMessage: err.message });
                 }
             }

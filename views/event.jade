@@ -1,38 +1,41 @@
 extends layout
 
 block content
-    if locals.event_image_path
-        img(class="eventImage", src= event_image_path)
-    else
-        img(class="eventImage", src="../images/sample_group_avatar.png")
-    h1 #{eventDetails.title}
-    h4 Overview
-    p #{eventDetails.description}
-    h4 Date
-    p #{eventDetails.start_date}
-    
-    a(href="http://localhost:3000/events/#{eventDetails.event_id}/edit") Edit Event
-    br
-    a(href="http://localhost:3000/events/#{eventDetails.event_id}/optin") Attend this Event
-    h3 Comments
-    if locals.eventDetails.can_users_comment
-        if locals.eventDetails.listOfComments
-            ul
-                each comment in eventDetails.listOfComments
-                    li
-                        img(class="userCommentAvatar", src= comment.userAvatar)
-                        h3= comment.username
-                        p= comment.message
+    section(class="groupOverview")
+        if locals.event_image_path
+            img(class="eventImage", src= event_image_path)
         else
-            p No comments found for this event
-        form(action="http://localhost:3000/events/#{eventDetails.event_id}/comment", method="post")
-            p Add a Comment
-            input(type="text", name="comment")
-            input(type="submit", value="Add Comment")
-    else
-        p Comments are currently disabled for this event
+            img(class="eventImage", src="../images/sample_group_avatar.png")
+            
+        a(href="http://localhost:3000/events/#{eventDetails.event_id}/edit") Edit Event
+        a(href="http://localhost:3000/events/#{eventDetails.event_id}/optin") Attend this Event
+    
+    section(class="groupInfo")
+        h1 #{eventDetails.title}
+        h4 Overview
+        p #{eventDetails.description}
+        h4 Date
+        p #{eventDetails.start_date}
         
-    script(src="/scripts/attend-event.js")
+    section(class="eventCommentSection")
+        h3 Comments
+        if locals.eventDetails.can_users_comment
+            if locals.eventDetails.listOfComments
+                ul
+                    each comment in eventDetails.listOfComments
+                        li
+                            img(class="userCommentAvatar", src= comment.userAvatar)
+                            h3= comment.username
+                            p= comment.message
+            else
+                p No comments found for this event
+            form(action="http://localhost:3000/events/#{eventDetails.event_id}/comment", method="post")
+                p Add a Comment
+                input(type="text", name="comment")
+                input(type="submit", value="Add Comment")
+        else
+            p Comments are currently disabled for this event
     
     //
         button(onclick="attendEvent(#{eventDetails.event_id})") Attend this Event
+        script(src="/scripts/attend-event.js")

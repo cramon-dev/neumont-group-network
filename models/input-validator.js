@@ -52,7 +52,7 @@ exports.validateOrgAndEventInput = function(inputStringList) {
 }
 
 exports.validateEmailAddress = function(inputString) {
-    if(inputString.match(/(\w+)\@(\w+\.)+(com|org|edu|mil|gov)/)) {
+    if(!inputString.match(/(\w+)\@(\w+\.)+(com|org|edu|mil|gov)/)) {
         var err = { 
             name: "InvalidEmailException",
             message: "Please supply a valid email address"

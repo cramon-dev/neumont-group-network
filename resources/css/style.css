@@ -17,7 +17,7 @@
 }
 
 body {
-    background-color: #DDDDDD; /* Alternatively, background color can be #CCCCCC */
+    background-color: #AAAAAA; /* Alternatively, background color can be #CCCCCC or #DDDDDD */
     width: 960px; /* I usually go with 960px */
     margin: 0 auto;
     font-family: 'Arial', sans-serif;
@@ -55,41 +55,54 @@ li {
 
 header {
     background-color: #FFCC00;
+    border-left: 1px solid #343434;
+    border-right: 1px solid #343434;
     border-bottom: 1px solid #000000;
-    height: 90px;
+    height: 120px;
 }
 
 .logo {
-    display: inline;
-    width: 320px;
-    height: 180px;
-    background-image: url(/images/logo_v1.png); 
+    background-image: url(/images/logo_v2.png); 
+    display: block;
+    position: relative;
+    top: 10px;
+    left: 40px;
+    width: 180px;
+    height: 100px;
+    overflow: hidden;
+    text-indent: 100%;
+    white-space: nowrap;
 }
 
-.logo-text {
-    /* float: left; */
-    text-indent: -500px;
-}
-
-img.userAvatar {
+.userAvatar {
     max-width: 56px;
+    max-height: 56px;
 }
+
 
 /* Signed In Header */
 
 .signedInHeader {
     display: inline-block;
+    position: relative;
+    bottom: 98px;
+    right: 40px;
     max-width: 300px;
     max-height: 200px;
     float: right;
 }
 
+.signedInHeader p {
+    font-size: 14px;
+}
 
-/* Body Content */
+
+/* General Body Styling */
 
 .bodyContent {
     display: block;
-    min-height: 655px;
+    background-color: #DDDDDD;
+    min-height: 604px;
     border-top: 1px solid #343434;
     border-bottom: 1px solid #000000;
     padding-top: 70px;
@@ -115,6 +128,33 @@ img.userAvatar {
 }
 
 
+/* Mailbox Page */
+
+.sendMessageForm {
+    
+}
+
+
+/* Organization/Event Styling */
+
+.groupOverview {
+    display: block;
+}
+
+.groupOverview img {
+    max-width: 360px;
+}
+
+.groupInfo {
+    display: inline-block;
+    width: 120px;
+}
+
+
+/* Individual Organization Page */
+
+
+
 /* Individual Event Page */
 
 .userCommentAvatar {
@@ -127,6 +167,14 @@ img.userAvatar {
 
 footer {
     border-top: 1px solid #343434;
+    border-left: 1px solid #343434;
+    border-right: 1px solid #343434;
     background-color: #AAAAAA;
     height: 90px;
+}
+
+footer p {
+    margin-top: 20px;
+    font-size: 14px;
+    text-align: center;
 }

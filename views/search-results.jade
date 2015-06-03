@@ -2,10 +2,12 @@ extends layout
 
 block content
     h1 Search Results
-    if searchResults
-        for result in searchResults
-            - var orgId = result.orgId
-            a(href="http://localhost:3000/organizations/#{orgId}")= result.orgName
-            br
-    else
-        p No results found
+    section(class="searchResultsSection")
+        if searchResults
+            h4 Organizations:
+            for result in searchResults
+                - var orgId = result.orgId
+                a(href="http://localhost:3000/organizations/#{orgId}")= result.orgName
+            h4 Events:
+        else
+            p No results found

@@ -3,15 +3,17 @@ extends layout
 block content
     h1 Inbox
 
-    if locals.listOfConversations
+    if listOfMessages
         p Messages: 
-        for val in listOfConversations
-            p Conversation with user ID: val.sender_id
-            p val.content
+        for val in listOfMessages
+            p Object
+            p= val
+            p Conversation with user ID: listOfMessages[val].receiver_id
+            p listOfMessages[val].content
     else
         p Your inbox is empty
 
-    form(action="http://localhost:3000/mailbox/send", method="post")
+    form(class="sendMessageForm", action="http://localhost:3000/mailbox/send", method="post")
         p To:
         input(type="text", name="userToSendTo")
         p Message:

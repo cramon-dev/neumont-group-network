@@ -1,7 +1,7 @@
 extends layout
 
 block content
-    h1 Edit your Account
+    h1 Edit your Account Details
         form(class="editUserForm", action="http://localhost:3000/profiles/edit", method='post')
             input(type="password", name="newPassword", placeholder="New password")
             input(type="password", name="confirmNewPass", placeholder="Confirm new password")

@@ -1,16 +1,19 @@
 extends layout
 
 block content
-    section(class="orgInfoOverview")
+    section(class="groupOverview")
         if locals.org_image_path
                 img(class="orgImage", src= org_image_path)
             else
                 img(class="orgImage", src="../images/sample_group_avatar.png")
-
-        h1 #{name}
-        p #{description}
-        p Created by: #{original_author_id}
+        h1(class="groupName") #{name}
+        a(href="http://localhost:3000/organizations/#{organization_id}/edit") Edit Information
+        a(href="http://localhost:3000/events/create?orgId=#{organization_id}") Add Event
     
+    section(class="groupInfo")
+            p #{description}
+            p Created by: #{original_author_id}
+            
     section(class="membersSection")
         h4 Members
         if locals.listOfUsers
@@ -32,10 +35,6 @@ block content
             a(href="http://localhost:3000/organizations/#{organization_id}/leave") Leave this Organization
         else
             a(href="http://localhost:3000/organizations/#{organization_id}/join") Join this Organization
-    
-    section(class="adminOnlySection")
-        a(href="http://localhost:3000/organizations/#{organization_id}/edit") Edit Information
-        a(href="http://localhost:3000/events/create?orgId=#{organization_id}") Add Event
     
     
     

@@ -4,17 +4,20 @@ var messages = require('../models/message.js');
 var users = require('../models/user.js');
 var inputValidator = require('../models/input-validator.js');
 
+//Get a user's mailbox
 router.get('/', function(req, res, next) {
     var userId = req.session.user.userId;
     var statusMessage = req.session.message;
-    var previousErrorMessage = req.session.errorMessage;
+    var errMessage = req.session.errorMessage;
+    req.session.message = null;
+    req.session.errorMessage = null;
     
-    messages.getConvosAndReplies(userId, function(err, listOfConversations) {
-        if(!err && listOfConversations) {
+    messages.getListOfMessages(userId, function(err, listOfMessages) {
+        if(!err && listOfMessages) {
 //            for(var convo in conversations) {
 //                
 //            }
-            res.render('mailbox', { inbox: listOfConversations });
+            res.render('mailbox', { inbox: listOfMessages, message: statusMessage, errorMessage: errMessage });
         }
         else {
             res.render('mailbox', { errorMessage: err.message });
@@ -22,6 +25,7 @@ router.get('/', function(req, res, next) {
     });
 });
 
+//Send a message to a user
 router.post('/send', function(req, res, next) {
     var userId = req.session.user.userId;
     var userToSendTo = req.body.userToSendTo;
@@ -34,7 +38,7 @@ router.post('/send', function(req, res, next) {
             var convoExists = doesConversationExist(userId, receiverId);
 
             if(convoExists) {
-                messages.replyToConversation(userId, receiverId, convoExists, message, currentTime, function(err, result) {
+                messages.replyToConversation(userId, receiverId, convoExists, message, currentTime, function onConversationReply(err, result) {
                     req.session.message = 'Message sent';
                     res.redirect('/mailbox');
                 });
@@ -42,7 +46,7 @@ router.post('/send', function(req, res, next) {
             else {
                 messages.createConversation(userId, receiverId, function(err, result) {
                     if(!err && result) {
-                        messages.replyToConversation(userId, receiverId, result, message, currentTime, function(err, result) {
+                        messages.replyToConversation(userId, receiverId, result, message, currentTime, function onConversationCreation(err, result) {
                             req.session.message = 'Message sent';
                             res.redirect('/mailbox');
                         });
@@ -55,9 +59,7 @@ router.post('/send', function(req, res, next) {
             }
         }
         else {
-            console.log('Error getting user by name?');
-            console.log('Error sending message: ' + err);
-            req.session.errorMessage = err.message;
+            req.session.errorMessage = err ? err.message : 'That user doesn\'t exist';
             res.redirect('/mailbox');
         }
     });
@@ -65,7 +67,7 @@ router.post('/send', function(req, res, next) {
 
 
 var doesConversationExist = function(senderId, receiverId) {
-    messages.getConversation(senderId, receiverId, function(err, conversation) {
+    messages.getConversation(senderId, receiverId, function onGetConversation(err, conversation) {
         if(!err && conversation) {
             return conversation.conversation_id;
         }

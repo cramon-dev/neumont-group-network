@@ -49,6 +49,13 @@ router.get('/create', function(req, res, next) {
 
 //Create the event
 router.post('/create', function(req, res, next) {
+    
+    /*
+        TODO:
+        
+        CHECK TO SEE IF REQUESTED DATE IS IN THE FUTURE
+    */
+    
     var orgId = req.body.orgId;
     var eventTitle = req.body.newEventTitle;
     var eventDesc = req.body.newEventDesc;
@@ -149,7 +156,7 @@ router.get(/((\d+)\/optin)/ || /(\d+)\/optout/, function(req, res, next) {
     var eventId = req.params[0];
     
     if(req.url.match('optin')) {
-        attendees.changeAttendanceStatus(userId, eventId, true, function(err, result) {
+        attendees.changeAttendanceStatus(userId, eventId, true, function onAttendanceChange(err, result) {
             if(!err) {
                 console.log('Success attending event');
                 req.session.message = 'You are now attending this event';
@@ -163,7 +170,7 @@ router.get(/((\d+)\/optin)/ || /(\d+)\/optout/, function(req, res, next) {
         });
     }
     else {
-        attendees.changeAttendanceStatus(userId, eventId, false, function(err, result) {
+        attendees.changeAttendanceStatus(userId, eventId, false, function onAttendanceChange(err, result) {
             if(!err) {
                 console.log('Success leaving event');
                 req.session.message = 'You are no longer attending this event';

@@ -104,7 +104,7 @@ router.get('/create', function(req, res, next) {
 router.post('/create', function(req, res, next) {
     var orgName = req.body.orgName;
     var orgDesc = req.body.orgDesc;
-    var orgImagePath = req.files.orgImage ? req.files.orgImageName : 'images/sample_group_avatar.png';
+    var orgImagePath = req.files.orgImage ? req.files.orgImage.name : 'images/sample_group_avatar.png';
     var userId = req.session.user.userId;
     var inputs = [ orgName, orgDesc ];
     var inputError = inputValidator.validateOrgAndEventInput(inputs);

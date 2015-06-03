@@ -35,13 +35,14 @@ var generateNewHash = function(password_to_hash) {
 // =========== Sign In/Registration ===========
 
 //Register a new user
-exports.registerNewUser = function(username, password, email, callback) {
+exports.registerNewUser = function(username, password, email, imagePath, callback) {
     var hashedPassword = generateNewHash(password);
     
     getConnection(function onConnect(err, connection) {
         if(!err) {
-            connection.query('INSERT INTO `users`(`username`, `password`, `email`) VALUES (\'' 
-                             + username + '\', \'' + hashedPassword + '\', \'' + email + '\')', function onDBInsertUser(err, result) {
+            var uploadPath = '../' + imagePath;
+            connection.query('INSERT INTO `users`(`username`, `password`, `email`, `avatar_path`) VALUES (\'' 
+                             + username + '\', \'' + hashedPassword + '\', \'' + email + '\', \'' + uploadPath + '\')', function onDBInsertUser(err, result) {
                 if(!err) {
                     callback(null, result.insertId);
                 }
@@ -458,6 +459,8 @@ exports.getEventDetails = function(eventId, callback) {
 exports.addNewEvent = function(eventTitle, eventDesc, eventStartDate, orgId, canUsersComment, eventImagePath, callback) {
     getConnection(function onConnect(err, connection) {
         if(!err) {
+            // TODO
+            // FIX THIS
             var convertedCanUsersComment = canUsersComment ? 1 : 0;
             connection.query('INSERT INTO `events`(`title`, `description`, `start_date`, `org_id`, `can_users_comment`, `event_image_path`)'
                              + 'VALUES (\'' + eventTitle + '\', \'' + eventDesc + '\', \'' + eventStartDate + '\', \'' 
@@ -628,19 +631,20 @@ exports.getConversation = function(senderId, receiverId, callback) {
     });
 }
 
-//oh god oh man
-exports.getConvosAndReplies = function(conversationId, callback) {
+//Get a list of conversations with replies
+exports.getListOfMessages = function(userId, callback) {
     getConnection(function onConnect(err, connection) {
         if(!err) {
             connection.query('SELECT * FROM message_replies INNER JOIN conversations ON '
                             + 'conversations.conversation_id = message_replies.conversation_id '
-                              + 'WHERE message_replies.conversation_id = \'' + conversationId + '\'', function(err, rows, fields) {
+                              + 'WHERE conversations.receiver_id = \'' + userId + '\'', function(err, rows, fields) {
                 if(rows) {
                     var toReturn = [];
                     for(var row in rows) {
-                        var convo = { conversation_id: rows[row].conversation_id, content: rows[row.content], sender_id: rows[row].sender_id, receiver_id: rows[row].receiver_id, time_sent: rows[row].time_sent };
-                        toReturn.push(convo);
+                        toReturn.push({ conversation_id: rows[row].conversation_id, content: rows[row.content], 
+                                       sender_id: rows[row].sender_id, receiver_id: rows[row].receiver_id, time_sent: rows[row].time_sent });
                     }
+                    
                     callback(err, toReturn);
                 }
                 else {
@@ -655,6 +659,34 @@ exports.getConvosAndReplies = function(conversationId, callback) {
         }
     });
 }
+
+////oh god oh man
+//exports.getConvosAndReplies = function(conversationId, callback) {
+//    getConnection(function onConnect(err, connection) {
+//        if(!err) {
+//            connection.query('SELECT * FROM message_replies INNER JOIN conversations ON '
+//                            + 'conversations.conversation_id = message_replies.conversation_id '
+//                              + 'WHERE message_replies.conversation_id = \'' + conversationId + '\'', function(err, rows, fields) {
+//                if(rows) {
+//                    var toReturn = [];
+//                    for(var row in rows) {
+//                        var convo = { conversation_id: rows[row].conversation_id, content: rows[row.content], sender_id: rows[row].sender_id, receiver_id: rows[row].receiver_id, time_sent: rows[row].time_sent };
+//                        toReturn.push(convo);
+//                    }
+//                    callback(err, toReturn);
+//                }
+//                else {
+//                    callback(err, null);
+//                }
+//                
+//                connection.release();
+//            });
+//        }
+//        else {
+//            callback(err, null);
+//        }
+//    });
+//}
 
 //exports.getListOfReplies = function(conversationId, callback) {
 //    getConnection(function onConnect(err, connection) {
@@ -676,22 +708,3 @@ exports.getConvosAndReplies = function(conversationId, callback) {
 //    });
 //}
 //
-//exports.getListOfConversations = function(userId, callback) {
-//    getConnection(function onConnect(err, connection) {
-//        if(!err) {
-//            connection.query('SELECT * FROM conversations where sender_id=\'' + userId + '\' OR receiver_id=\'' + userId + '\'', function(err, rows, fields) {
-//                if(rows) {
-//                    callback(err, rows);
-//                }
-//                else {
-//                    callback(err, null);
-//                }
-//                
-//                connection.release();
-//            });
-//        }
-//        else {
-//            callback(err, null);
-//        }
-//    });
-//}
