@@ -60,14 +60,12 @@ router.post('/create', function(req, res, next) {
     var eventTitle = req.body.newEventTitle;
     var eventDesc = req.body.newEventDesc;
     var eventStartDate = req.body.newEventStartDate;
-    var canUsersComment = false;
-    if(req.body.canUsersComment) {
-        canUsersComment = true;
-    }
+    var eventImagePath = req.files.eventImage ? req.files.eventImage.name : 'images/sample_group_avatar.png';
+    var canUsersComment = req.body.canUsersComment ? true : false;
     var inputError = inputValidator.validateOrgAndEventInput([ eventTitle, eventDesc ]);
     
     if(!inputError) {
-        events.addNewEvent(eventTitle, eventDesc, eventStartDate, orgId, canUsersComment, function onAddNewEvent(err, result) {
+        events.addNewEvent(eventTitle, eventDesc, eventStartDate, orgId, canUsersComment, eventImagePath, function onAddNewEvent(err, result) {
             if(!err) {
                 if(result) {
                     req.session.message = 'Event successfully created';
@@ -151,19 +149,17 @@ router.post(/(\d+)\/comment/, function(req, res, next) {
 
 // =========== Opt In / Opt Out of Event ===========
 
-router.get(/((\d+)\/optin)/ || /(\d+)\/optout/, function(req, res, next) {
+router.get(/(\d+)\/optin/ || /(\d+)\/optout/, function(req, res, next) {
     var userId = req.session.user.userId;
     var eventId = req.params[0];
     
     if(req.url.match('optin')) {
         attendees.changeAttendanceStatus(userId, eventId, true, function onAttendanceChange(err, result) {
             if(!err) {
-                console.log('Success attending event');
                 req.session.message = 'You are now attending this event';
                 res.redirect('/events/' + eventId);
             }
             else {
-                console.log('Error attending event');
                 req.session.errorMessage = 'Something went wrong attending this event';
                 res.redirect('/events/' + eventId);
             }
@@ -172,12 +168,10 @@ router.get(/((\d+)\/optin)/ || /(\d+)\/optout/, function(req, res, next) {
     else {
         attendees.changeAttendanceStatus(userId, eventId, false, function onAttendanceChange(err, result) {
             if(!err) {
-                console.log('Success leaving event');
                 req.session.message = 'You are no longer attending this event';
                 res.redirect('/events/' + eventId);
             }
             else {
-                console.log('Error leaving event');
                 req.session.errorMessage = 'Something went wrong leaving this event';
                 res.redirect('/events/' + eventId);
             }

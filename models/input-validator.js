@@ -75,5 +75,6 @@ exports.encodeString = function(string) {
 //Decode Base64 string to UTF-8
 exports.decodeString = function(string) {
 //    return decodeURIComponent(escape(atob(string)));
-    return new Buffer(string, 'base64'); // Ta-da
+    console.log('Decoding string: ' + string);
+    return new Buffer(string, 'base64');
 }

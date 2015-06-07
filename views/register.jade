@@ -1,14 +1,14 @@
-extends layout
+extends layout-notsignedin
 
 block content
     h1 Register
-        form(class="userRegistrationForm", action="http://localhost:3000/register", method="post", enctype="multipart/form-data")
-            input(type="text", name="username", placeholder="Your username")
-            input(type="password", name="password", placeholder="Your password")
-            input(type="password", name="passwordConfirm", placeholder="Confirm password")
-            input(type="text", name="email", placeholder="Your email")
-            p Upload an avatar:
-            input(type="file", name="newUserAvatar", accept="image/*")
-            input(type="submit", value="Register")
-            //
-                Mention something about prohibited characters
+    form(class="userRegistrationForm", action="http://localhost:3000/register", method="post", enctype="multipart/form-data")
+        input(type="text", name="username", placeholder="Your username")
+        input(type="password", name="password", placeholder="Your password")
+        input(type="password", name="passwordConfirm", placeholder="Confirm password")
+        input(type="text", name="email", placeholder="Your email")
+        p Upload an avatar(optional):
+        input(type="file", name="newUserAvatar", accept="image/*")
+        input(id="registerSubmitButton", type="submit", value="Register")
+        //
+            Mention something about prohibited characters

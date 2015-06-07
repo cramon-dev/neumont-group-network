@@ -31,16 +31,16 @@ router.post('/', function(req, res, next) {
                     }
                 }
                 else {
-                    res.render('index', { errorMessage: 'Invalid username or password' });
+                    res.render('signin', { title: 'Sign In', errorMessage: 'Invalid username or password' });
                 }
             }
             else {
-                res.render('index', { errorMessage: 'Error while signing in, try again' });
+                res.render('signin', { title: 'Sign In', errorMessage: 'Error while signing in, try again' });
             }
         });
     }
     else {
-        res.render('index', { errorMessage: inputError.message });
+        res.render('signin', { title: 'Sign In', errorMessage: inputError.message });
     }
 });
 

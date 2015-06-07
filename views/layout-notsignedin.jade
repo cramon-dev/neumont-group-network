@@ -13,8 +13,7 @@ html
         header
             a(class="logo" href="http://localhost:3000/")
                 span(class="logo-text") Neumont Group Network
-            if session.user
-                include ./partials/header-signedin.jade
+            include ./partials/header-signinform.jade
         section(class="bodyContent")
             p(class="message") #{message}
             p(class="errorMessage") #{errorMessage}

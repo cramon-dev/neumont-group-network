@@ -17,7 +17,7 @@
 }
 
 body {
-    background-color: #AAAAAA; /* Alternatively, background color can be #CCCCCC or #DDDDDD */
+    background-color: #EEE; /* Alternatively, background color can be #CCCCCC or #DDDDDD */
     width: 960px; /* I usually go with 960px */
     margin: 0 auto;
     font-family: 'Arial', sans-serif;
@@ -35,6 +35,10 @@ li {
     list-style-type: none;
 }
 
+textarea:focus, input:focus {
+    border: 1px solid #0BC;
+}
+
 
 /* Status Messages */
 
@@ -42,12 +46,16 @@ li {
     color: #5DBB11;
     font-size: 16px;
     font-weight: bold;
+    margin-bottom: 20px;
+    text-align: center;
 }
 
 .errorMessage {
     color: #C00;
     font-size: 16px;
     font-weight: bold;
+    margin-bottom: 20px;
+    text-align: center;
 }
 
 
@@ -55,8 +63,6 @@ li {
 
 header {
     background-color: #FFCC00;
-    border-left: 1px solid #343434;
-    border-right: 1px solid #343434;
     border-bottom: 1px solid #000000;
     height: 120px;
 }
@@ -77,6 +83,13 @@ header {
 .userAvatar {
     max-width: 56px;
     max-height: 56px;
+}
+
+.headerSignInForm {
+    display: inline-block;
+    position: relative;
+    left: 530px;
+    bottom: 40px;
 }
 
 
@@ -102,15 +115,28 @@ header {
 .bodyContent {
     display: block;
     background-color: #DDDDDD;
+    text-align: center;
     min-height: 604px;
     border-top: 1px solid #343434;
     border-bottom: 1px solid #000000;
-    padding-top: 70px;
+    padding-top: 130px;
     padding-bottom: 70px;
 }
 
 
 /* Index Page */
+
+.welcomeMessage {
+    text-align: center;
+    font-size: 120%;
+    margin-bottom: 85px;
+    padding-left: 40px;
+    padding-right: 40px;
+}
+
+.signInForm {
+    margin: 0 auto;
+}
 
 .register-button {
     display: block;
@@ -128,6 +154,13 @@ header {
 }
 
 
+/* Register Page */
+
+#registerSubmitButton {
+    display: block;
+}
+
+
 /* Mailbox Page */
 
 .sendMessageForm {
@@ -142,7 +175,7 @@ header {
 }
 
 .groupOverview img {
-    max-width: 360px;
+    max-width: 240px;
 }
 
 .groupInfo {
@@ -167,8 +200,6 @@ header {
 
 footer {
     border-top: 1px solid #343434;
-    border-left: 1px solid #343434;
-    border-right: 1px solid #343434;
     background-color: #AAAAAA;
     height: 90px;
 }

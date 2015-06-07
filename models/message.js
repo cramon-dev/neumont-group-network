@@ -1,4 +1,5 @@
 var dbManager = require('./db-manager.js');
+var inputValidator = require('./input-validator.js');
 
 
 exports.createConversation = function(senderId, receiverId, callback) {
@@ -15,12 +16,21 @@ exports.getConversation = function(user1Id, user2Id, callback) {
 
 exports.getListOfMessages = function(userId, callback) {
     dbManager.getListOfMessages(userId, function onModelGetListOfMessages(err, listOfMessages) {
+        console.log('Decoding messages from base64 to utf8');
+        for(var i in listOfMessages) {
+            var content = listOfMessages[i].message;
+            console.log('Inside for loop, message content before decoding: ' + content);
+            listOfMessages[i].message = inputValidator.decodeString(content);
+            console.log('After decoding: ' + listOfMessages[i].message);
+        }
+        console.log('Messages decoded');
         callback(err, listOfMessages);
     });
 }
 
 exports.replyToConversation = function(senderId, receiverId, conversationId, content, timeSent, callback) {
-    dbManager.replyToConversation(senderId, receiverId, conversationId, content, timeSent, function onModelReplyToConversation(err, result) {
+    var message = inputValidator.encodeString(content);
+    dbManager.replyToConversation(senderId, receiverId, conversationId, message, timeSent, function onModelReplyToConversation(err, result) {
         callback(err, result);
     });
 }

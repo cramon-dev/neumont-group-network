@@ -7,35 +7,34 @@ block content
             else
                 img(class="orgImage", src="../images/sample_group_avatar.png")
         h1(class="groupName") #{name}
-        a(href="http://localhost:3000/organizations/#{organization_id}/edit") Edit Information
-        a(href="http://localhost:3000/events/create?orgId=#{organization_id}") Add Event
+        section("orgActionSection")
+            a(href="http://localhost:3000/organizations/#{organization_id}/edit") Edit Information
+            a(href="http://localhost:3000/events/create?orgId=#{organization_id}") Add Event
+            if locals.isMember
+                a(href="http://localhost:3000/organizations/#{organization_id}/leave") Leave this Organization
+            else
+                a(href="http://localhost:3000/organizations/#{organization_id}/join") Join this Organization
     
-    section(class="groupInfo")
-            p #{description}
-            p Created by: #{original_author_id}
-            
-    section(class="membersSection")
-        h4 Members
-        if locals.listOfUsers
-            each val in listOfUsers
-                li
-                    a(href="http://localhost:3000/profiles/#{val.user_id}")= val.username
-    
-    section(class="eventsSection")
-        h4 Events
-        if locals.listOfEvents
-            each val in listOfEvents
-                li 
-                    a(href="http://localhost:3000/events/#{val.event_id}")= val.title
-        else
-            p No events posted
-    
-    section(class="joinLeaveSection")
-        if locals.isMember
-            a(href="http://localhost:3000/organizations/#{organization_id}/leave") Leave this Organization
-        else
-            a(href="http://localhost:3000/organizations/#{organization_id}/join") Join this Organization
-    
+    section(class="groupBodySection")
+        section(class="groupInfo")
+                p #{description}
+                p Created by: #{original_author_id}
+
+        section(class="membersSection")
+            h4 Members
+            if locals.listOfUsers
+                each val in listOfUsers
+                    li
+                        a(href="http://localhost:3000/profiles/#{val.user_id}")= val.username
+
+        section(class="eventsSection")
+            h4 Events
+            if locals.listOfEvents
+                each val in listOfEvents
+                    li 
+                        a(href="http://localhost:3000/events/#{val.event_id}")= val.title
+            else
+                p No events posted
     
     
     //

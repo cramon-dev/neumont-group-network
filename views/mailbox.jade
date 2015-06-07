@@ -3,13 +3,11 @@ extends layout
 block content
     h1 Inbox
 
-    if listOfMessages
+    if inbox
         p Messages: 
-        for val in listOfMessages
-            p Object
-            p= val
-            p Conversation with user ID: listOfMessages[val].receiver_id
-            p listOfMessages[val].content
+        for val in inbox
+            h4 Conversation with user
+            p= val.message
     else
         p Your inbox is empty
 
@@ -22,3 +20,8 @@ block content
 
     //
         Ideally, I would want the messages to load as the user logs in and store them in the session so that a call wouldn't have to be made on every page to get a list of messages the user has received or sent. How should I tackle this?
+        
+        for val in listOfMessages
+            p Object exists
+            p Conversation with user ID: listOfMessages[val].receiver_id
+            p listOfMessages[val].message

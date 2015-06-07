@@ -1,6 +1,7 @@
 //Manage database connections and perform operations
 var mysql = require('mysql');
 var bcrypt = require('bcrypt');
+var util = require('util');
 
 //Connection pool
 var pool = mysql.createPool({
@@ -143,7 +144,7 @@ exports.getListOfUserDetails = function(requestedIDs, callback) {
         }
         else {
             callback(err, null);
-            
+
             connection.release();
         }
     });
@@ -287,10 +288,10 @@ exports.editOrganization = function(orgId, newOrgName, newOrgDesc, callback) {
 
 //To be implemented: pass in multiple keywords or tags
 //Get a list of organizations based on a keyword
-exports.getListOfOrgsByOneKeyword = function(keyword, callback) {
+exports.getListOfOrgsByKeywords = function(keywords, callback) {
     getConnection(function onConnect(err, connection) {
         if(!err) {
-            connection.query('SELECT * FROM organizations where name like \'\%' + keyword + '\%\'', function(err, rows, fields) {
+            connection.query('SELECT * FROM organizations where name like \'\%' + keywords + '\%\'', function(err, rows, fields) {
                 if(!err) {
                     if(rows) {
                         var searchResults = [];
@@ -641,8 +642,9 @@ exports.getListOfMessages = function(userId, callback) {
                 if(rows) {
                     var toReturn = [];
                     for(var row in rows) {
-                        toReturn.push({ conversation_id: rows[row].conversation_id, content: rows[row.content], 
-                                       sender_id: rows[row].sender_id, receiver_id: rows[row].receiver_id, time_sent: rows[row].time_sent });
+                        var obj = { conversation_id: rows[row].conversation_id, message: rows[row].content, 
+                                       sender_id: rows[row].sender_id, receiver_id: rows[row].receiver_id, time_sent: rows[row].time_sent };
+                        toReturn.push(obj);
                     }
                     
                     callback(err, toReturn);

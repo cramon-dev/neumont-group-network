@@ -1,8 +1,8 @@
  var dbManager = require('./db-manager.js');
 
 
-exports.addNewEvent = function(eventTitle, eventDesc, eventStartDate, orgId, canUsersComment, callback) {
-    dbManager.addNewEvent(eventTitle, eventDesc, eventStartDate, orgId, canUsersComment, function onAddNewEvent(err, result) {
+exports.addNewEvent = function(eventTitle, eventDesc, eventStartDate, orgId, canUsersComment, eventImagePath, callback) {
+    dbManager.addNewEvent(eventTitle, eventDesc, eventStartDate, orgId, canUsersComment, eventImagePath, function onAddNewEvent(err, result) {
         callback(err, result);
     });
 }

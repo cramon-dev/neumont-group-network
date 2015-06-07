@@ -27,6 +27,8 @@ router.post('/', function(req, res, next) {
                 res.redirect('/');
             }
             else {
+                console.log('Error registering new user');
+                res.render('register', { errorMessage: err.message });
                 if(err.message.match('ER_DUP_ENTRY')) {
                     res.render('register', { errorMessage: 'That username or email has already been taken' });
                 }

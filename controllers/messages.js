@@ -3,6 +3,7 @@ var router = express.Router();
 var messages = require('../models/message.js');
 var users = require('../models/user.js');
 var inputValidator = require('../models/input-validator.js');
+var util = require('util');
 
 //Get a user's mailbox
 router.get('/', function(req, res, next) {
@@ -14,9 +15,6 @@ router.get('/', function(req, res, next) {
     
     messages.getListOfMessages(userId, function(err, listOfMessages) {
         if(!err && listOfMessages) {
-//            for(var convo in conversations) {
-//                
-//            }
             res.render('mailbox', { inbox: listOfMessages, message: statusMessage, errorMessage: errMessage });
         }
         else {
@@ -29,7 +27,7 @@ router.get('/', function(req, res, next) {
 router.post('/send', function(req, res, next) {
     var userId = req.session.user.userId;
     var userToSendTo = req.body.userToSendTo;
-    var message = inputValidator.encodeString(req.body.messageContent);
+    var message = req.body.messageContent;
     var currentTime = Date.now();
     
     users.getUserByName(userToSendTo, function(err, receiver) {
