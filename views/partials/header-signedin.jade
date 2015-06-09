@@ -1,6 +1,11 @@
 if locals.session.user
+    nav
+        ul
+            li
+                a(href="http://localhost:3000/organizations") Organizations
+            li
+                a(href="http://localhost:3000/events") Events
     section(class="signedInHeader")
-        p(class="headerUsername")= session.user.username
         if session.user.userAvatar
             img(class="userAvatar", src= session.user.userAvatar)
         else
@@ -12,7 +17,3 @@ if locals.session.user
                 a(href="http://localhost:3000/mailbox") Inbox
             li
                 a(href="http://localhost:3000/signout") Sign Out
-        section(class="searchFormSection")
-            form(class="searchOrgsForm", action="http://localhost:3000/search", method="get")
-                input(type="text", name="userQuery", placeholder="Search for groups..")
-                input(type="submit" value="Search")

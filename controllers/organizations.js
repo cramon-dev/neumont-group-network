@@ -1,10 +1,19 @@
 var express = require('express');
 var router = express.Router();
-var organization = require('../models/organization.js');
+var util = require('util');
+var q = require('q');
+var organizations = require('../models/organization.js');
 var members = require('../models/member.js');
 var events = require('../models/event.js');
 var inputValidator = require('../models/input-validator.js');
 
+// =========== View All Organizations ===========
+
+router.get(/^\/?$/, function(req, res, next) {
+    organizations.getAllOrganizations(function onRetrieveOrgs(err, listOfOrgs) {
+        res.render('all-orgs', { title: 'Organizations', listOfOrgs: listOfOrgs });
+    });
+});
 
 // =========== View/Join Organization ===========
 
@@ -13,7 +22,7 @@ router.get(/^\/(\d+)\/?$/, function(req, res, next) {
     var orgId = req.params[0];
     
     //Goddamn son. How did you let it get this bad. How the mighty have fallen.
-    organization.getOrganization(orgId, function onOrgRetrieval(err, orgData) {
+    organizations.getOrganization(orgId, function onOrgRetrieval(err, orgData) {
         if(!err) {
             if(orgData) {
                 members.getOrgMemberDetails(orgId, function onMemberDetailsRetrieval(err, listOfMemberDetails) {
@@ -27,6 +36,7 @@ router.get(/^\/(\d+)\/?$/, function(req, res, next) {
                                 req.session.errorMessage = null;
                                 req.session.message = null;
 
+                                console.log(util.inspect(listOfMemberDetails));
                                 res.render('organization', orgData);
                             }
                             else {
@@ -110,7 +120,7 @@ router.post('/create', function(req, res, next) {
     var inputError = inputValidator.validateOrgAndEventInput(inputs);
 
     if(!inputError) {
-        organization.addNewOrganization(orgName, orgDesc, userId, orgImagePath, function onOrgInsert(err, result) {
+        organizations.addNewOrganization(orgName, orgDesc, userId, orgImagePath, function onOrgInsert(err, result) {
             if(!err) {
                 var orgId = result;
                 var userId = req.session.user.userId;
@@ -174,7 +184,7 @@ router.post(/(\d+)\/edit/, function(req, res, next) {
     var inputError = inputValidator.validateOrgAndEventInput([ newOrgName, newOrgDesc ]);
     
     if(!inputError) {
-        organization.editOrganization(orgId, newOrgName, newOrgDesc, function onEditOrg(err, result) {
+        organizations.editOrganization(orgId, newOrgName, newOrgDesc, function onEditOrg(err, result) {
             if(!err) {
                 req.session.message = 'Organization successfully updated';
                 res.redirect('/organizations/' + orgId);

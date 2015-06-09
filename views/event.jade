@@ -8,10 +8,6 @@ block content
             img(class="eventImage", src="../images/sample_group_avatar.png")
             
         a(href="http://localhost:3000/events/#{eventDetails.event_id}/edit") Edit Event
-        if locals.isUserAttending
-            a(href="http://localhost:3000/events/#{eventDetails.event_id}/optout") Leave Event
-        else
-            a(href="http://localhost:3000/events/#{eventDetails.event_id}/optin") Attend Event
     
     section(class="groupBodySection")
         section(class="groupInfo")
@@ -43,3 +39,8 @@ block content
     //
         button(onclick="attendEvent(#{eventDetails.event_id})") Attend this Event
         script(src="/scripts/attend-event.js")
+        
+        if locals.isUserAttending
+            a(href="http://localhost:3000/events/#{eventDetails.event_id}/optout") Leave Event
+        else
+            a(href="http://localhost:3000/events/#{eventDetails.event_id}/optin") Attend Event

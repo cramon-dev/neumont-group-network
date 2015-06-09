@@ -2,12 +2,12 @@ extends layout
 
 block content
     section(class="groupOverview")
+        h1(class="groupName") #{name}
         if locals.org_image_path
                 img(class="orgImage", src= org_image_path)
             else
                 img(class="orgImage", src="../images/sample_group_avatar.png")
-        h1(class="groupName") #{name}
-        section("orgActionSection")
+        section(class="orgActionSection")
             a(href="http://localhost:3000/organizations/#{organization_id}/edit") Edit Information
             a(href="http://localhost:3000/events/create?orgId=#{organization_id}") Add Event
             if locals.isMember
@@ -17,21 +17,22 @@ block content
     
     section(class="groupBodySection")
         section(class="groupInfo")
-                p #{description}
-                p Created by: #{original_author_id}
+            h4 Description
+            p #{description}
 
         section(class="membersSection")
             h4 Members
             if locals.listOfUsers
                 each val in listOfUsers
                     li
-                        a(href="http://localhost:3000/profiles/#{val.user_id}")= val.username
+                        a(href="http://localhost:3000/users/#{val.user_id}")= val.username
 
         section(class="eventsSection")
             h4 Events
             if locals.listOfEvents
                 each val in listOfEvents
                     li 
+                        img(src= val.event_image_path)
                         a(href="http://localhost:3000/events/#{val.event_id}")= val.title
             else
                 p No events posted
@@ -50,3 +51,12 @@ block content
         
         
         script(href="./public/scripts/join-org.js")
+        
+        section(class="searchFormSection")
+            form(class="searchOrgsForm", action="http://localhost:3000/search", method="get")
+                input(type="text", name="userQuery", placeholder="Search for groups..")
+                input(type="submit" value="Search")
+                
+                
+        img(src= val.avatar_path)
+        p Created by: #{original_author_id} <-- Find a use for this in the future

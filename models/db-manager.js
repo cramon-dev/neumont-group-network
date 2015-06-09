@@ -238,6 +238,50 @@ exports.getOrganization = function(requestedId, callback) {
     });
 }
 
+//Get all organizations
+exports.getAllOrganizations = function(callback) {
+    getConnection(function onConnect(err, connection) {
+        if(!err) {
+            connection.query('SELECT * FROM organizations', function onDBOrgsRetrieval(err, rows, fields) {
+                var toReturn = [];
+                
+                for(var i in rows) {
+                    toReturn.push({ orgId: rows[i].organization_id, orgName: rows[i].name, orgImage: rows[i].org_image_path });
+                }
+
+                callback(err, toReturn);
+                connection.release();
+            });
+        }
+        else {
+            callback(err, null);
+        }
+    });
+}
+
+//Get all organizations a particular user is a member of
+exports.getOrgsUserIsMemberOf = function(userId, callback) {
+    getConnection(function onConnect(err, connection) {
+        if(!err) {
+            connection.query('SELECT * FROM organizations INNER JOIN members on '
+                             + 'organizations.organization_id = members.org_id '
+                                + 'where members.member_id=\'' + userId + '\'', function onRelevantOrgsRetrieval(err, rows, fields) {
+                var toReturn = [];
+                
+                for(var i in rows) {
+                    toReturn.push({ orgId: rows[i].organization_id, orgName: rows[i].name, orgDesc: rows[i].description, orgImage: rows[i].org_image_path });
+                }
+
+                callback(err, toReturn);
+                connection.release();
+            });
+        }
+        else {
+            callback(err, null);
+        }
+    });
+}
+
 //Add a new organization
 exports.addNewOrganization = function(orgName, orgDesc, authorId, orgImagePath, callback) {
     getConnection(function onConnect(err, connection) {
@@ -341,7 +385,7 @@ exports.getOrgMembers = function(orgId, callback) {
 exports.getOrgMemberDetails = function(orgId, callback) {
     getConnection(function onConnect(err, connection) {
         if(!err) {
-            connection.query('SELECT users.user_id, users.username FROM users INNER JOIN members ON members.member_id = users.user_id WHERE members.org_id = \'' + orgId + '\'', function onDBMembersRetrieval(err, rows, fields) {
+            connection.query('SELECT users.user_id, users.username, users.avatar_path FROM users INNER JOIN members ON members.member_id = users.user_id WHERE members.org_id = \'' + orgId + '\'', function onDBMembersRetrieval(err, rows, fields) {
                 callback(err, rows);
 
                 connection.release();
@@ -446,6 +490,27 @@ exports.getEventDetails = function(eventId, callback) {
                 else {
                     callback(err, null);
                 }
+                
+                connection.release();
+            });
+        }
+        else {
+            callback(err, null);
+        }
+    });
+}
+
+exports.getAllEvents = function(callback) {
+    getConnection(function onConnect(err, connection) {
+        if(!err) {
+            connection.query('SELECT * FROM events', function onDBEventInsert(err, rows, fields) {
+                var toReturn = [];
+                
+                for(var i in rows) {
+                    toReturn.push({ eventId: rows[i].event_id, eventTitle: rows[i].title, eventImage: rows[i].event_image_path });
+                }
+                
+                callback(err, toReturn);
                 
                 connection.release();
             });

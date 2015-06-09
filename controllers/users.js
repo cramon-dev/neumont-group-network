@@ -10,7 +10,7 @@ var inputValidator = require('../models/input-validator.js');
 router.get(/^\/(\d+)\/?$/, function(req, res, next) {
     var requestedUserId = req.params[0];
     
-    user.getSingleUserDetails(requestedUserId, function(err, userDetails) {
+    user.getUserById(requestedUserId, function(err, userDetails) {
         if(!err && userDetails) {
             res.render('profile', { userDetails: userDetails });
         }

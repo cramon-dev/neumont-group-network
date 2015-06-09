@@ -1,0 +1,9 @@
+extends layout
+
+block content
+    a(href="http://localhost:3000/organizations/create") Create an Organization
+    ul(class="listOfOrgs")
+        each org in listOfOrgs
+            li
+                img(src= org.orgImage)
+                a(href="http://localhost:3000/organizations/#{org.orgId}")= org.orgName

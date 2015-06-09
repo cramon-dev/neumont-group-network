@@ -6,6 +6,15 @@ var members = require('../models/member.js');
 var attendees = require('../models/attendee.js');
 var inputValidator = require('../models/input-validator.js');
 
+// =========== View All Events ===========
+
+router.get(/^\/?$/, function(req, res, next) {
+    events.getAllEvents(function onRetrieveEvents(err, listOfEvents) {
+        res.render('all-events', { title: 'Events', listOfEvents: listOfEvents });
+    });
+});
+
+
 // =========== View Event Details ===========
 
 router.get(/^\/(\d+)\/?$/, function(req, res, next) {
@@ -13,6 +22,9 @@ router.get(/^\/(\d+)\/?$/, function(req, res, next) {
     
     events.getEventDetails(eventId, function(err, eventDetails) {
         if(!err && eventDetails) {
+            var newDate = new Date();
+            newDate.setTime(eventDetails.start_date * 1000);
+            eventDetails.start_date = newDate.toDateString();
                 comments.getComments(eventId, function(err, listOfComments) {
                     if(!err && listOfComments) {
                         eventDetails.listOfComments = listOfComments;

@@ -1,17 +1,23 @@
 extends layout
 
 block content
+    p(class="welcomeMessage") Welcome, #{username}!
     section(class="memberOfOrgsSection")
         h3 Organizations you're a member of:
         if locals.listOfOrgs
-            p Member of some org
-            a(href="http://localhost:3000/organizations/create") Create an Organization
+            ul(class="listOfOrgs")
+                each val in listOfOrgs
+                    li
+                        img(src= val.orgImage)
+                        a(href="http://localhost:3000/organizations/#{val.orgId}")= val.orgName
         else
             p You're not a member of any organizations.
     
-    section(class="eventsAttendingSection")
-        h3 Events you're attending:
-        if locals.listOfEvents
-            p Attending some event
-        else
-            p You don't seem to be attending any events.
+    
+    //
+        section(class="eventsAttendingSection")
+            h3 Events you're attending:
+            if locals.listOfEvents
+                p Attending some event
+            else
+                p You don't seem to be attending any events.

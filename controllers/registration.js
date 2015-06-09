@@ -6,7 +6,7 @@ var util = require('util');
 
 /* GET register page. */
 router.get('/', function(req, res, next) {
-    res.render('register');
+    res.render('register', { title: 'Register' });
 });
 
 //Upon successful user account registration, redirect to logged in home page
@@ -30,24 +30,24 @@ router.post('/', function(req, res, next) {
                 console.log('Error registering new user');
                 res.render('register', { errorMessage: err.message });
                 if(err.message.match('ER_DUP_ENTRY')) {
-                    res.render('register', { errorMessage: 'That username or email has already been taken' });
+                    res.render('register', { title: 'Register', errorMessage: 'That username or email has already been taken' });
                 }
                 else {
                     throw err;
-                    res.render('register', { errorMessage: err.message });
+                    res.render('register', { title: 'Register', errorMessage: err.message });
                 }
             }
         });
     }
     else {
         if(inputError) {
-            res.render('register', { errorMessage: inputError.message });
+            res.render('register', { title: 'Register', errorMessage: inputError.message });
         }
         else if(emailError) {
-            res.render('register', { errorMessage: emailError.message });
+            res.render('register', { title: 'Register', errorMessage: emailError.message });
         }
         else {
-            res.render('register', { errorMessage: 'The inputted passwords don\'t match' });
+            res.render('register', { title: 'Register', errorMessage: 'The inputted passwords don\'t match' });
         }
     }
 });

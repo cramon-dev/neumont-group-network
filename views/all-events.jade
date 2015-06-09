@@ -1,0 +1,8 @@
+extends layout
+
+block content
+    ul(class="listOfEvents")
+        each event in listOfEvents
+            li
+                img(src= event.eventImage)
+                a(href="http://localhost:3000/events/#{event.eventId}")= event.eventTitle

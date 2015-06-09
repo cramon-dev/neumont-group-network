@@ -15,12 +15,13 @@ router.get('/', function(req, res, next) {
     
     messages.getListOfMessages(userId, function(err, listOfMessages) {
         if(!err && listOfMessages) {
-            res.render('mailbox', { inbox: listOfMessages, message: statusMessage, errorMessage: errMessage });
+            res.render('mailbox', { title: 'Inbox', inbox: listOfMessages, message: statusMessage, errorMessage: errMessage });
         }
         else {
-            res.render('mailbox', { errorMessage: err.message });
+            res.render('mailbox', { title: 'Inbox', errorMessage: err.message });
         }
     });
+    
 });
 
 //Send a message to a user

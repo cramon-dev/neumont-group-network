@@ -15,7 +15,9 @@ html
                 span(class="logo-text") Neumont Group Network
             if session.user
                 include ./partials/header-signedin.jade
-        section(class="bodyContent")
+        main(class="bodyContent")
+            section(class="breadcrumb")
+            h1(class="pageTitle")= title
             p(class="message") #{message}
             p(class="errorMessage") #{errorMessage}
             block content

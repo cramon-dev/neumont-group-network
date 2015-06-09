@@ -16,10 +16,16 @@
 	padding: 0;
 }
 
+html {
+    height: 100%;
+    font-size: 16px;
+}
+
 body {
     background-color: #EEE; /* Alternatively, background color can be #CCCCCC or #DDDDDD */
     width: 960px; /* I usually go with 960px */
     margin: 0 auto;
+    height: 100%;
     font-family: 'Arial', sans-serif;
     font-size: 16px;
     /* Tighter spacing between letters? */
@@ -44,7 +50,9 @@ textarea:focus, input:focus {
 
 .message {
     color: #5DBB11;
-    font-size: 16px;
+    position: relative;
+    bottom: 60px;
+    font-size: 140%; /* 16px */
     font-weight: bold;
     margin-bottom: 20px;
     text-align: center;
@@ -52,7 +60,9 @@ textarea:focus, input:focus {
 
 .errorMessage {
     color: #C00;
-    font-size: 16px;
+    position: relative;
+    bottom: 60px;
+    font-size: 140%; /* 16px */
     font-weight: bold;
     margin-bottom: 20px;
     text-align: center;
@@ -103,10 +113,43 @@ header {
     max-width: 300px;
     max-height: 200px;
     float: right;
+    overflow: hidden;
+}
+
+.signedInHeader img {
+    width: 100%;
+    margin-right: 10px;
 }
 
 .signedInHeader p {
     font-size: 14px;
+}
+
+.userAccountActions {
+    display: inline-block;
+}
+
+.userAccountActions li:first-child, li:last-child {
+    margin-bottom: 5px;
+}
+
+.userAccountActions li:nth-child(2) {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+nav {
+    margin-left: 465px;
+    font-weight: bold;
+    font-size: 140%;
+    position: relative;
+    bottom: 50px;
+}
+
+nav ul li {
+    display: inline-block;
+    list-style-type: none;
+    margin-right: 30px;
 }
 
 
@@ -116,7 +159,8 @@ header {
     display: block;
     background-color: #DDDDDD;
     text-align: center;
-    min-height: 604px;
+/*    min-height: 604px;*/
+    min-height: calc(100% - 414px);
     border-top: 1px solid #343434;
     border-bottom: 1px solid #000000;
     padding-top: 130px;
@@ -128,7 +172,7 @@ header {
 
 .welcomeMessage {
     text-align: center;
-    font-size: 120%;
+    font-size: 165%;
     margin-bottom: 85px;
     padding-left: 40px;
     padding-right: 40px;
@@ -152,6 +196,9 @@ header {
     border-radius: 5px;
     box-shadow: 1px 1px 2px #222222;
 }
+
+
+/* Home Page */
 
 
 /* Register Page */
@@ -186,13 +233,122 @@ header {
 
 /* Individual Organization Page */
 
+.groupName {
+    font-size: 380%;
+}
 
+.groupInfo h4 {
+    font-size: 180%;
+}
+
+.membersSection { 
+    margin: 10px 0px 10px 0px;
+}
+
+.membersSection h4 {
+    font-size: 180%;
+}
+
+.membersSection li {
+    width: 180px;
+    text-align: center;
+}
+
+.eventsSection {
+    margin: 10px 0px 10px 0px;
+}
+
+.eventsSection h4 {
+    font-size: 180%;
+}
+
+.eventsSection li {
+    width: 180px;
+    text-align: center;
+}
+
+.orgActionSection {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.orgActionSection a {
+    font-size: 120%;
+}
+
+.orgActionSection a:first-child {
+    margin-right: 20px;
+}
+
+.orgActionSection a:last-child {
+    margin-left: 20px;
+}
 
 /* Individual Event Page */
 
 .userCommentAvatar {
     display: inline-block;
+    float: left;
     max-width: 56px;
+}
+
+.eventCommentSection ul li {
+    margin: 0 auto;
+    width: 400px;
+    height: 85px;
+}
+
+
+/* All Orgs Page */
+
+.listOfOrgs {
+    margin: 0 auto;
+}
+
+.listOfOrgs li {
+    width: 220px;
+    margin: 0 auto;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.listOfOrgs li img {
+    width: 112px;
+    height: 112px;
+    border: 1px solid #000;
+}
+
+.listOfOrgs li a {
+    position: relative;
+    font-size: 120%;
+    left: 25px;
+    bottom: 25px;
+}
+
+
+/* All Events Page */
+
+.listOfEvents {
+    margin: 0 auto;
+}
+
+.listOfEvents li {
+    width: 220px;
+    margin: 0 auto;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.listOfEvents li img {
+    width: 112px;
+    height: 112px;
+}
+
+.listOfEvents li a {
+    position: relative;
+    font-size: 120%;
+    left: 25px;
+    bottom: 25px;
 }
 
 

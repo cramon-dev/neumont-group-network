@@ -13,6 +13,12 @@ exports.editEventDetails = function(newEventTitle, newEventDesc, newEventStartDa
     });
 }
 
+exports.getAllEvents = function(callback) {
+    dbManager.getAllEvents(function onGetAllEvents(err, listOfEvents) {
+        callback(err, listOfEvents);
+    });
+}
+
 exports.getEventDetails = function(eventId, callback) {
     dbManager.getEventDetails(eventId, function onGetEventDetails(err, eventDetails) {
         var canUsersComment = eventDetails.can_users_comment ? true : false;

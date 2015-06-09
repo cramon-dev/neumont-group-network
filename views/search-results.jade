@@ -7,7 +7,7 @@ block content
             h4 Organizations:
             for result in searchResults
                 - var orgId = result.orgId
+                img(src=result.org_image_path)
                 a(href="http://localhost:3000/organizations/#{orgId}")= result.orgName
-            h4 Events:
         else
             p No results found

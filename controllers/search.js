@@ -16,15 +16,15 @@ router.get('/', function(req, res, next) {
     if(!inputError) {
         searchModel.getListOfOrgsByKeywords(keywords, function(err, searchResults) {
             if(!err) {
-                res.render('search-results', { searchResults: searchResults });
+                res.render('search-results', { title: 'Search Results', searchResults: searchResults });
             }
             else {
-                res.render('search-results', { errorMessage: err.message });
+                res.render('search-results', { title: 'Search Results', errorMessage: err.message });
             }
         });
     }
     else {
-        res.render('home', { errorMessage: inputError.message });
+        res.render('home', { title: 'Search Results', errorMessage: inputError.message });
     }
 });
 
