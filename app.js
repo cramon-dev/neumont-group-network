@@ -19,6 +19,7 @@ var events = require('./controllers/events');
 var search = require('./controllers/search');
 var users = require('./controllers/users');
 var messages = require('./controllers/messages');
+var test = require('./controllers/test');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -61,21 +62,21 @@ app.use(function(req, res, next) {
     next();
 });
 
-//Catch all routes except sign in and register and check if user is logged in
-app.all(/\/(?!signin)(?!signout)(?!register)(\w+)/, function(req, res, next) {
-    if(req.session.user) {
-        console.log("Found valid session");
-        next();
-    }
-    else {
-        console.log("Could not find session or session has expired, sending user to sign in screen");
-        if(!req.path.indexOf('/favicon.ico' || '/signout') > -1) {
-            console.log('Recording last action taken: ' + req.path);
-            req.session.lastAction = req.path;
-        }
-        res.render('index', { message: 'You need to be logged in to do that' });
-    }
-});
+////Catch all routes except sign in and register and check if user is logged in
+//app.all(/\/(?!signin)(?!signout)(?!register)(\w+)/, function(req, res, next) {
+//    if(req.session.user) {
+//        console.log("Found valid session");
+//        next();
+//    }
+//    else {
+//        console.log("Could not find session or session has expired, sending user to sign in screen");
+//        if(!req.path.indexOf('/favicon.ico' || '/signout') > -1) {
+//            console.log('Recording last action taken: ' + req.path);
+//            req.session.lastAction = req.path;
+//        }
+//        res.render('index', { message: 'You need to be logged in to do that' });
+//    }
+//});
 
 //All other routes
 app.use('/', index);
@@ -87,6 +88,7 @@ app.use('/events', events);
 app.use('/search', search);
 app.use('/users', users);
 app.use('/mailbox', messages);
+app.use('/test', test);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

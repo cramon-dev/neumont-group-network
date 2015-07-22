@@ -9,9 +9,15 @@ var inputValidator = require('../models/input-validator.js');
 
 // =========== View All Organizations ===========
 
+//router.get(/^\/?$/, function(req, res, next) {
+//    organizations.getAllOrganizations(function onRetrieveOrgs(err, listOfOrgs) {
+//        res.render('all-orgs', { title: 'Organizations', listOfOrgs: listOfOrgs });
+//    });
+//});
+
 router.get(/^\/?$/, function(req, res, next) {
     organizations.getAllOrganizations(function onRetrieveOrgs(err, listOfOrgs) {
-        res.render('all-orgs', { title: 'Organizations', listOfOrgs: listOfOrgs });
+        res.json(listOfOrgs);
     });
 });
 
@@ -21,47 +27,59 @@ router.get(/^\/?$/, function(req, res, next) {
 router.get(/^\/(\d+)\/?$/, function(req, res, next) {
     var orgId = req.params[0];
     
-    //Goddamn son. How did you let it get this bad. How the mighty have fallen.
-    organizations.getOrganization(orgId, function onOrgRetrieval(err, orgData) {
-        if(!err) {
-            if(orgData) {
-                members.getOrgMemberDetails(orgId, function onMemberDetailsRetrieval(err, listOfMemberDetails) {
-                    if(!err) {
-                        events.getListOfEvents(orgId, function onListOfEventsRetrieval(err, listOfEvents) {
-                            if(!err && listOfEvents) {
-                                orgData.listOfEvents = listOfEvents;
-                                orgData.listOfUsers = listOfMemberDetails;
-                                orgData.errorMessage = req.session.errorMessage;
-                                orgData.message = req.session.message;
-                                req.session.errorMessage = null;
-                                req.session.message = null;
-
-                                console.log(util.inspect(listOfMemberDetails));
-                                res.render('organization', orgData);
-                            }
-                            else {
-                                orgData.errorMessage = 'Something went wrong displaying a list of events';
-                                res.render('organization', orgData);
-                            }
-                        });
-                    }
-                    else {
-                        req.session.errorMessage = err.message;
-                        res.redirect('/');
-                    }
-                });
-            }
-            else {
-                var err = new Error('Not Found');
-                err.status = 404;
-                next();
-            }
-        }
-        else {
-            req.session.errorMessage = 'Something went wrong displaying that organization, please try again later';
-            res.redirect('/');
-        }
-    });
+//    q.fcall(organizations.getOrganization(orgId))
+//    .then(members.getOrgMemberDetails(orgId))
+//    .then(events.getListOfEvents(orgId))
+//    .then(function(err, data) {
+//        console.log('got everything');
+//    })
+//    .catch(function (err) {
+//        console.log('got an error');
+//        console.log(util.inspect(err));
+//    })
+//    .done();
+    
+//    //Goddamn son. How did you let it get this bad. How the mighty have fallen.
+//    organizations.getOrganization(orgId, function onOrgRetrieval(err, orgData) {
+//        if(!err) {
+//            if(orgData) {
+//                members.getOrgMemberDetails(orgId, function onMemberDetailsRetrieval(err, listOfMemberDetails) {
+//                    if(!err) {
+//                        events.getListOfEvents(orgId, function onListOfEventsRetrieval(err, listOfEvents) {
+//                            if(!err && listOfEvents) {
+//                                orgData.listOfEvents = listOfEvents;
+//                                orgData.listOfUsers = listOfMemberDetails;
+//                                orgData.errorMessage = req.session.errorMessage;
+//                                orgData.message = req.session.message;
+//                                req.session.errorMessage = null;
+//                                req.session.message = null;
+//
+//                                console.log(util.inspect(listOfMemberDetails));
+//                                res.render('organization', orgData);
+//                            }
+//                            else {
+//                                orgData.errorMessage = 'Something went wrong displaying a list of events';
+//                                res.render('organization', orgData);
+//                            }
+//                        });
+//                    }
+//                    else {
+//                        req.session.errorMessage = err.message;
+//                        res.redirect('/');
+//                    }
+//                });
+//            }
+//            else {
+//                var err = new Error('Not Found');
+//                err.status = 404;
+//                next();
+//            }
+//        }
+//        else {
+//            req.session.errorMessage = 'Something went wrong displaying that organization, please try again later';
+//            res.redirect('/');
+//        }
+//    });
 });
 
 //Join an organization
