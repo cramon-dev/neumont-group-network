@@ -6,9 +6,10 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 //var busboy = require('connect-busboy');
 var multer = require('multer');
-var sessions = require('express-session');
-//var redis = require('redis');
-//var client = redis.createClient();
+// var sessions = require('express-session');
+var redis = require('redis');
+var client = redis.createClient();
+console.log('Redis client created: ' + client);
 
 var app = express();
 var hour = 1000 * 60 * 60;
@@ -37,12 +38,12 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'uploads')));
-app.use(sessions({
-    secret: 'g53hm#v+c=u7(4b#7q*9wds+(j)=i3+j(x4=6joi9v$7v0-gfwn5z',
-    cookie: { expires: (Date.now() + hour), maxAge: hour }, //in milliseconds
-    resave: false,
-    saveUninitialized: true
-}));
+// app.use(sessions({
+//     secret: 'g53hm#v+c=u7(4b#7q*9wds+(j)=i3+j(x4=6joi9v$7v0-gfwn5z',
+//     cookie: { expires: (Date.now() + hour), maxAge: hour }, //in milliseconds
+//     resave: false,
+//     saveUninitialized: true
+// }));
 
 //Multer for image uploading
 app.use(multer({
@@ -91,7 +92,7 @@ app.use('/organizations', organizations);
 app.use('/events', events);
 app.use('/search', search);
 app.use('/profiles', profiles);
-app.use('/mailbox', messages);
+app.use('/messages', messages);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

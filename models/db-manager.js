@@ -1,16 +1,16 @@
 //Manage database connections and perform operations
 var mysql = require('mysql');
-var bcrypt = require('bcrypt');
+var bcrypt = require('bcrypt-nodejs');
+
 
 //Connection pool
 var pool = mysql.createPool({
     host: 'localhost',
-    user: 'ngn-admin',
+    user: 'admin',
     password: 'QFpExCtT8zS5MnuZ',
     database: 'ngn-db',
     connectionLimit: 10
 });
-
 
 //user: 'ngn-user',
 //password: 'zJ7m9cdujSGrSvAq'
@@ -676,22 +676,22 @@ exports.getConvosAndReplies = function(conversationId, callback) {
 //    });
 //}
 //
-//exports.getListOfConversations = function(userId, callback) {
-//    getConnection(function onConnect(err, connection) {
-//        if(!err) {
-//            connection.query('SELECT * FROM conversations where sender_id=\'' + userId + '\' OR receiver_id=\'' + userId + '\'', function(err, rows, fields) {
-//                if(rows) {
-//                    callback(err, rows);
-//                }
-//                else {
-//                    callback(err, null);
-//                }
-//                
-//                connection.release();
-//            });
-//        }
-//        else {
-//            callback(err, null);
-//        }
-//    });
-//}
+exports.getListOfConversations = function(userId, callback) {
+   getConnection(function onConnect(err, connection) {
+       if(!err) {
+           connection.query('SELECT * FROM conversations where sender_id=\'' + userId + '\' OR receiver_id=\'' + userId + '\'', function(err, rows, fields) {
+               if(rows) {
+                   callback(err, rows);
+               }
+               else {
+                   callback(err, null);
+               }
+               
+               connection.release();
+           });
+       }
+       else {
+           callback(err, null);
+       }
+   });
+}

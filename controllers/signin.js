@@ -1,9 +1,11 @@
 var express = require('express');
 var router = express.Router();
+var crypto = require('crypto');
 var inputValidator = require('../models/input-validator.js');
 var user = require('../models/user.js');
 
 router.get('/', function(req, res, next) {
+    // res.json({ username: 'username' });
     res.render('signin');
 });
 
@@ -12,6 +14,8 @@ router.post('/', function(req, res, next) {
     var password = req.body.password;
     var inputs = [ username, password ];
     var inputError = inputValidator.validateInput(inputs);
+
+    // res.json({ username: username });
 
     //If no invalid input found, authenticate, no errors while authenticating, and the user was authenticated, redirect the user home or to the url they last requested
     if(!inputError) {
@@ -22,6 +26,8 @@ router.post('/', function(req, res, next) {
                     req.session.user = user;
                     res.locals.user = user;
                     
+                    // res.json({ username: user.username });
+
                     console.log('User avatar: ' + req.session.user.userAvatar);
 
                     if(req.session.lastAction) {

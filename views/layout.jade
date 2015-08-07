@@ -5,16 +5,33 @@ html
             title= title
         else
             title Neumont Group Network
-        link(rel='stylesheet', type='text/css', href='/stylesheets/style.min.css')
-        link(rel='stylesheet', type='text/css', href='http://fonts.googleapis.com/css?family=Lato:400,700,900|Oswald:400,700')
+        link(rel="stylesheet", type="text/css", href="/css/style.css")
+        link(rel="stylesheet", type="text/css", href="http://fonts.googleapis.com/css?family=Lato:400,700,900|Oswald:400,700")
+        script(src="/js/angular.min.js")
+        script(src="/js/app.js")
+        script(src="/js/controllers/messageCtrl.js")
+
     body
         header
-            a(class='logo' href='http://localhost:3000/') 
-                span(class='logo-text') Neumont Group Network
+            a(class="logo" href="http://localhost:3000/") 
+                span(class="logo-text") Neumont Group Network
             include ./partials/header-signedin.jade
-        section(class="bodyContent")
-            p(class='message') #{message}
-            p(class='errorMessage') #{errorMessage}
+        main(class="bodyContent")
+            section(class="breadcrumb")
+            h1(class="pageTitle")= title
+            p(class="message") #{message}
+            p(class="errorMessage") #{errorMessage}
             block content
+            if locals.session.user
+                section(ng-app="messager")
+                    section(ng-controller="messageCtrl")
+                        section(ng-if="user")
+                            input(type="button", ng-click="getAllConversations()", value="Refresh")
+                            p Welcome, {{ user.username }}
+                            ul
+                                li
+                                    p User 1
+                                    p User 2
+                                    p User 3
         footer
             p Created 2015, Christian Ramon
