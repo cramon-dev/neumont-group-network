@@ -4,15 +4,22 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-//var busboy = require('connect-busboy');
+var nodemailer = require('nodemailer');
 var multer = require('multer');
-// var sessions = require('express-session');
-var redis = require('redis');
-var client = redis.createClient();
-console.log('Redis client created: ' + client);
+var sessions = require('express-session');
+// var redis = require('redis');
+// var client = redis.createClient();
+// console.log('Redis client created: ' + client);
 
 var app = express();
 var hour = 1000 * 60 * 60;
+var transporter = nodemailer.createTransport({
+    service: 'Gmail',
+    auth: {
+        user: 'christianr465@gmail.com',
+        pass: 'unaxnwgrztjbtphk'
+    }
+});
 
 var index = require('./controllers/index');
 var signin = require('./controllers/signin');
@@ -23,6 +30,7 @@ var events = require('./controllers/events');
 var search = require('./controllers/search');
 var profiles = require('./controllers/profiles');
 var messages = require('./controllers/messages');
+var users = require('./controllers/users');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -38,12 +46,12 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'uploads')));
-// app.use(sessions({
-//     secret: 'g53hm#v+c=u7(4b#7q*9wds+(j)=i3+j(x4=6joi9v$7v0-gfwn5z',
-//     cookie: { expires: (Date.now() + hour), maxAge: hour }, //in milliseconds
-//     resave: false,
-//     saveUninitialized: true
-// }));
+app.use(sessions({
+    secret: 'g53hm#v+c=u7(4b#7q*9wds+(j)=i3+j(x4=6joi9v$7v0-gfwn5z',
+    cookie: { expires: (Date.now() + hour), maxAge: hour }, //in milliseconds
+    resave: false,
+    saveUninitialized: true
+}));
 
 //Multer for image uploading
 app.use(multer({
@@ -93,6 +101,7 @@ app.use('/events', events);
 app.use('/search', search);
 app.use('/profiles', profiles);
 app.use('/messages', messages);
+app.use('/users', users);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

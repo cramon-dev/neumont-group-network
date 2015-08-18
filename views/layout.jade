@@ -6,6 +6,7 @@ html
         else
             title Neumont Group Network
         link(rel="stylesheet", type="text/css", href="/css/style.css")
+        link(rel="stylesheet", type="text/css", href="/bootstrap/css/bootstrap.min.css")
         link(rel="stylesheet", type="text/css", href="http://fonts.googleapis.com/css?family=Lato:400,700,900|Oswald:400,700")
         script(src="/js/angular.min.js")
         script(src="/js/app.js")
@@ -22,16 +23,16 @@ html
             p(class="message") #{message}
             p(class="errorMessage") #{errorMessage}
             block content
-            if locals.session.user
+
+            if user
                 section(ng-app="messager")
-                    section(ng-controller="messageCtrl")
-                        section(ng-if="user")
+                    section(class="messageCtrlSection", ng-controller="messageCtrl", ng-init="setUser(#{JSON.stringify(user)})")
+                        section(class="recentMessages")
                             input(type="button", ng-click="getAllConversations()", value="Refresh")
-                            p Welcome, {{ user.username }}
-                            ul
+                            input(type="button" ng-click="getUser()" value="Get User")
+                            h3 Messages
+                            ul(ng-repeat="conversation in conversations")
                                 li
-                                    p User 1
-                                    p User 2
-                                    p User 3
+                                    p {{ conversation }}
         footer
             p Created 2015, Christian Ramon

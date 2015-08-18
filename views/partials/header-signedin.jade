@@ -1,7 +1,7 @@
-if locals.session.user
+if user
     section(class="signedInHeader")
-        p= session.user.username
-        if session.user.userAvatar
+        p= user.username
+        if user.userAvatar
             img(class="userAvatar", src= session.user.userAvatar)
         else
             img(class="userAvatar", src="../images/default_avatar.png")
@@ -10,3 +10,8 @@ if locals.session.user
             form(action="http://localhost:3000/search", method="get")
                 input(type="text", name="userQuery", placeholder="Search for groups..")
                 input(type="submit" value="Search")
+else
+    form(action="http://localhost:3000/signin", method="post")
+        input(type="text", name="username", placeholder="Username")
+        input(type="password", name="password", placeholder="Password")
+        input(type="submit" value="Sign In")
