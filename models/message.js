@@ -19,8 +19,8 @@ exports.getListOfConversations = function(userId, callback) {
     });
 }
 
-exports.replyToConversation = function(senderId, receiverId, conversationId, content, callback) {
-    dbManager.replyToConversation(senderId, receiverId, conversationId, content, function(err, result) {
+exports.replyToConversation = function(senderId, receiverId, conversationId, content, timeSent, callback) {
+    dbManager.replyToConversation(senderId, receiverId, conversationId, content, timeSent, function(err, result) {
         callback(err, result);
     });
 }

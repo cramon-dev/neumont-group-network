@@ -60,14 +60,22 @@ html
                             a(href="#", id="toggle-messager") Recent Conversations
                             a(href="#", id="new-message") 
                                 span(class="glyphicon glyphicon-envelope")
-                        section(class="recent-conversations", ng-init="initUser()")
-                            ul(class="list-group conversation-list", ng-if="conversations")
-                                li(class="list-group-item", ng-repeat="conversation in conversations")
-                                    a(href="#", ng-click="selectConversation(conversation)")
-                                        img(class="conversation-avatar", ng-src="{{ conversation.userMessagingImg }}")
-                                        p {{ conversation.userMessaging }}
-                            ul(class="list-group", ng-if="!conversations")
-                                h5(id="no-conversations") No conversations found
+                        div(ng-if="windowMode == 'list'")
+                            section(class="recent-conversations", ng-init="initUser()")
+                                ul(class="list-group conversation-list", ng-if="conversations")
+                                    li(class="list-group-item", ng-repeat="conversation in conversations")
+                                        a(href="#", ng-click="selectConversation(conversation)")
+                                            img(class="conversation-avatar", ng-src="{{ conversation.userMessagingImg }}")
+                                            p {{ conversation.userMessaging }}
+                                ul(class="list-group", ng-if="!conversations")
+                                    h5(id="no-conversations") No conversations found
+                        div(ng-if="windowMode == 'convo'")
+                            section(class="conversation")
+                                a(href="#", class="glyphicon glyphicon-menu-left", ng-click="returnToList()")
+                                section(class="conversation-input")
+                                    input(type="text", class="form-control", ng-model="message", name="message")
+                                    a(href="#")
+                                        i(class="glyphicon glyphicon-menu-right", ng-click="sendMessage(message)")
 
                                     //
                                         userMessaging = the user who this user is conversing with 

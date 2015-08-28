@@ -18,6 +18,15 @@ angular
 
 		this.sendMessage = function(senderId, receiverId, message) {
 			console.log('Send message');
+			$http.post('http://localhost:3000/messages/send/' + receiverId, { senderId: senderId, message: message })
+				.success(function(response) {
+					console.log('Success sending message');
+					return response;
+				})
+				.error(function(response) {
+					console.log('Error sending message');
+					console.log(response);
+				});
 		}
 
 		//Encode UTF-8 string to Base64
@@ -33,15 +42,12 @@ angular
 	.controller("messageCtrl", function($scope, $http, $log, MessageService, UserService) {
 		$scope.windowMode = 'list'; // when window mode = list, show list of conversations, when window mode = convo, show conversation with someone
 		$scope.user;
-		// $scope.conversations = [
-		// 	{ userMessaging: 'cramon', userMessagingImg: '/resources/img/default_user_avatar.png' },
-		// 	{ userMessaging: 'kreed', userMessagingImg: '/resources/img/default_user_avatar.png' },
-		// 	{ userMessaging: 'zosullivan', userMessagingImg: '/resources/img/default_user_avatar.png' }
-		// ];
+		$scope.currentConversation = { receiverId: 1 };
+		$scope.conversations = [
+			{ userMessaging: 'testuser2', userMessagingImg: '/resources/img/default_user_avatar.png', receiverId: 3 },
+			{ userMessaging: 'testuser3', userMessagingImg: '/resources/img/default_user_avatar.png', receiverId: 2 }
+		];
 
-		$scope.something = function() {
-			$log.warn('something');
-		};
 
 		$scope.getUser = function() {
 			return $scope.user;
@@ -67,22 +73,31 @@ angular
 
 		$scope.getAllConversations = function() {
 			console.log('Get all conversations');
-			$scope.conversations = MessageService.getAllConversations($scope.user.userId);
+			// $scope.conversations = MessageService.getAllConversations($scope.user.userId);
 			// MessageService.getAllConversations(userId, ??)
 			// MessageService.getAllConversations(1, 'kjsa;lkfjajelwqoiuewoiruewrewqoij');
 		};
 
 		$scope.selectConversation = function(conversation) {
 			console.log('Select conversation');
+			$scope.currentConversation = conversation;
 			$scope.windowMode = 'convo';
 			for(var i in conversation) {
 				console.log('Key: ' + i + '\nValue: ' + conversation[i]);
 			}
 		};
 
+		$scope.returnToList = function() {
+			$scope.currentConversation = {};
+			$scope.windowMode = 'list';
+		}
+
 		$scope.sendMessage = function(message) {
-			var messageToSend = $scope.encodeString(message);
-			console.log('Message to send encoded: ' + messageToSend);
+			console.log('Message to send: ' + message);
+			console.log('Receiver ID: ' + $scope.currentConversation.receiverId);
+			console.log('Sender ID: ' + $scope.user.userId);
+
+			MessageService.sendMessage($scope.user.userId, $scope.currentConversation.receiverId, message);
 			// MessageService.sendMessage(senderId, receiverId, message);
 		};
 	});

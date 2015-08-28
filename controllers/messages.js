@@ -3,6 +3,7 @@ var router = express.Router();
 var messageModel = require('../models/message.js');
 var userModel = require('../models/user.js');
 var inputValidator = require('../models/input-validator.js');
+var util = require('util');
 
 router.get('/:userid', function(req, res, next) {
     var userId = req.session.user.userId;
@@ -39,50 +40,76 @@ router.post('/:receiverId', function(req, res, next) {
 //     });
 // });
 
-// router.post('/send', function(req, res, next) {
-//     var userId = req.session.user.userId;
-//     var userToSendTo = req.body.userToSendTo;
-//     var message = inputValidator.encodeString(req.body.messageContent);
-//     var currentTime = Date.now();
-    
-//     userModel.getUserByName(userToSendTo, function(err, receiver) {
-//         if(!err && receiver) {
-//             var receiverId = receiver.user_id;
-//             var convoExists = doesConversationExist(userId, receiverId);
+router.post('/send/:receiverId', function(req, res, next) {
+    console.log('Post a message..');
+    var userId = req.body.senderId;
+    var receiverId = req.params.receiverId;
+    var message = req.body.message;
+    // var message = inputValidator.encodeString(req.body.messageContent);
+    var currentTime = Date.now();
 
-//             if(convoExists) {
-//                 messageModel.replyToConversation(userId, receiverId, convoExists, message, currentTime, function(err, result) {
-//                     req.session.message = 'Message sent';
-//                     res.redirect('/mailbox');
-//                 });
-//             }
-//             else {
-//                 messageModel.createConversation(userId, receiverId, function(err, result) {
-//                     if(!err && result) {
-//                         messageModel.replyToConversation(userId, receiverId, result, message, currentTime, function(err, result) {
-//                             req.session.message = 'Message sent';
-//                             res.redirect('/mailbox');
-//                         });
-//                     }
-//                     else {
-//                         req.session.errorMessage = err.message;
-//                         res.redirect('/mailbox');
-//                     }
-//                 });
-//             }
-//         }
-//         else {
-//             req.session.errorMessage = err.message;
-//             res.redirect('/mailbox');
-//         }
-//     });
-// });
+    var existingConvoId = doesConversationExist(userId, receiverId);
+    if(existingConvoId) {
+        console.log('Conversation exists');
+        messageModel.replyToConversation(userId, receiverId, existingConvoId, message, currentTime, function(err, result) {
+            res.status(200).send('Message sent!');
+        });
+    }
+    else {
+        console.log('Conversation does not yet exist');
+        messageModel.createConversation(userId, receiverId, function(err, result) {
+            if(!err && result) {
+                messageModel.replyToConversation(userId, receiverId, result, message, currentTime, function(err, result) {
+                    res.status(200).send('New conversation created and message sent!');
+                });
+            }
+            else {
+                res.status(err.status || 500).send(err);
+            }
+        });
+    }
+    
+    // userModel.getUserByName(userToSendTo, function(err, receiver) {
+    //     if(!err && receiver) {
+    //         var receiverId = receiver.user_id;
+    //         var convoExists = doesConversationExist(userId, receiverId);
+
+    //         if(convoExists) {
+    //             messageModel.replyToConversation(userId, receiverId, convoExists, message, currentTime, function(err, result) {
+    //                 req.session.message = 'Message sent';
+    //                 res.redirect('/mailbox');
+    //             });
+    //         }
+    //         else {
+    //             messageModel.createConversation(userId, receiverId, function(err, result) {
+    //                 if(!err && result) {
+    //                     messageModel.replyToConversation(userId, receiverId, result, message, currentTime, function(err, result) {
+    //                         req.session.message = 'Message sent';
+    //                         res.redirect('/mailbox');
+    //                     });
+    //                 }
+    //                 else {
+    //                     req.session.errorMessage = err.message;
+    //                     res.redirect('/mailbox');
+    //                 }
+    //             });
+    //         }
+    //     }
+    //     else {
+    //         req.session.errorMessage = err.message;
+    //         res.redirect('/mailbox');
+    //     }
+    // });
+});
 
 
 var doesConversationExist = function(senderId, receiverId) {
     messageModel.getConversation(senderId, receiverId, function(err, conversation) {
         if(!err && conversation) {
             return conversation.conversation_id;
+        }
+        else {
+            return null;
         }
     });
 }

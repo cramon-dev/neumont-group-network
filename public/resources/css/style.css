@@ -71,6 +71,20 @@ body {
     max-width: 24px;
 }
 
+.messager-section .conversation-input {
+    position: absolute;
+    width: 100%;
+    bottom: 0;
+}
+
+.messager-section .conversation-input a {
+    display: inline-block;
+    background-color: #FFF;
+    position: absolute;
+    bottom: 5px;
+    left: 255px;
+}
+
 
 /* Index */
 

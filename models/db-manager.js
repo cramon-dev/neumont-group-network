@@ -711,7 +711,8 @@ exports.getConversation = function(senderId, receiverId, callback) {
     getConnection(function onConnect(err, connection) {
         if(!err) {
             connection.query('SELECT * FROM conversations where sender_id=\'' 
-                             + senderId + '\' AND receiver_id=\'' + receiverId + '\' LIMIT 1', function onRetrieveConversation(err, rows, fields) {
+                             + senderId + '\' AND receiver_id=\'' + receiverId 
+                                + '\' OR sender_id=\'' + receiverId + '\' AND receiver_id=\'' + senderId + '\' LIMIT 1', function onRetrieveConversation(err, rows, fields) {
                 if(rows[0]) {
                     callback(err, rows[0]);
                 }
@@ -786,8 +787,6 @@ exports.getListOfConversations = function(userId, callback) {
                else {
                    callback(err, null);
                }
-               
-               connection.release();
            });
        }
        else {
