@@ -1,7 +1,7 @@
 //Manage database connections and perform operations
 var mysql = require('mysql');
 var bcrypt = require('bcrypt-nodejs');
-
+var util = require('util');
 
 //Connection pool
 var pool = mysql.createPool({
@@ -21,7 +21,12 @@ var pool = mysql.createPool({
 //Get a DB connection from the pool and give it to a callback
 var getConnection = function(callback) {
     pool.getConnection(function onConnectionRetrieval(err, conn) {
-        callback(err, conn);
+        if(!err) {
+            callback(null, conn);
+        }
+        else {
+            return callback(err, null);
+        }
     });
 }
 
@@ -31,30 +36,47 @@ var generateNewHash = function(password_to_hash) {
     return bcrypt.hashSync(password_to_hash, salt);
 }
 
+//Encode UTF-8 string to Base64
+var encodeString = function(string) {
+//    return btoa(unescape(encodeURIComponent(string)));
+    return new Buffer(string).toString('base64');
+}
+
+//Decode Base64 string to UTF-8
+var decodeString = function(string) {
+//    return decodeURIComponent(escape(atob(string)));
+    return new Buffer(string, 'base64'); // Ta-da
+}
+
 
 // =========== Sign In/Registration ===========
 
 //Register a new user
-exports.registerNewUser = function(username, password, email, callback) {
+exports.registerNewUser = function(username, password, email, userAvatar, callback) {
     var hashedPassword = generateNewHash(password);
     
     getConnection(function onConnect(err, connection) {
         if(!err) {
-            connection.query('INSERT INTO `users`(`username`, `password`, `email`) VALUES (\'' 
-                             + username + '\', \'' + hashedPassword + '\', \'' + email + '\')', function onDBInsertUser(err, result) {
+            if(!userAvatar) {
+                userAvatar = null;
+            }
+
+            connection.query('INSERT INTO `users`(`username`, `password`, `email`, `avatar_path`) VALUES (\'' 
+                             + username + '\', \'' + hashedPassword + '\', \'' + email + '\', \'' + userAvatar + '\')', function onDBInsertUser(err, result) {
                 if(!err) {
                     callback(null, result.insertId);
                 }
                 else {
                     callback(err, null);
                 }
-                
-                connection.release();
             });
         }
         else {
             callback(err, null);
         }
+
+        console.log('Releasing connection..');
+        connection.release();
     });
 }
 
@@ -80,13 +102,13 @@ exports.authenticate = function(username, password, callback) {
                 else {
                     callback(err, null);
                 }
-
-                connection.release();
             });
         }
         else {
             callback(err, null);
         }
+
+        connection.release();
     });
 }
 
@@ -111,9 +133,9 @@ exports.getUserDetails = function(requestedId, callback) {
         }
         else {
             callback(err, null);
-            
-            connection.release();
         }
+
+        connection.release();
     });
 }
 
@@ -142,9 +164,9 @@ exports.getListOfUserDetails = function(requestedIDs, callback) {
         }
         else {
             callback(err, null);
-            
-            connection.release();
         }
+
+        connection.release();
     });
 }
 
@@ -154,15 +176,13 @@ exports.getUserByName = function(username, callback) {
         if(!err) {
             connection.query('SELECT * FROM users where username=\'' + username + '\'', function onUserRetrieval(err, rows, fields) {
                 callback(err, rows[0]);
-                
-                connection.release();
             });
         }
         else {
             callback(err, null);
-            
-            connection.release();
         }
+
+        connection.release();
     });
 }
 
@@ -174,13 +194,13 @@ exports.editUserDetails = function(newPassword, newEmail, userId, callback) {
             connection.query('UPDATE `users` SET `password`=\'' + 
                              hashedPassword + '\', `email`=\'' + newEmail + '\' WHERE `user_id`=\'' + userId + '\'', function(err, result) {
                 callback(err, result);
-
-                connection.release();
             });
         }
         else {
             callback(err, null);
         }
+
+        connection.release();
     });
 }
 
@@ -191,13 +211,13 @@ exports.deleteUser = function(userId, callback) {
             connection.query('DELETE FROM users where user_id=\'' + userId + '\'', function(err, result) {
                 console.log('Deleted ' + result.affectedRows + ' rows');
                 callback(err, result);
-
-                connection.release();
             });
         }
         else {
             callback(err, null);
         }
+
+        connection.release();
     });
 }
 
@@ -207,13 +227,13 @@ exports.changeUserAvatar = function(userId, avatarPath, callback) {
             var uploadPath = '../' + avatarPath;
             connection.query('UPDATE `users` SET `avatar_path`=\'' + uploadPath + '\' WHERE `user_id`=\'' + userId + '\'', function(err, result) {
                 callback(err, result.insertId);
-
-                connection.release();
             });
         }
         else {
             callback(err, null);
         }
+
+        connection.release();
     });
 }
 
@@ -226,13 +246,49 @@ exports.getOrganization = function(requestedId, callback) {
         if(!err) {
             connection.query('SELECT * FROM organizations where organization_id=\'' + requestedId + '\' LIMIT 1', function onDBOrgRetrieval(err, rows, fields) {
                 callback(err, rows[0]);
-
-                connection.release();
             });
         }
         else {
             callback(err, null);
         }
+
+        connection.release();
+    });
+}
+
+//Get all organizations
+exports.getAllOrganizations = function(callback) {
+    getConnection(function onConnect(err, connection) {
+        if(!err) {
+            connection.query('SELECT * FROM organizations', function onDBOrgRetrieval(err, rows, fields) {
+                callback(err, rows);
+            });
+        }
+        else {
+            callback(err, null);
+        }
+
+        connection.release();
+    });
+}
+
+exports.getAllOrgsUserIsMemberOf = function(userId, callback) {
+    getConnection(function onConnect(err, connection) {
+        if(!err) {
+            connection.query('SELECT organizations.* from organizations LEFT JOIN `members` on organizations.organization_id = members.org_id', function onDBOrgRetrieval(err, rows, fields) {
+                if(!err) {
+                    callback(err, rows);
+                }
+                else {
+                    callback(err, null);
+                }
+            });
+        }
+        else {
+            callback(err, null);
+        }
+
+        connection.release();
     });
 }
 
@@ -252,13 +308,13 @@ exports.addNewOrganization = function(orgName, orgDesc, authorId, orgImagePath, 
                 else {
                     callback(err, null);
                 }
-                
-                connection.release();
             });
         }
         else {
             callback(err, null);
         }
+
+        connection.release();
     });
 }
 
@@ -276,13 +332,13 @@ exports.editOrganization = function(orgId, newOrgName, newOrgDesc, callback) {
                 else {
                     callback(err, null);
                 }
-                
-                connection.release();
             });
         }
         else {
             callback(err, null);
         }
+
+        connection.release();
     });
 }
 
@@ -308,13 +364,13 @@ exports.getListOfOrgsByOneKeyword = function(keyword, callback) {
                 else {
                     callback(err, null);
                 }
-                
-                connection.release();
             });
         }
         else {
             callback(err, null);
         }
+
+        connection.release();
     });
 }
 
@@ -327,13 +383,13 @@ exports.getOrgMembers = function(orgId, callback) {
         if(!err) {
             connection.query('SELECT * FROM members where org_id = \'' + orgId + '\'', function onDBMembersRetrieval(err, rows, fields) {
                 callback(err, rows);
-
-                connection.release();
             });
         }
         else {
             throw err;
         }
+
+        connection.release();
     });
 }
 
@@ -343,13 +399,13 @@ exports.getOrgMemberDetails = function(orgId, callback) {
         if(!err) {
             connection.query('SELECT users.user_id, users.username FROM users INNER JOIN members ON members.member_id = users.user_id WHERE members.org_id = \'' + orgId + '\'', function onDBMembersRetrieval(err, rows, fields) {
                 callback(err, rows);
-
-                connection.release();
             });
         }
         else {
             throw err;
         }
+
+        connection.release();
     });
 }
 
@@ -362,13 +418,13 @@ exports.addNewOrgMember = function(orgId, userId, isAdmin, callback) {
             connection.query('INSERT INTO `members`(`org_id`, `member_id`, `is_admin`) VALUES (\'' 
                              + orgId + '\', \'' + userId + '\', \'' + isAdmin + '\')', function onOrgMemberInsert(err, result) {
                 callback(err, result);
-
-                connection.release();
             });
         }
         else {
             callback(err, null);
         }
+
+        connection.release();
     });
 }
 
@@ -378,13 +434,13 @@ exports.removeOrgMember = function(orgId, userId, callback) {
         if(!err) {
             connection.query('DELETE FROM members where member_id=\'' + userId + '\' AND org_id=\'' + orgId + '\'', function onMemberRemoval(err, result) {
                 callback(err, result);
-
-                connection.release();
             });
         }
         else {
             callback(err, null);
         }
+
+        connection.release();
     });
 }
 
@@ -399,13 +455,13 @@ exports.getIsMemberAdmin = function(orgId, userId, callback) {
                 else {
                     callback(null, false);
                 }
-
-                connection.release();
             });
         }
         else {
             callback(err, null);
         }
+
+        connection.release();
     });
 }
 
@@ -420,18 +476,58 @@ exports.isMemberOfOrg = function(orgId, userId, callback) {
                 else {
                     callback(err, false);
                 }
-
-                connection.release();
             });
         }
         else {
             callback(err, null);
         }
+
+        connection.release();
     });
 }
 
 
 // =========== Events ===========
+
+exports.getAllEvents = function(callback) {
+    getConnection(function onConnect(err, connection) {
+        if(!err) {
+            connection.query('SELECT * FROM events', function onDBEventInsert(err, rows, fields) {
+                if(rows[0]) {
+                    callback(err, rows[0]);
+                }
+                else {
+                    callback(err, null);
+                }
+            });
+        }
+        else {
+            callback(err, null);
+        }
+
+        connection.release();
+    });
+}
+
+exports.getAllEventsUserIsAttending = function(userId, callback) {
+    getConnection(function onConnect(err, connection) {
+        if(!err) {
+            connection.query('SELECT events.* FROM events LEFT JOIN `organizations` on events.org_id = organizations.organization_id', function onDBEventInsert(err, rows, fields) {
+                if(rows) {
+                    callback(err, rows);
+                }
+                else {
+                    callback(err, null);
+                }
+            });
+        }
+        else {
+            callback(err, null);
+        }
+
+        connection.release();
+    });
+}
 
 //Get an event's details
 exports.getEventDetails = function(eventId, callback) {
@@ -446,13 +542,13 @@ exports.getEventDetails = function(eventId, callback) {
                 else {
                     callback(err, null);
                 }
-                
-                connection.release();
             });
         }
         else {
             callback(err, null);
         }
+
+        connection.release();
     });
 }
 
@@ -464,13 +560,13 @@ exports.addNewEvent = function(eventTitle, eventDesc, eventStartDate, orgId, can
             connection.query('INSERT INTO `events`(`title`, `description`, `start_date`, `org_id`, `can_users_comment`) VALUES (\'' +
                                 eventTitle + '\', \'' + eventDesc + '\', \'' + eventStartDate + '\', \'' + orgId + '\', \'' + convertedCanUsersComment + '\')', function onDBEventInsert(err, result) {
                 callback(err, result.insertId);
-                
-                connection.release();
             });
         }
         else {
             throw err;
         }
+
+        connection.release();
     });
 }
 
@@ -483,13 +579,13 @@ exports.editEventDetails = function(newEventTitle, newEventDesc, newEventStartDa
                              newEventDesc + '\', `start_date`=\'' + newEventStartDate + '\', `can_users_comment`=\'' +
                                 convertedCanUsersComment + '\' WHERE `event_id`=\'' + eventId + '\'', function onUpdateEvent(err, result) {
                 callback(err, result);
-                
-                connection.release();
             });
         }
         else {
             callback(err, null);
         }
+
+        connection.release();
     });
 }
 
@@ -499,13 +595,13 @@ exports.retrieveAllEventsByOrgId = function(orgId, callback) {
         if(!err) {
             connection.query('SELECT * FROM events where org_id=\'' + orgId + '\'', function onRetrieveEventsByOrgId(err, rows, fields) {
                 callback(err, rows);
-                
-                connection.release();
             });
         }
         else {
             callback(err, null);
         }
+
+        connection.release();
     });
 }
 
@@ -516,13 +612,13 @@ exports.changeAttendanceStatus = function(userId, eventId, isAttending, callback
             connection.query('INSERT INTO `attendees`(`is_attending`, `user_id`, `event_id`) VALUES (\'' 
                              + isAttending + '\', \'' + userId + '\', \'' + eventId + '\')', function onChangeAttendanceStatus(err, rows, fields) {
                 callback(err, rows);
-                
-                connection.release();
             });
         }
         else {
             callback(err, null);
         }
+
+        connection.release();
     });
 }
 
@@ -535,39 +631,41 @@ exports.getComments = function(eventId, callback) {
                              + ' where event_id=\'' + eventId + '\'', function onRetrieveCommentList(err, rows, fields) {
                 var listOfComments = [];
                 for(var result in rows) {
+                    var decodedComment = decodeString(rows[result].message);
                     listOfComments.push({ userId: rows[result].user_id, username: rows[result].username, userAvatar: rows[result].avatar_path, 
-                                            message: rows[result].message, timePosted: rows[result].time_posted });
+                                            message: decodedComment, timePosted: rows[result].time_posted });
                 }
                 callback(err, listOfComments);
-                
-                connection.release();
             });
         }
         else {
             callback(err, null);
         }
+
+        connection.release();
     });
 }
 
 //Add a new comment
-exports.addComment = function(userId, eventId, comment, callback) { 
+exports.addComment = function(userId, eventId, comment, callback) {
+    var encodedComment = encodeString(comment);
     getConnection(function onConnect(err, connection) {
         if(!err) {
             connection.query('INSERT INTO `comments`(`comment_author_id`, `message`, `event_id`) VALUES (\'' 
-                             + userId + '\', \'' + comment + '\', \'' + eventId + '\')', function onAddComment(err, result) {
+                             + userId + '\', \'' + encodedComment + '\', \'' + eventId + '\')', function onAddComment(err, result) {
                 if(!err && result) {
                     callback(null, result.insertId);
                 }
                 else {
                     callback(err, null);
                 }
-                
-                connection.release();
             });
         }
         else {
             callback(err, null);
         }
+
+        connection.release();
     });
 }
 
@@ -580,31 +678,32 @@ exports.createConversation = function(senderId, receiverId, callback) {
         if(!err) {
             connection.query('INSERT INTO `conversations`(`sender_id`, `receiver_id`) VALUES (\'' + senderId + '\', \'' + receiverId + '\')', function onConversationCreation(err, result) {
                 callback(err, result.insertId);
-                
-                connection.release();
             });
         }
         else {
             callback(err, null);
         }
+
+        connection.release();
     });
 }
 
 //Record a message between two people
 exports.replyToConversation = function(senderId, receiverId, conversationId, messageReply, timeSent, callback) {
+    var encodedMessage = encodeString(messageReply);
     getConnection(function onConnect(err, connection) {
         if(!err) {
             connection.query('INSERT INTO `message_replies`(`conversation_id`, `content`, `sender_id`, `receiver_id`, `time_sent`) VALUES (\'' 
-                             + conversationId + '\', \'' + messageReply + '\', \'' 
+                             + conversationId + '\', \'' + encodedMessage + '\', \'' 
                                 + senderId + '\', \'' + receiverId + '\', \'' + timeSent + '\')', function onConversationReplyInsert(err, result) {
                 callback(err, result.insertId);
-                
-                connection.release();
             });
         }
         else {
             callback(err, null);
         }
+
+        connection.release();
     });
 }
 
@@ -619,13 +718,13 @@ exports.getConversation = function(senderId, receiverId, callback) {
                 else {
                     callback(err, null);
                 }
-                
-                connection.release();
             });
         }
         else {
             callback(err, null);
         }
+
+        connection.release();
     });
 }
 
@@ -638,7 +737,8 @@ exports.getConvosAndReplies = function(conversationId, callback) {
                 if(rows) {
                     var toReturn = [];
                     for(var row in rows) {
-                        var convo = { conversation_id: rows[row].conversation_id, content: rows[row.content], sender_id: rows[row].sender_id, receiver_id: rows[row].receiver_id, time_sent: rows[row].time_sent };
+                        var decodedMessage = decodeString(rows[row].content);
+                        var convo = { conversation_id: rows[row].conversation_id, content: decodedMessage, sender_id: rows[row].sender_id, receiver_id: rows[row].receiver_id, time_sent: rows[row].time_sent };
                         toReturn.push(convo);
                     }
                     callback(err, toReturn);
@@ -646,13 +746,13 @@ exports.getConvosAndReplies = function(conversationId, callback) {
                 else {
                     callback(err, null);
                 }
-                
-                connection.release();
             });
         }
         else {
             callback(err, null);
         }
+
+        connection.release();
     });
 }
 
@@ -666,13 +766,13 @@ exports.getConvosAndReplies = function(conversationId, callback) {
 //                else {
 //                    callback(err, null);
 //                }
-//                
-//                connection.release();
 //            });
 //        }
 //        else {
 //            callback(err, null);
 //        }
+
+        // connection.release();
 //    });
 //}
 //
@@ -692,6 +792,8 @@ exports.getListOfConversations = function(userId, callback) {
        }
        else {
            callback(err, null);
-       }
-   });
+       } 
+
+       connection.release();
+    });
 }

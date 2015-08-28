@@ -1,25 +1,44 @@
 var express = require('express');
 var router = express.Router();
-var organization = require('../models/organization.js');
-var members = require('../models/member.js');
-var users = require('../models/user.js');
-var events = require('../models/event.js');
+var organizationModel = require('../models/organization.js');
+var memberModel = require('../models/member.js');
+var userModel = require('../models/user.js');
+var eventModel = require('../models/event.js');
 var inputValidator = require('../models/input-validator.js');
+var events = require('events');
+var eventEmitter = new events.EventEmitter();
 
 
 // =========== View/Join Organization ===========
+
+router.get('/', function(req, res, next) {
+    organizationModel.getAllOrganizations(function onOrgsRetrieval(err, listOfOrgs) {
+        if(!err && listOfOrgs) {
+            res.render('all-organizations', { user: req.session.user, listOfOrgs: listOfOrgs });
+        }
+        else {
+            if(err) {
+                req.session.errorMessage = err;
+                res.redirect('/');
+            }
+            else {
+                res.render('all-organizations', { user: req.session.user, listOfOrgs: [] });
+            }
+        }
+    });
+});
 
 //Retrieve an organization and display their information
 router.get(/^\/(\d+)\/?$/, function(req, res, next) {
     var orgId = req.params[0];
     
     //Goddamn son. How did you let it get this bad.
-    organization.getOrganization(orgId, function onOrgRetrieval(err, orgData) {
+    organizationModel.getOrganization(orgId, function onOrgRetrieval(err, orgData) {
         if(!err) {
             if(orgData) {
-                members.getOrgMemberDetails(orgId, function onMemberDetailsRetrieval(err, listOfMemberDetails) {
+                memberModel.getOrgMemberDetails(orgId, function onMemberDetailsRetrieval(err, listOfMemberDetails) {
                     if(!err) {
-                        events.getListOfEvents(orgId, function onListOfEventsRetrieval(err, listOfEvents) {
+                        eventModel.getListOfEvents(orgId, function onListOfEventsRetrieval(err, listOfEvents) {
                             if(!err && listOfEvents) {
                                 orgData.listOfEvents = listOfEvents;
                                 orgData.listOfUsers = listOfMemberDetails;
@@ -28,11 +47,11 @@ router.get(/^\/(\d+)\/?$/, function(req, res, next) {
                                 req.session.errorMessage = null;
                                 req.session.message = null;
 
-                                res.render('organization', orgData);
+                                res.render('organization', { user: req.session.user, orgData: orgData });
                             }
                             else {
                                 orgData.errorMessage = 'Something went wrong displaying a list of events';
-                                res.render('organization', orgData);
+                                res.render('organization', { user: req.session.user , orgData: orgData });
                             }
                         });
                     }
@@ -43,9 +62,8 @@ router.get(/^\/(\d+)\/?$/, function(req, res, next) {
                 });
             }
             else {
-                var err = new Error('Not Found');
-                err.status = 404;
-                next();
+                req.session.errorMessage = 'The organization you\'re looking for does not exist.';
+                res.redirect('/');
             }
         }
         else {
@@ -60,9 +78,9 @@ router.get(/(\d+)\/join/, function(req, res, next) {
     var orgId = req.params[0];
     var userId = req.session.user.userId;
     
-    members.isMemberOfOrg(orgId, userId, function(err, result) {
+    memberModel.isMemberOfOrg(orgId, userId, function(err, result) {
         if(!err && !result) {
-            members.addNewOrgMember(orgId, userId, false, function(err, result) {
+            memberModel.addNewOrgMember(orgId, userId, false, function(err, result) {
                 req.session.message = 'You are now a member of this organization';
                 res.redirect('/organizations/' + orgId);
             });
@@ -79,9 +97,9 @@ router.get(/(\d+)\/leave/, function(req, res, next) {
     var orgId = req.params[0];
     var userId = req.session.user.userId;
     
-    members.isMemberOfOrg(orgId, userId, function(err, result) {
+    memberModel.isMemberOfOrg(orgId, userId, function(err, result) {
         if(!err && !result) {
-            members.removeOrgMember(orgId, userId, function(err, result) {
+            memberModel.removeOrgMember(orgId, userId, function(err, result) {
                 req.session.message = 'You are no longer a member of this organization';
                 res.redirect('/organizations/' + orgId);
             });
@@ -105,20 +123,23 @@ router.get('/create', function(req, res, next) {
 router.post('/create', function(req, res, next) {
     var orgName = req.body.orgName;
     var orgDesc = req.body.orgDesc;
-    var orgImagePath = req.files.orgImage.name;
+    var orgImagePath = '/resources/img/default_group_avatar.png';
+    if(req.files.orgImage) {
+        orgImagePath = req.files.orgImage.name;
+    }
     var userId = req.session.user.userId;
     var inputs = [ orgName, orgDesc ];
     var inputError = inputValidator.validateOrgAndEventInput(inputs);
     console.log('Org Image Name: ' + orgImagePath);
 
     if(!inputError) {
-        organization.addNewOrganization(orgName, orgDesc, userId, orgImagePath, function onOrgInsert(err, result) {
+        organizationModel.addNewOrganization(orgName, orgDesc, userId, orgImagePath, function onOrgInsert(err, result) {
             if(!err) {
                 var orgId = result;
                 var userId = req.session.user.userId;
 
                 //Insert 'true' because the organization must have an admin
-                members.addNewOrgMember(orgId, userId, true, function onMemberInsert(err, result) {
+                memberModel.addNewOrgMember(orgId, userId, true, function onMemberInsert(err, result) {
                     console.log('Redirecting to new organization\'s page');
                     res.redirect('/organizations/' + orgId);
                 });
@@ -143,7 +164,7 @@ router.all(/(\d+)\/edit/, function(req, res, next) {
     
     //If no errors and they are an admin, send them to the proper route they requested
     //Otherwise, kick them back to organization's home page
-    members.getIsMemberAdmin(orgId, userId, function onRetrieveAdminStatus(err, result) {
+    memberModel.getIsMemberAdmin(orgId, userId, function onRetrieveAdminStatus(err, result) {
         if(!err) {
             if(result) {
                 next();
@@ -168,7 +189,7 @@ router.get(/(\d+)\/edit/, function(req, res, next) {
 
 
 //Update organization's info
-router.post(/(\d+)\/edit/, function(req, res, next) {
+router.put(/(\d+)\/edit/, function(req, res, next) {
     var orgId = req.params[0];
     var userId = req.session.user.userId;
     var newOrgName = req.body.newOrgName;
@@ -176,7 +197,7 @@ router.post(/(\d+)\/edit/, function(req, res, next) {
     var inputError = inputValidator.validateOrgAndEventInput([ newOrgName, newOrgDesc ]);
     
     if(!inputError) {
-        organization.editOrganization(orgId, newOrgName, newOrgDesc, function onEditOrg(err, result) {
+        organizationModel.editOrganization(orgId, newOrgName, newOrgDesc, function onEditOrg(err, result) {
             if(!err) {
                 req.session.message = 'Organization successfully updated';
                 res.redirect('/organizations/' + orgId);
@@ -197,11 +218,13 @@ router.post(/(\d+)\/edit/, function(req, res, next) {
 
 //How can I improve/implement this?
 var getCurrentUserAdminStatus = function(orgId, userId, callback) {
-    members.getIsMemberAdmin(orgId, userId, function onIsUserAdminRetrieval(err, isUserAdmin) {
+    memberModel.getIsMemberAdmin(orgId, userId, function onIsUserAdminRetrieval(err, isUserAdmin) {
         callback(err, isUserAdmin);
     });
 }
 
+eventEmitter.on('orgCreateError', function(req, res, err) {
 
+});
 
 module.exports = router;

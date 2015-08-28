@@ -1,10 +1,28 @@
 var express = require('express');
 var router = express.Router();
 var events = require('../models/event.js');
-var comments = require('../models/comment.js');
-var members = require('../models/member.js');
-var attendees = require('../models/attendee.js');
+var commentModel = require('../models/comment.js');
+var memberModel = require('../models/member.js');
+var attendeeModel = require('../models/attendee.js');
 var inputValidator = require('../models/input-validator.js');
+var events = require('events');
+var eventEmitter = new events.EventEmitter();
+
+
+// =========== Get All Events ===========
+
+router.get('/', function(req, res, next) {
+    events.getAllEvents(function(err, listOfEvents) {
+        if(!err) {
+            res.render('all-events', { user: req.session.user, listOfEvents: listOfEvents });
+        }
+        else {
+            req.session.errorMessage = err;
+            res.redirect('/');
+        }
+    });
+});
+
 
 // =========== View Event Details ===========
 
@@ -13,7 +31,7 @@ router.get(/^\/(\d+)\/?$/, function(req, res, next) {
     
     events.getEventDetails(eventId, function(err, eventDetails) {
         if(!err && eventDetails) {
-                comments.getComments(eventId, function(err, listOfComments) {
+                commentModel.getComments(eventId, function(err, listOfComments) {
                     if(!err && listOfComments) {
                         eventDetails.listOfComments = listOfComments;
                         eventDetails.message = req.session.message;
@@ -21,11 +39,11 @@ router.get(/^\/(\d+)\/?$/, function(req, res, next) {
                         req.session.message = null;
                         req.session.errorMessage = null;
 
-                        res.render('event', { eventDetails: eventDetails });
+                        res.render('event', { user: req.session.user, eventDetails: eventDetails });
                     }
                     else {
                         req.session.errorMessage = 'Error displaying comments';
-                        res.render('event', { eventDetails: eventDetails });
+                        res.render('event', { user: req.session.user, eventDetails: eventDetails });
                     }
                 });
 //                var detailsToPush = { eventId: eventDetails.event_id, eventTitle: eventDetails. };
@@ -44,7 +62,7 @@ router.get(/^\/(\d+)\/?$/, function(req, res, next) {
 router.get('/create', function(req, res, next) {
     var orgId = req.query.orgId;
     
-    res.render('create-event', { orgId: orgId });
+    res.render('create-event', { user: req.session.user, orgId: orgId });
 });
 
 //Create the event
@@ -67,17 +85,17 @@ router.post('/create', function(req, res, next) {
                     res.redirect('/events/' + result);
                 }
                 else {
-                    res.render('create-event', { orgId: orgId, errorMessage: 'Event unsuccessfully created, try again later or contact the administrator' });
+                    res.render('create-event', { user: req.session.user, orgId: orgId, errorMessage: 'Event unsuccessfully created, try again later or contact the administrator' });
                 }
             }
             else {
-                res.render('create-event', { orgId: orgId });
+                res.render('create-event', { user: req.session.user, orgId: orgId });
             }
         });
     }
     else {
         req.session.errorMessage = inputError.message;
-        res.render('create-event', { orgId: orgId });
+        res.render('create-event', { user: req.session.user, orgId: orgId });
     }
 });
 
@@ -86,11 +104,11 @@ router.post('/create', function(req, res, next) {
 
 //Get the 'edit event' form
 router.get(/(\d+)\/edit/, function(req, res, next) {
-    res.render('edit-event', { eventId: req.params[0] });
+    res.render('edit-event', { user: req.session.user, eventId: req.params[0] });
 });
 
 //Edit the event details
-router.post(/(\d+)\/edit/, function(req, res, next) {
+router.put(/(\d+)\/edit/, function(req, res, next) {
     var eventId = req.params[0];
     var newTitle = req.body.newEventTitle;
     var newDesc = req.body.newEventDesc;
@@ -109,17 +127,17 @@ router.post(/(\d+)\/edit/, function(req, res, next) {
                     res.redirect('/events/' + eventId);
                 }
                 else {
-                    res.render('edit-event', { eventId: eventId, errorMessage: 'Event information not updated, something went wrong, please try again later' });
+                    res.render('edit-event', { user: req.session.user, eventId: eventId, errorMessage: 'Event information not updated, something went wrong, please try again later' });
                 }
             }
             else {
-                res.render('edit-event', { eventId: eventId });
+                res.render('edit-event', { user: req.session.user, eventId: eventId });
             }
         });
     }
     else {
         req.session.errorMessage = inputError.message;
-        res.render('edit-event', { eventId: eventId });
+        res.render('edit-event', { user: req.session.user, eventId: eventId });
     }
 });
 
@@ -132,13 +150,12 @@ router.post(/(\d+)\/comment/, function(req, res, next) {
     var eventId = req.params[0];
     var userId = req.session.user.userId;
     
-    comments.addComment(eventId, userId, req.body.comment, function(err, result) {
+    commentModel.addComment(eventId, userId, req.body.comment, function(err, result) {
         if(!err && result) {
             res.redirect('/events/' + eventId);
         }
         else {
-            req.session.errorMessage = err.message;
-            res.redirect('/events/' + eventId);
+            eventEmitter.emit('specificEventError', req, res, err, eventId);
         }
     });
 });
@@ -149,35 +166,22 @@ router.post(/(\d+)\/comment/, function(req, res, next) {
 router.get(/((\d+)\/optin)/ || /(\d+)\/optout/, function(req, res, next) {
     var userId = req.session.user.userId;
     var eventId = req.params[0];
+    var isAttending = true;
     
-    if(req.url.match('optin')) {
-        attendees.changeAttendanceStatus(userId, eventId, true, function(err, result) {
-            if(!err) {
-                console.log('Success attending event');
-                req.session.message = 'You are now attending this event';
-                res.redirect('/events/' + eventId);
-            }
-            else {
-                console.log('Error attending event');
-                req.session.errorMessage = 'Something went wrong attending this event';
-                res.redirect('/events/' + eventId);
-            }
-        });
+    if(req.url.match('optout')) {
+        isAttending = false;
     }
-    else {
-        attendees.changeAttendanceStatus(userId, eventId, false, function(err, result) {
-            if(!err) {
-                console.log('Success leaving event');
-                req.session.message = 'You are no longer attending this event';
-                res.redirect('/events/' + eventId);
-            }
-            else {
-                console.log('Error leaving event');
-                req.session.errorMessage = 'Something went wrong leaving this event';
-                res.redirect('/events/' + eventId);
-            }
-        });
-    }
+
+    attendeeModel.changeAttendanceStatus(userId, eventId, isAttending, function(err, result) {
+        if(!err) {
+            req.session.message = (isAttending ? 'You are now attending this event.' : 'You are no longer attending this event.');
+            res.redirect('/events/' + eventId);
+        }
+        else {
+            console.log('Error changing event attendance status');
+            eventEmitter.emit('specificEventError', req, res, err);
+        }
+    });
 });
 
 
@@ -190,7 +194,7 @@ router.get(/((\d+)\/optin)/ || /(\d+)\/optout/, function(req, res, next) {
 //    var userId = req.session.user.userId;
 //    
 //    if(orgId) {
-//        members.getIsMemberAdmin(orgId, userId, function onRetrieveAdminStatus(err, result) {
+//        memberModel.getIsMemberAdmin(orgId, userId, function onRetrieveAdminStatus(err, result) {
 //            if(!err) {
 //                if(result) {
 //                    next();
@@ -207,7 +211,7 @@ router.get(/((\d+)\/optin)/ || /(\d+)\/optout/, function(req, res, next) {
 //        });
 //    }
 //    else if(eventId) {
-//        members.getIsMemberAdmin(orgId, userId, function onRetrieveAdminStatus(err, result) {
+//        memberModel.getIsMemberAdmin(orgId, userId, function onRetrieveAdminStatus(err, result) {
 //            if(!err) {
 //                if(result) {
 //                    next();
@@ -224,6 +228,25 @@ router.get(/((\d+)\/optin)/ || /(\d+)\/optout/, function(req, res, next) {
 //        });
 //    }
 //});
+
+eventEmitter.on('generalEventError', function(req, res, err) {
+    req.session.errorMessage = err;
+    res.redirect('/events');
+});
+
+
+eventEmitter.on('specificEventError', function(req, res, err, eventId) {
+    req.session.errorMessage = err;
+    res.redirect('/events/' + eventId);
+});
+
+eventEmitter.on('eventCreationError', function(req, res, err, completedFields) {
+    res.redirect('/events/create');
+});
+
+eventEmitter.on('eventUpdateError', function(req, res, err, eventId) {
+
+});
 
 
 module.exports = router;

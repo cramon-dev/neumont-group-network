@@ -1,7 +1,7 @@
 var dbManager = require('./db-manager.js');
 
-exports.registerNewUser = function(username, password, email, callback) {
-    dbManager.registerNewUser(username, password, email, function onQuery(err, result) {
+exports.registerNewUser = function(username, password, email, userAvatar, callback) {
+    dbManager.registerNewUser(username, password, email, userAvatar, function onQuery(err, result) {
         callback(err, result);
     });
 }

@@ -1,16 +1,19 @@
-var ngn = angular
-	.module("messager", [])
-	.service('UserService', function() {
-		var user = {};
+var ngn = angular.module("messager", []);
 
-		this.setUser = function(userToSet) {
-			user = userToSet;
+ngn.service("UserService", function($http) {
+	//just don't use this..
+	var user = {};
+
+	this.getUser = function() {
+		console.log('Get user in UserService');
+		if(!user) {
+			return ;
 		}
-
-		this.getUser = function() {
+		else {
 			return user;
 		}
-	});
+	}
+});
 
 	// this.initUser = function() {
 	// 		console.log('Init user');

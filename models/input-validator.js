@@ -4,7 +4,7 @@ exports.validateString = function(inputString) {
     if(inputString.match(/[~!#$%^&*='"(){}\[\]\\\/\<\>]/)) {
         var err = {
             name: "InvalidInputException",
-            message: "Invalid input, please refrain from using prohibited characters"
+            message: "Invalid input, please refrain from using prohibited characters."
         };
 
         return err;
@@ -25,7 +25,7 @@ exports.validateInput = function(inputStringList) {
             console.log('Found a match for potentially malicious input');
             var err = {
                 name: "InvalidInputException",
-                message: "Invalid input, please refrain from using prohibited characters"
+                message: "Invalid input, please refrain from using prohibited characters."
             };
             
             return err;
@@ -41,7 +41,7 @@ exports.validateOrgAndEventInput = function(inputStringList) {
         if(item.match(/['"(){}\[\]\\\/\<\>]/)) {
             var err = {
                 name: "InvalidInputException",
-                message: "Invalid input, please refrain from using prohibited characters"
+                message: "Invalid input, please refrain from using prohibited characters."
             };
             
             return err;
@@ -49,16 +49,4 @@ exports.validateOrgAndEventInput = function(inputStringList) {
     }
     
     return null;
-}
-
-//Encode UTF-8 string to Base64
-exports.encodeString = function(string) {
-//    return btoa(unescape(encodeURIComponent(string)));
-    return new Buffer(string).toString('base64');
-}
-
-//Decode Base64 string to UTF-8
-exports.decodeString = function(string) {
-//    return decodeURIComponent(escape(atob(string)));
-    return new Buffer(string, 'base64'); // Ta-da
 }

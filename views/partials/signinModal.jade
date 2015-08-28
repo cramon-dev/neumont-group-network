@@ -1,0 +1,16 @@
+button.userButton.btn.btn-info.btn-lg(type='button', data-toggle='modal', data-target='#myModal') Sign in
+#myModal.modal.fade(role='dialog')
+  .modal-dialog
+    .modal-content
+      .modal-header
+        button.close(type='button', data-dismiss='modal') ×
+        h4.modal-title Sign in
+      .modal-body
+        .loggedWindow
+          form.form-signin(action='http://localhost:3000/signin', method='post')
+            input.form-control(type='text', name='username', placeholder='Username', required='required', autofocus='autofocus')
+            input.form-control(type='password', name='password', placeholder='Password', required='required')
+            button.btn.btn-lg.btn-primary.btn-block(type='submit') Sign in
+      .modal-footer
+        a(href='http://localhost:3000/register') Register Account
+        button.btn.btn-default(type='button', data-dismiss='modal') Close

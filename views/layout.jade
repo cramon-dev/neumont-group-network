@@ -5,34 +5,102 @@ html
             title= title
         else
             title Neumont Group Network
-        link(rel="stylesheet", type="text/css", href="/css/style.css")
-        link(rel="stylesheet", type="text/css", href="/bootstrap/css/bootstrap.min.css")
-        link(rel="stylesheet", type="text/css", href="http://fonts.googleapis.com/css?family=Lato:400,700,900|Oswald:400,700")
-        script(src="/js/angular.min.js")
-        script(src="/js/app.js")
-        script(src="/js/controllers/messageCtrl.js")
+        link(rel="stylesheet", type="text/css", href="/resources/bootstrap/css/bootstrap.min.css")
+        link(rel="stylesheet", type="text/css", href="/resources/css/style.css")
+        meta(name="viewport", content="width=device-width, initial-scale=1")
+        script(src="/resources/js/dependencies/jquery-1.11.3.min.js")
+        script(src="/resources/js/dependencies/angular.min.js")
+        script(src="/resources/js/dependencies/jquery.validate.min.js")
+        script(src="/resources/bootstrap/js/bootstrap.min.js")
+        script(src="/resources/js/app.js")
+        script(src="/resources/js/controllers/messageCtrl.js")
 
     body
         header
-            a(class="logo" href="http://localhost:3000/") 
-                span(class="logo-text") Neumont Group Network
-            include ./partials/header-signedin.jade
-        main(class="bodyContent")
-            section(class="breadcrumb")
-            h1(class="pageTitle")= title
-            p(class="message") #{message}
-            p(class="errorMessage") #{errorMessage}
+            nav(class="navbar navbar-inverse")
+                section(class="container")
+                    div(class="navbar-header")
+                        a(class="navbar-brand", href="http://localhost:3000") Neumont Group Network
+                    section(class="collapse navbar-collapse")
+                        if user
+                            ul(class="nav navbar-nav navbar-right")
+                                li
+                                    a(href="http://localhost:3000/organizations") Organizations
+                                li
+                                    a(href="http://localhost:3000/events") Events
+                                li(class="dropdown")
+                                    a(href="#", class="dropdown-toggle", data-toggle="dropdown", role="button", aria-haspopup="true", aria-expanded="false") #{user.username}
+                                    ul(class="dropdown-menu")
+                                        li
+                                            a(href="http://localhost:3000/users/edit") Settings
+                                        li
+                                            a(href="http://localhost:3000/signout") Sign out
+                        else
+                            form(class="navbar-form navbar-right", action="http://localhost:3000/signin", method="post")
+                                div(class="form-group signin-form")
+                                    input(type="text", class="form-control", name="username", placeholder="Username")
+                                    input(type="password", class="form-control", name="password", placeholder="Password")
+                                input(type="submit", class="btn btn-primary" value="Sign in")
+                    
+        main(class="container")
+            if message
+                div(class="alert alert-warning")
+                    span #{message}
+
+            if errorMessage
+                div(class="alert alert-danger")
+                    strong #{errorMessage}
+
             block content
 
             if user
-                section(ng-app="messager")
-                    section(class="messageCtrlSection", ng-controller="messageCtrl", ng-init="setUser(#{JSON.stringify(user)})")
-                        section(class="recentMessages")
-                            input(type="button", ng-click="getAllConversations()", value="Refresh")
-                            input(type="button" ng-click="getUser()" value="Get User")
-                            h3 Messages
-                            ul(ng-repeat="conversation in conversations")
+                section(class="messager-section", ng-app="messager")
+                    section(class="", ng-controller="messageCtrl")
+                        section(class="messager-header")
+                            a(href="#", id="toggle-messager") Recent Conversations
+                            a(href="#", id="new-message") 
+                                span(class="glyphicon glyphicon-envelope")
+                        section(class="recent-conversations", ng-init="initUser()")
+                            ul(class="list-group conversation-list", ng-if="conversations")
+                                li(class="list-group-item", ng-repeat="conversation in conversations")
+                                    a(href="#", ng-click="selectConversation(conversation)")
+                                        img(class="conversation-avatar", ng-src="{{ conversation.userMessagingImg }}")
+                                        p {{ conversation.userMessaging }}
+                            ul(class="list-group", ng-if="!conversations")
+                                h5(id="no-conversations") No conversations found
+
+                                    //
+                                        userMessaging = the user who this user is conversing with 
+                                        currentUser = this user
+
+    //
+        if user
+                section(ng-app="messager", class="container")
+                    section(class="messager-section-collapsed")
+                        div(class="panel-group")
+                            div(class="panel-heading")
+                                section(class="panel-title")
+                                    a(href="#", id="toggle-messager") Recent Conversations
+                            div(class="recent-conversations")
+                                ul(class="list-group")
+                                    li(class="list-group-item")
+                                        a(href="#") username
+                                    li(class="list-group-item")
+                                        a(href="#") username2
+        script(src="/resources/js/messager-toggle.js")
+
+                //
+                    section(id="recent-conversations", class="messager-section-collapsed messager-section", ng-controller="messageCtrl", ng-init="setUser(#{JSON.stringify(user)})")
+                        a(href="#", data-toggle="collapse", data-target="#recent-conversations", class="recent-conversations-header", expanded="false") Recent Conversations
+                        div(class="conversation-list collapse collapse-in")
+                            ul(ng-repeat="conversation in conversations", ng-if="conversations")
                                 li
                                     p {{ conversation }}
-        footer
-            p Created 2015, Christian Ramon
+                            ul(ng-if="!conversations")
+                                li
+                                    p No recent conversations
+
+//
+    div(class="span4 collapse-group")
+    input(type="button", ng-click="getAllConversations()", value="Refresh")
+    input(type="button" ng-click="getUser()" value="Get User")

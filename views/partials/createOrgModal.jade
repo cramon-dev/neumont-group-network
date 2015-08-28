@@ -1,0 +1,19 @@
+section(id="createOrgModal", class="modal fade", role="dialog")
+  div(class="modal-dialog")
+      div(class="modal-content")
+          form(class="form-group", data-toggle="validator", action="http://localhost:3000/organizations/create", method="post", enctype="multipart/form-data")
+              section(class="modal-header")
+                  button(type="button", class="close", data-dismiss="modal") &times;
+                  h4(class="modal-title") New Organization
+              section(class="modal-body")
+                  div(class="form-group")
+                      label(for="orgName") Name
+                      input(type='text', class="form-control", name='orgName', required)
+                  div(class="form-group")
+                      label(for="orgDesc") Description
+                      input(type='textarea', class="form-control", name='orgDesc', required)
+                  div(class="form-group")
+                      label(for="orgImageUpload") Upload avatar
+                      input(type="file", accept="image/*", name="orgImageUpload")
+                  div(class="text-right")
+                      button(type="submit", class="btn btn-info register-btn", value="Create") Create

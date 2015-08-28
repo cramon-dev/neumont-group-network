@@ -1,14 +1,44 @@
 extends layout
 
 block content
-    section(class="welcomeSection")
+    section(class="welcome-content")
         h1 Neumont Group Network
-        p Welcome to the Neumont Group Network! With this website, students of Neumont University finally have a centralized site where they can organize student-run events and keep up to date with their clubs and orders.
-    a(class='register-button', href='http://localhost:3000/register') Sign Up
+        p(class="lead") Welcome to the Neumont Group Network! With this website, students of Neumont University finally have a centralized site where they can organize student-run events and keep up to date with their clubs and orders.
+        button(type="button", class='btn btn-lg btn-info', data-toggle="modal", data-target="#registerModal") Register
     
+    section(id="registerModal", class="modal fade", role="dialog")
+        div(class="modal-dialog")
+            div(class="modal-content")
+                form(class="form-group", data-toggle="validator", action="http://localhost:3000/register", method="post", enctype="multipart/form-data")
+                    section(class="modal-header")
+                        button(type="button", class="close", data-dismiss="modal") &times;
+                        h4(class="modal-title") Register
+                    section(class="modal-body")
+                        div(class="form-group")
+                            label(for="username") Username
+                                a(href="#", id="username-tooltip-trigger", class="glyphicon glyphicon-question-sign") 
+                            input(type='text', class="form-control", name='username', required)
+                            p(id="username-tooltip") Characters allowed: "A-Z", "0-9", "-", "_")
+                        div(class="form-group")
+                            label(for="email") Email
+                            input(type='email', class="form-control", name='email', required)
+                        div(class="form-group")
+                            label(for="password") Password
+                            input(type='password', data-match="passwordConfirm", class="form-control", name='password', id="password", required)
+                        div(class="form-group")    
+                            label(for="passwordConfirm") Confirm password
+                            input(type='password', class="form-control", id="passwordConfirm", name='passwordConfirm', required)
+                        div(class="form-group")
+                            label(for="userAvatarUpload") Upload avatar
+                                a(href="#", id="avatar-tooltip-trigger", class="glyphicon glyphicon-question-sign") 
+                            input(type="file", accept="image/*", name="userAvatarUpload")
+                            p(id="avatar-tooltip") Upload an avatar that displays next to your name
+                        div(class="text-right")
+                            button(type="submit", class="btn btn-info register-btn", value="Register") Register
     //
         p Sign In
         form(class='signInForm', action='http://localhost:3000/signin', method='post')
             input(type='text', name='username', placeholder='Username')
             input(type='password', name='password', placeholder='Password')
             input(type='submit', value='Sign in')
+            input(type='submit', class="btn btn-info", data-dismiss="modal", value='Register')

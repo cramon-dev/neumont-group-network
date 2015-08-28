@@ -1,7 +1,9 @@
 var express = require('express');
 var router = express.Router();
+var userModel = require('../models/user.js');
 var inputValidator = require('../models/input-validator.js');
-var user = require('../models/user.js');
+var events = require('events');
+var eventEmitter = new events.EventEmitter();
 
 
 router.post('/', function(req, res, next) {
@@ -14,46 +16,40 @@ router.post('/', function(req, res, next) {
 
     //If no invalid input found, authenticate, no errors while authenticating, and the user was authenticated, redirect the user home or to the url they last requested
     if(!inputError) {
-        user.authenticate(username, password, function(err, user) {
+        userModel.authenticate(username, password, function(err, user) {
             if(!err && user) {
+                console.log('Authentication successful');
                 req.session.user = user;
                 res.locals.user = user;
 
                 res.redirect('/');
             }
             else {
-                req.session.errorMessage = err.message;
-                res.redirect('/');
+                if(err) {
+                    eventEmitter.emit('authError', req, res, err);
+                }
+                else if(!user) {
+                    eventEmitter.emit('authError', req, res, 'That user doesn\'t exist.');
+                }
             }
-            // if(!err) {
-            //     if(user) {
-            //         //While signing in, get a list of all the groups the user is a member of and attach it to the session object?
-            //         req.session.user = user;
-            //         res.locals.user = user;
-                    
-            //         // res.json({ username: user.username });
-
-            //         console.log('User avatar: ' + req.session.user.userAvatar);
-
-            //         if(req.session.lastAction) {
-            //             console.log("Redirecting user to last page requested..");
-            //             res.redirect(req.session.lastAction);
-            //         }
-            //         else {
-            //             res.redirect('/');
-            //         }
-            //     }
-            //     else {
-            //         res.render('index', { errorMessage: 'Invalid username or password' });
-            //     }
-            // }
-            // else {
-            //     res.render('index', { errorMessage: 'Error while signing in, try again' });
-            // }
         });
     }
     else {
         res.render('index', { errorMessage: inputError.message });
+    }
+});
+
+eventEmitter.on('authError', function(req, res, err) {
+    console.log('Authentication error');
+    if(/.*ECONNREFUSED/.test(err) || /.*ENOENT/.test(err)) {
+        console.log(err);
+        console.log('Server error with authentication');
+        req.session.errorMessage = 'Something went wrong with our server. Please try signing in in a few minutes.';
+        res.redirect('/');
+    }
+    else {
+        req.session.errorMessage = err;
+        res.redirect('/');
     }
 });
 

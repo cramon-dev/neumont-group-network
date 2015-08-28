@@ -1,6 +1,18 @@
  var dbManager = require('./db-manager.js');
 
 
+exports.getAllEvents = function(callback) {
+    dbManager.getAllEvents(function onGetAllEvents(err, listOfEvents) {
+        callback(err, listOfEvents);
+    });
+}
+
+exports.getAllEventsUserIsAttending = function(userId, callback) {
+    dbManager.getAllEventsUserIsAttending(userId, function onUserEventRetrieval(err, listOfEvents) {
+        callback(err, listOfEvents);
+    });
+}
+
 exports.addNewEvent = function(eventTitle, eventDesc, eventStartDate, orgId, canUsersComment, callback) {
     dbManager.addNewEvent(eventTitle, eventDesc, eventStartDate, orgId, canUsersComment, function onAddNewEvent(err, result) {
         callback(err, result);

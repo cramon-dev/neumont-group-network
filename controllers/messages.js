@@ -1,25 +1,24 @@
 var express = require('express');
 var router = express.Router();
-var messages = require('../models/message.js');
-var users = require('../models/user.js');
+var messageModel = require('../models/message.js');
+var userModel = require('../models/user.js');
 var inputValidator = require('../models/input-validator.js');
 
-router.get('/:userId', function(req, res, next) {
-    // if(authenticated) {
-        var userId = req.params.userId;
-        console.log('User id: ' + userId);
-        messages.getListOfConversations(userId, function(err, listOfConversations) {
-            if(!err && listOfConversations) {
-                res.json(listOfConversations);
-            }
-            else {
-                res.status(err.statusCode).json(err);
-            }
-        });
-    // }
-    // else {
-    //     res.status(401);
-    // }
+router.get('/:userid', function(req, res, next) {
+    var userId = req.session.user.userId;
+    console.log('User id: ' + userId);
+    messageModel.getListOfConversations(userId, function(err, listOfConversations) {
+        if(!err && listOfConversations) {
+            res.json(listOfConversations);
+        }
+        else {
+            res.status(err.statusCode).json(err);
+        }
+    });
+});
+
+router.post('/:receiverId', function(req, res, next) {
+    var receiverId = req.params.receiverId;
 });
 
 // router.get('/', function(req, res, next) {
@@ -27,7 +26,7 @@ router.get('/:userId', function(req, res, next) {
 //     var statusMessage = req.session.message;
 //     var previousErrorMessage = req.session.errorMessage;
     
-//     messages.getConvosAndReplies(userId, function(err, listOfConversations) {
+//     messageModel.getConvosAndReplies(userId, function(err, listOfConversations) {
 //         if(!err && listOfConversations) {
 //             for(var convo in conversations) {
                 
@@ -46,21 +45,21 @@ router.get('/:userId', function(req, res, next) {
 //     var message = inputValidator.encodeString(req.body.messageContent);
 //     var currentTime = Date.now();
     
-//     users.getUserByName(userToSendTo, function(err, receiver) {
+//     userModel.getUserByName(userToSendTo, function(err, receiver) {
 //         if(!err && receiver) {
 //             var receiverId = receiver.user_id;
 //             var convoExists = doesConversationExist(userId, receiverId);
 
 //             if(convoExists) {
-//                 messages.replyToConversation(userId, receiverId, convoExists, message, currentTime, function(err, result) {
+//                 messageModel.replyToConversation(userId, receiverId, convoExists, message, currentTime, function(err, result) {
 //                     req.session.message = 'Message sent';
 //                     res.redirect('/mailbox');
 //                 });
 //             }
 //             else {
-//                 messages.createConversation(userId, receiverId, function(err, result) {
+//                 messageModel.createConversation(userId, receiverId, function(err, result) {
 //                     if(!err && result) {
-//                         messages.replyToConversation(userId, receiverId, result, message, currentTime, function(err, result) {
+//                         messageModel.replyToConversation(userId, receiverId, result, message, currentTime, function(err, result) {
 //                             req.session.message = 'Message sent';
 //                             res.redirect('/mailbox');
 //                         });
@@ -81,7 +80,7 @@ router.get('/:userId', function(req, res, next) {
 
 
 var doesConversationExist = function(senderId, receiverId) {
-    messages.getConversation(senderId, receiverId, function(err, conversation) {
+    messageModel.getConversation(senderId, receiverId, function(err, conversation) {
         if(!err && conversation) {
             return conversation.conversation_id;
         }

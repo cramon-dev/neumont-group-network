@@ -1,5 +1,5 @@
 if user
-    section(class="signedInHeader")
+    nav(class="navbar")
         p= user.username
         if user.userAvatar
             img(class="userAvatar", src= session.user.userAvatar)

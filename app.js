@@ -1,5 +1,6 @@
 var express = require('express');
 var path = require('path');
+var serveStatic = require('serve-static');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
@@ -44,8 +45,10 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.static(path.join(__dirname, 'uploads')));
+app.use(serveStatic(__dirname + '/public'));
+app.use(serveStatic(__dirname + '/uploads'));
+// app.use(express.static(path.join(__dirname, 'public')));
+// app.use(express.static(path.join(__dirname, 'uploads')));
 app.use(sessions({
     secret: 'g53hm#v+c=u7(4b#7q*9wds+(j)=i3+j(x4=6joi9v$7v0-gfwn5z',
     cookie: { expires: (Date.now() + hour), maxAge: hour }, //in milliseconds
@@ -76,7 +79,7 @@ app.use(function(req, res, next) {
 });
 
 //Catch all routes except sign in and register and check if user is logged in
-app.all(/\/(?!signin)(?!signout)(?!register)(\w+)/, function(req, res, next) {
+app.all(/\/(?!resources)(?!signin)(?!signout)(?!register)(?!favicon.ico)(\w+)/, function(req, res, next) {
     if(req.session.user) {
         console.log("Found valid session");
         next();
@@ -87,7 +90,7 @@ app.all(/\/(?!signin)(?!signout)(?!register)(\w+)/, function(req, res, next) {
             console.log('Recording last action taken: ' + req.path);
             req.session.lastAction = req.path;
         }
-        res.render('index', { message: 'You need to be logged in to do that' });
+        res.render('index', { message: 'You need to be signed in to do that.' });
     }
 });
 
@@ -115,24 +118,25 @@ app.use(function(req, res, next) {
 // development error handler
 // will print stacktrace
 if (app.get('env') === 'development') {
+    console.log('Dev error');
     app.use(function(err, req, res, next) {
         res.status(err.status || 500);
         res.render('error', {
-            message: err.message,
+            serverErrorMessage: err.message,
             error: err
         });
+        // res.render('prod-error', { serverErrorMessage: err.message }); // Comment this out in dev
     });
 }
-
-// production error handler
-// no stacktraces leaked to user
-app.use(function(err, req, res, next) {
-    res.status(err.status || 500);
-    res.render('error', {
-        message: err.message,
-        error: {}
+else {
+    console.log('Prod error');
+    // production error handler
+    // no stacktraces leaked to user
+    app.use(function(err, req, res, next) {
+        res.status(err.status || 500);
+        res.render('prod-error', { serverErrorMessage: err.message });
     });
-});
+}
 
 
 module.exports = app;

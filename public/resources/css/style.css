@@ -1,0 +1,172 @@
+/* Universal Styling */
+
+body {
+    background-color: #CBCBCB; /* Alternatively, background color can be #CCCCCC */
+    /* Tighter spacing between letters? */
+    /* letter-spacing: -0.5px; */
+}
+
+/* Avatar thumbnail - large size */
+.avatar-thumb-lg {
+    max-width: 192px;
+}
+
+
+/* Messager */
+
+.messager-section {
+    position: absolute;
+    bottom: 0;
+    right: 10%;
+    width: 280px;
+    height: 360px;
+    background-color: #F5F5F5;
+    border-top: 1px solid #AAA;
+    border-left: 1px solid #AAA;
+    border-right: 1px solid #AAA;
+}
+
+.messager-section .messager-header {
+    padding: 10px 15px;
+    border-bottom: 1px solid #AAA;
+}
+
+.messager-section .messager-header a {
+    text-decoration: none;
+}
+
+.messager-section .recent-conversations {
+    
+}
+
+.messager-section li {
+    list-style-type: none;
+}
+
+.messager-section #new-message {
+    position: absolute;
+    right: 7%;
+}
+
+.messager-section #no-conversations {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.messager-section-collapsed {
+    position: absolute;
+    bottom: 0;
+    right: 10%;
+    width: 20%;
+    height: 40px;
+    background-color: #F5F5F5;
+    border-top: 1px solid #AAA;
+    border-left: 1px solid #AAA;
+    border-right: 1px solid #AAA;
+}
+
+.messager-section .conversation-avatar {
+    max-width: 24px;
+}
+
+
+/* Index */
+
+.signin-form input[type=text], input[type=password] {
+	margin-right: 15px;
+}
+
+.welcome-content {
+	text-align: center;
+	margin: 0 auto;
+	padding: 40px 15px;
+}
+
+
+/* Register modal */
+
+#username-tooltip-trigger {
+    text-decoration: none;
+    position: relative;
+    left: 5px;
+}
+
+#avatar-tooltip-trigger {
+    text-decoration: none;
+    position: relative;
+    left: 5px;
+}
+
+#username-tooltip {
+    display: none;
+}
+
+#avatar-tooltip {
+    display: none;
+}
+
+
+/*#username-tooltip {
+    display: none;
+}
+
+#username-tooltip-trigger:hover #username-tooltip {
+    display: block;
+}*/
+
+/*.tooltip-trigger {
+    text-decoration: none;
+    position: relative;
+    left: 5%;
+}*/
+
+/*.register-form-tooltip {
+    display: none;
+}
+
+.tooltip-trigger:hover .register-form-tooltip {
+    display: block;
+}*/
+
+/*.register-btn {
+    margin-right: 10px;
+}*/
+
+/*
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+li {
+    list-style-type: none;
+}
+
+
+img.userAvatar {
+    max-width: 56px;
+}
+
+*/
+
+
+/* Home */
+
+.home-profile-image {
+    max-width: 256px;
+}
+
+
+/* All Organizations/Events */
+
+.org-info-section > div > img {
+    max-width: 192px;
+    margin: 0 auto;
+}
+
+.new-org-button {
+    margin-right: 5px;
+}

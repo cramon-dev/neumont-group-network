@@ -2,7 +2,7 @@ extends layout
 
 block content
     h1 Edit Organization Information
-    form(action="http://localhost:3000/organizations/#{orgId}/edit", method="post")
+    form(action="http://localhost:3000/organizations/#{orgId}/edit", method="put")
         p Organization Name:
         input(type="text", name="newOrgName")
         p Description:
