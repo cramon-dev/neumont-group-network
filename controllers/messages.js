@@ -18,9 +18,9 @@ router.get('/:userid', function(req, res, next) {
     });
 });
 
-router.post('/:receiverId', function(req, res, next) {
-    var receiverId = req.params.receiverId;
-});
+// router.post('/:receiverId', function(req, res, next) {
+//     var receiverId = req.params.receiverId;
+// });
 
 // router.get('/', function(req, res, next) {
 //     var userId = req.session.user.userId;
@@ -48,26 +48,28 @@ router.post('/send/:receiverId', function(req, res, next) {
     // var message = inputValidator.encodeString(req.body.messageContent);
     var currentTime = Date.now();
 
-    var existingConvoId = doesConversationExist(userId, receiverId);
-    if(existingConvoId) {
-        console.log('Conversation exists');
-        messageModel.replyToConversation(userId, receiverId, existingConvoId, message, currentTime, function(err, result) {
-            res.status(200).send('Message sent!');
-        });
-    }
-    else {
-        console.log('Conversation does not yet exist');
-        messageModel.createConversation(userId, receiverId, function(err, result) {
-            if(!err && result) {
-                messageModel.replyToConversation(userId, receiverId, result, message, currentTime, function(err, result) {
-                    res.status(200).send('New conversation created and message sent!');
-                });
-            }
-            else {
-                res.status(err.status || 500).send(err);
-            }
-        });
-    }
+    doesConversationExist(userId, receiverId, function(existingConvoId) {
+        if(existingConvoId) {
+            console.log('Conversation exists');
+            messageModel.replyToConversation(userId, receiverId, existingConvoId, message, currentTime, function(err, result) {
+                res.status(200).send('Message sent!');
+            });
+        }
+        else {
+            console.log('Conversation does not yet exist');
+            messageModel.createConversation(userId, receiverId, function(err, result) {
+                if(!err && result) {
+                    messageModel.replyToConversation(userId, receiverId, result, message, currentTime, function(err, result) {
+                        res.status(200).send('New conversation created and message sent!');
+                    });
+                }
+                else {
+                    res.status(err.status || 500).send('Something went wrong creating that conversation.');
+                }
+            });
+        }
+    });
+    
     
     // userModel.getUserByName(userToSendTo, function(err, receiver) {
     //     if(!err && receiver) {
@@ -102,14 +104,54 @@ router.post('/send/:receiverId', function(req, res, next) {
     // });
 });
 
+router.post('/send/user/:receiverUsername', function(req, res, next) {
+    console.log('Post a new message..');
+    var userId = req.body.senderId;
+    var message = req.body.message;
+    // var message = inputValidator.encodeString(req.body.messageContent);
+    var currentTime = Date.now();
 
-var doesConversationExist = function(senderId, receiverId) {
-    messageModel.getConversation(senderId, receiverId, function(err, conversation) {
-        if(!err && conversation) {
-            return conversation.conversation_id;
+    userModel.getUserByName(req.params.receiverUsername, function(err, foundUser) {
+        if(!err && foundUser) {
+            var receiverId = foundUser.user_id;
+            doesConversationExist(userId, receiverId, function(existingConvoId) {
+                if(existingConvoId) {
+                    console.log('Conversation exists');
+                    messageModel.replyToConversation(userId, receiverId, existingConvoId, message, currentTime, function(err, result) {
+                        res.status(200).send('Message sent!');
+                    });
+                }
+                else {
+                    console.log('Conversation does not yet exist');
+                    messageModel.createConversation(userId, receiverId, function(err, result) {
+                        if(!err && result) {
+                            messageModel.replyToConversation(userId, receiverId, result, message, currentTime, function(err, result) {
+                                res.status(200).send('New conversation created and message sent!');
+                            });
+                        }
+                        else {
+                            res.status(err.status || 500).send('Something went wrong creating that conversation.');
+                        }
+                    });
+                }
+            });
         }
         else {
-            return null;
+            res.status(err.status || 500).send('Couldn\'t get that user.');
+        }
+    });
+});
+
+
+var doesConversationExist = function(senderId, receiverId, callback) {
+    messageModel.getConversation(senderId, receiverId, function(err, conversation) {
+        if(!err && conversation) {
+            console.log('Return conversation id');
+            callback(conversation.conversation_id);
+        }
+        else {
+            console.log('Return null');
+            callback(null);
         }
     });
 }

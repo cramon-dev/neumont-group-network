@@ -37,7 +37,7 @@ router.get('/', function(req, res, next) {
         console.log('Found a user, redirecting them home');
         // res.render('home', { userId: req.session.user.userId, username: req.session.user.username, 
         //                     userAvatar: req.session.user.userAvatar, message: message, errorMessage: errorMessage });
-        res.render('home', { user: req.session.user, message: message, errorMessage: errorMessage });
+        res.render('home', { user: req.session.user, message: message, errorMessage: errorMessage, listOfOrgs: req.session.user.orgs, listOfEvents: req.session.user.events });
     }
     else {
         console.log('Did not find a user, redirecting to index page');

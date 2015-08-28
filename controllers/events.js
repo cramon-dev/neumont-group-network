@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-var events = require('../models/event.js');
+var eventModel = require('../models/event.js');
 var commentModel = require('../models/comment.js');
 var memberModel = require('../models/member.js');
 var attendeeModel = require('../models/attendee.js');
@@ -12,7 +12,7 @@ var eventEmitter = new events.EventEmitter();
 // =========== Get All Events ===========
 
 router.get('/', function(req, res, next) {
-    events.getAllEvents(function(err, listOfEvents) {
+    eventModel.getAllEvents(function(err, listOfEvents) {
         if(!err) {
             res.render('all-events', { user: req.session.user, listOfEvents: listOfEvents });
         }
@@ -29,7 +29,7 @@ router.get('/', function(req, res, next) {
 router.get(/^\/(\d+)\/?$/, function(req, res, next) {
     var eventId = req.params[0];
     
-    events.getEventDetails(eventId, function(err, eventDetails) {
+    eventModel.getEventDetails(eventId, function(err, eventDetails) {
         if(!err && eventDetails) {
                 commentModel.getComments(eventId, function(err, listOfComments) {
                     if(!err && listOfComments) {
@@ -78,7 +78,7 @@ router.post('/create', function(req, res, next) {
     var inputError = inputValidator.validateOrgAndEventInput([ eventTitle, eventDesc ]);
     
     if(!inputError) {
-        events.addNewEvent(eventTitle, eventDesc, eventStartDate, orgId, canUsersComment, function onAddNewEvent(err, result) {
+        eventModel.addNewEvent(eventTitle, eventDesc, eventStartDate, orgId, canUsersComment, function onAddNewEvent(err, result) {
             if(!err) {
                 if(result) {
                     req.session.message = 'Event successfully created';
@@ -120,7 +120,7 @@ router.put(/(\d+)\/edit/, function(req, res, next) {
     var inputError = inputValidator.validateOrgAndEventInput([ newTitle, newDesc ]);
     
     if(!inputError) {
-        events.editEventDetails(newTitle, newDesc, newStartDate, eventId, canUsersComment, function onEditEvent(err, result) {
+        eventModel.editEventDetails(newTitle, newDesc, newStartDate, eventId, canUsersComment, function onEditEvent(err, result) {
             if(!err) {
                 if(result) {
                     req.session.message = 'Event details successfully updated';

@@ -48,6 +48,31 @@ var decodeString = function(string) {
     return new Buffer(string, 'base64'); // Ta-da
 }
 
+var mysql_real_escape_string = function(str) {
+    return str.replace(/[\0\x08\x09\x1a\n\r"'\\\%]/g, function (char) {
+        switch (char) {
+            case "\0":
+                return "\\0";
+            case "\x08":
+                return "\\b";
+            case "\x09":
+                return "\\t";
+            case "\x1a":
+                return "\\z";
+            case "\n":
+                return "\\n";
+            case "\r":
+                return "\\r";
+            case "\"":
+            case "'":
+            case "\\":
+            case "%":
+                return "\\"+char; // prepends a backslash to backslash, percent,
+                                  // and double/single quotes
+        }
+    });
+}
+
 
 // =========== Sign In/Registration ===========
 
@@ -296,11 +321,13 @@ exports.getAllOrgsUserIsMemberOf = function(userId, callback) {
 exports.addNewOrganization = function(orgName, orgDesc, authorId, orgImagePath, callback) {
     getConnection(function onConnect(err, connection) {
         if(!err) {
+            var escapedName = mysql_real_escape_string(orgName);
+            var escapedDesc = mysql_real_escape_string(orgDesc);
             var uploadPath = '../' + orgImagePath;
-            console.log('Inside db manager, before final upload path: ' + orgImagePath);
-            console.log('Inside db manager, final upload path: ' + uploadPath);
-            connection.query('INSERT INTO `organizations`(`name`, `description`, `original_author_id`, `org_image_path`) VALUES (\'' + 
-                             orgName + '\', \'' + orgDesc + '\', \'' + authorId + '\', \'' + uploadPath + '\')', function onDBInsertOrg(err, result) {
+            // console.log('Inside db manager, before final upload path: ' + orgImagePath);
+            // console.log('Inside db manager, final upload path: ' + uploadPath);
+            connection.query('INSERT INTO `organizations`(`name`, `description`, `original_author_id`, `org_image_path`) VALUES (\'' 
+                             + escapedName + '\', \'' + escapedDesc + '\', \'' + authorId + '\', \'' + uploadPath + '\')', function onDBInsertOrg(err, result) {
                 //If insert was successful
                 if(result) {
                     callback(err, result.insertId);
@@ -397,7 +424,7 @@ exports.getOrgMembers = function(orgId, callback) {
 exports.getOrgMemberDetails = function(orgId, callback) {
     getConnection(function onConnect(err, connection) {
         if(!err) {
-            connection.query('SELECT users.user_id, users.username FROM users INNER JOIN members ON members.member_id = users.user_id WHERE members.org_id = \'' + orgId + '\'', function onDBMembersRetrieval(err, rows, fields) {
+            connection.query('SELECT users.user_id, users.username, users.avatar_path FROM users INNER JOIN members ON members.member_id = users.user_id WHERE members.org_id = \'' + orgId + '\'', function onDBMembersRetrieval(err, rows, fields) {
                 callback(err, rows);
             });
         }
@@ -631,9 +658,11 @@ exports.getComments = function(eventId, callback) {
                              + ' where event_id=\'' + eventId + '\'', function onRetrieveCommentList(err, rows, fields) {
                 var listOfComments = [];
                 for(var result in rows) {
-                    var decodedComment = decodeString(rows[result].message);
+                    // var decodedComment = decodeString(rows[result].message);
+                    // listOfComments.push({ userId: rows[result].user_id, username: rows[result].username, userAvatar: rows[result].avatar_path, 
+                    //                         message: decodedComment, timePosted: rows[result].time_posted });
                     listOfComments.push({ userId: rows[result].user_id, username: rows[result].username, userAvatar: rows[result].avatar_path, 
-                                            message: decodedComment, timePosted: rows[result].time_posted });
+                                            message: rows[result].message, timePosted: rows[result].time_posted });
                 }
                 callback(err, listOfComments);
             });
@@ -690,11 +719,12 @@ exports.createConversation = function(senderId, receiverId, callback) {
 
 //Record a message between two people
 exports.replyToConversation = function(senderId, receiverId, conversationId, messageReply, timeSent, callback) {
-    var encodedMessage = encodeString(messageReply);
+    // var encodedMessage = encodeString(messageReply);
+    messageReply = mysql_real_escape_string(messageReply);
     getConnection(function onConnect(err, connection) {
         if(!err) {
             connection.query('INSERT INTO `message_replies`(`conversation_id`, `content`, `sender_id`, `receiver_id`, `time_sent`) VALUES (\'' 
-                             + conversationId + '\', \'' + encodedMessage + '\', \'' 
+                             + conversationId + '\', \'' + messageReply + '\', \'' 
                                 + senderId + '\', \'' + receiverId + '\', \'' + timeSent + '\')', function onConversationReplyInsert(err, result) {
                 callback(err, result.insertId);
             });
@@ -738,8 +768,9 @@ exports.getConvosAndReplies = function(conversationId, callback) {
                 if(rows) {
                     var toReturn = [];
                     for(var row in rows) {
-                        var decodedMessage = decodeString(rows[row].content);
-                        var convo = { conversation_id: rows[row].conversation_id, content: decodedMessage, sender_id: rows[row].sender_id, receiver_id: rows[row].receiver_id, time_sent: rows[row].time_sent };
+                        // var decodedMessage = decodeString(rows[row].content);
+                        // var convo = { conversation_id: rows[row].conversation_id, content: decodedMessage, sender_id: rows[row].sender_id, receiver_id: rows[row].receiver_id, time_sent: rows[row].time_sent };
+                        var convo = { conversation_id: rows[row].conversation_id, content: rows[row].content, sender_id: rows[row].sender_id, receiver_id: rows[row].receiver_id, time_sent: rows[row].time_sent };
                         toReturn.push(convo);
                     }
                     callback(err, toReturn);
@@ -776,17 +807,27 @@ exports.getConvosAndReplies = function(conversationId, callback) {
         // connection.release();
 //    });
 //}
-//
+// 
 exports.getListOfConversations = function(userId, callback) {
    getConnection(function onConnect(err, connection) {
        if(!err) {
-           connection.query('SELECT * FROM conversations where sender_id=\'' + userId + '\' OR receiver_id=\'' + userId + '\'', function(err, rows, fields) {
-               if(rows) {
-                   callback(err, rows);
-               }
-               else {
-                   callback(err, null);
-               }
+           connection.query('SELECT message_replies.*, users.username, users.avatar_path FROM message_replies INNER JOIN `users` on message_replies.sender_id = users.user_id OR message_replies.receiver_id = users.user_id'
+                + ' where users.user_id!=\'' + userId +'\'', function(err, rows, fields) {
+                if(rows) {  
+                    var toReturn = [];
+                    // for(var i in rows) {
+                        // var decodedMessage = decodeString(rows[i].content);
+                        // console.log('Decoded message: ' + decodedMessage);
+                        // rows[i].content = decodedMessage;
+                        // toReturn.push({ messageReplyId: rows[i].message_reply_id, conversationId: rows[i].conversation_id, 
+                        //     content: rows[i].content, senderId: rows[i].sender_id, receiverId: rows[i].receiver_id, timeSent: rows[i].time_sent, unread: rows[i].unread });
+                    // }
+
+                    callback(err, rows);
+                }
+                else {
+                    callback(err, null);
+                }
            });
        }
        else {
@@ -796,3 +837,22 @@ exports.getListOfConversations = function(userId, callback) {
        connection.release();
     });
 }
+// exports.getListOfConversations = function(userId, callback) {
+//    getConnection(function onConnect(err, connection) {
+//        if(!err) {
+//            connection.query('SELECT * FROM conversations where sender_id=\'' + userId + '\' OR receiver_id=\'' + userId + '\'', function(err, rows, fields) {
+//                if(rows) {
+//                    callback(err, rows);
+//                }
+//                else {
+//                    callback(err, null);
+//                }
+//            });
+//        }
+//        else {
+//            callback(err, null);
+//        } 
+
+//        connection.release();
+//     });
+// }

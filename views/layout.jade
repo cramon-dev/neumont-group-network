@@ -58,24 +58,36 @@ html
                     section(class="", ng-controller="messageCtrl")
                         section(class="messager-header")
                             a(href="#", id="toggle-messager") Recent Conversations
-                            a(href="#", id="new-message") 
+                            a(href="#", id="new-message", ng-click="composeMessage()") 
                                 span(class="glyphicon glyphicon-envelope")
                         div(ng-if="windowMode == 'list'")
                             section(class="recent-conversations", ng-init="initUser()")
                                 ul(class="list-group conversation-list", ng-if="conversations")
-                                    li(class="list-group-item", ng-repeat="conversation in conversations")
+                                    li(class="list-group-item", ng-repeat="conversation in recentConversations")
                                         a(href="#", ng-click="selectConversation(conversation)")
-                                            img(class="conversation-avatar", ng-src="{{ conversation.userMessagingImg }}")
-                                            p {{ conversation.userMessaging }}
+                                            img(class="conversation-avatar", ng-src="{{ conversation.avatar_path }}")
+                                            p {{ conversation.username }}
                                 ul(class="list-group", ng-if="!conversations")
                                     h5(id="no-conversations") No conversations found
                         div(ng-if="windowMode == 'convo'")
                             section(class="conversation")
-                                a(href="#", class="glyphicon glyphicon-menu-left", ng-click="returnToList()")
+                                a(href="#", ng-click="returnToList()") 
+                                    span(class="glyphicon glyphicon-menu-left back-to-list")
+                                section(class="past-messages")
+                                    ul(class="list-group")
                                 section(class="conversation-input")
-                                    input(type="text", class="form-control", ng-model="message", name="message")
+                                    input(type="text", class="form-control", ng-model="messageInput", name="message", placeholder="Your message")
                                     a(href="#")
-                                        i(class="glyphicon glyphicon-menu-right", ng-click="sendMessage(message)")
+                                        i(class="glyphicon glyphicon-menu-right", ng-click="sendMessage(messageInput);messageInput=null")
+                        div(ng-if="windowMode == 'newMessage'")
+                            section(class="conversation")
+                                a(href="#", ng-click="returnToList()") 
+                                    span(class="glyphicon glyphicon-menu-left back-to-list")
+                                section(class="conversation-input")
+                                    input(type="text", class="form-control", ng-model="userToSendTo", name="usernameInput", placeholder="User to message")
+                                    input(type="text", class="form-control", ng-model="messageInput", name="messageInput", placeholder="Your message")
+                                    a(href="#")
+                                        i(class="glyphicon glyphicon-menu-right", ng-click="sendNewMessage(userToSendTo,messageInput);returnToList()")
 
                                     //
                                         userMessaging = the user who this user is conversing with 

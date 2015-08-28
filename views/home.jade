@@ -2,35 +2,36 @@ extends layout
 
 block content
 	div(class="jumbotron")
-		div(class="col-sm-6")
-			if user.userAvatar
-				img(class="img-rounded home-profile-image", src="#{user.userAvatar}")
-			else
-				img(class="img-rounded", src="/resources/img/default_user_avatar.png")
-		div(class="col-sm-6")
-			h2 Your organizations:
-			if listOfOrgs
-				each org in listOfOrgs
-					div(class="row")
-						div(class="col-sm-4")
-							img(class="img-rounded", src="#{org.org_image_path}")
-						div(class="col-sm-8")
-							a(href="http://localhost:3000/organizations/#{org.organization_id}") org.name
-			else
-				div(class="row")
-					p Not a member of any groups? 
-					span
-						a(href="http://localhost:3000/organizations") Join one today!
-			h2 Recently updated events:
-			if listOfEvents
-				each event in listOfEvents
-					div(class="row")
-						div(class="col-sm-4")
-							img(class="img-rounded", src="#{event.event_image_path}")
-						div(class="col-sm-8")
-							a(href="http://localhost:3000/events/#{event.event_id}") event.title
-			else
-				div(class="row")
-					p Not following any events?
-					span
-						a(href="http://localhost:3000/event") Sign up for an event today!
+		div(class="row")
+			div(class="col-sm-6")
+				if user.userAvatar
+					img(class="img-rounded home-profile-image", src="#{user.userAvatar}")
+				else
+					img(class="img-rounded", src="/resources/img/default_user_avatar.png")
+			div(class="col-sm-6")
+				h2 Your organizations:
+				if listOfOrgs
+					each org in listOfOrgs
+						div(class="row home-info-row")
+							div(class="col-sm-4")
+								img(class="img-rounded", src="#{org.org_image_path}")
+							div(class="col-sm-8")
+								a(href="http://localhost:3000/organizations/#{org.organization_id}") org.name
+				else
+					div(class="row home-info-row")
+						p Not a member of any groups? 
+						span
+							a(href="http://localhost:3000/organizations") Join one today!
+				h2 Recently updated events:
+				if listOfEvents
+					each event in listOfEvents
+						div(class="row home-info-row")
+							div(class="col-sm-4")
+								img(class="img-rounded", src="#{event.event_image_path}")
+							div(class="col-sm-8")
+								a(href="http://localhost:3000/events/#{event.event_id}") event.title
+				else
+					div(class="row home-info-row")
+						p Not following any events?
+						span
+							a(href="http://localhost:3000/event") Sign up for an event today!

@@ -11,11 +11,33 @@ body {
     max-width: 192px;
 }
 
+/* Avatar thumbnail - small size */
+.avatar-thumb-sm {
+    max-width: 48px;
+}
+
+ul li {
+    list-style-type: none;
+}
+
+/* Random */
+
+.home-info-row {
+    padding-top: 5px;
+    margin-left: 2px;
+    margin-right: 15px;
+}
+
+.org-list {
+    list-style-type: none;
+}
+
+
 
 /* Messager */
 
 .messager-section {
-    position: absolute;
+    position: fixed;
     bottom: 0;
     right: 10%;
     width: 280px;
@@ -83,6 +105,12 @@ body {
     position: absolute;
     bottom: 5px;
     left: 255px;
+}
+
+.messager-section .back-to-list {
+    padding-left: 15px;
+    padding-top: 10px;
+    padding-right: 5px;
 }
 
 
@@ -173,6 +201,10 @@ img.userAvatar {
     max-width: 256px;
 }
 
+.org-profile-image {
+    max-width: 384px;
+}
+
 
 /* All Organizations/Events */
 
@@ -182,5 +214,14 @@ img.userAvatar {
 }
 
 .new-org-button {
+    margin-right: 5px;
+}
+
+
+/* Organization Page */
+
+.org-actions a {
+    text-align: center;
+    margin-left: 5px;
     margin-right: 5px;
 }

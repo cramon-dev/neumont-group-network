@@ -3,19 +3,22 @@ extends layout
 block content
 	section(class="container")
 		div(class="row")
-			button(type="button", class='btn btn-lg btn-primary', data-toggle="modal", data-target="#createOrgModal")
+			button(type="button", class='btn btn-primary', data-toggle="modal", data-target="#createOrgModal")
 				span(class="glyphicon glyphicon-plus new-org-button")
 				| New Organization
 		h3 All Organizations
+		ul(class="list-group")
 		each org in listOfOrgs
 			div(class="row")
-				section(class="org-info-section")
-					div(class="col-sm-4")
-						img(class="img-responsive img-rounded", src="#{org.org_image_path}")
-					div(class="col-sm-8")
-						section(class="org-info")
-							a(class="org-name") #{org.name}
-							p(class="org-desc") #{org.description}
+				li(class="list-group-item")
+					section(class="org-info-section")
+						div(class="row")
+							div(class="col-sm-4")
+								img(class="img-responsive img-rounded", src="#{org.org_image_path}")
+							div(class="col-sm-8")
+								section(class="org-info")
+									a(class="org-name", href="http://localhost:3000/organizations/#{org.organization_id}") #{org.name}
+									p(class="org-desc") #{org.description}
 
 		section(id="createOrgModal", class="modal fade", role="dialog")
 			div(class="modal-dialog")
@@ -32,7 +35,7 @@ block content
 								label(for="orgDesc") Description
 								input(type='textarea', class="form-control", name='orgDesc', required)
 							div(class="form-group")
-								label(for="orgImageUpload") Upload avatar
-								input(type="file", accept="image/*", name="orgImageUpload")
+								label(for="orgImage") Upload avatar
+								input(type="file", accept="image/*", name="orgImage")
 							div(class="text-right")
 								button(type="submit", class="btn btn-info register-btn", value="Create") Create

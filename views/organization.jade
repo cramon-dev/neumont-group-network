@@ -1,39 +1,49 @@
 extends layout
 
 block content
-    img(class="orgImage", src= org_image_path)
-    
-    h1 #{name}
-    
-    p #{description}
-    
-    p Original Author ID: #{original_author_id}
-    
-    h4 Members
-    if locals.listOfUsers
-        each val in listOfUsers
-            li
-                a(href="http://localhost:3000/profiles/#{val.user_id}")= val.username
-            
-    h4 Events
-    if locals.listOfEvents
-        each val in listOfEvents
-            li 
-                a(href="http://localhost:3000/events/#{val.event_id}")= val.title
-    else
-        p No events posted
-    
-    if locals.isMember
-        a(href="http://localhost:3000/organizations/#{organization_id}/leave") Leave this Organization
-    else
-        a(href="http://localhost:3000/organizations/#{organization_id}/join") Join this Organization
-    
-    a(href="http://localhost:3000/organizations/#{organization_id}/edit") Edit Information
-    
-    a(href="http://localhost:3000/events/create?orgId=#{organization_id}") Add Event
-    
-    script(href="./public/scripts/join-org.js")
-    
+    div(class="jumbotron")
+        div(class="row")
+            div(class="col-sm-6")
+                img(class="org-profile-image", src= orgData.org_image_path)
+            div(class="col-sm-6")
+                div(class="row")
+                    div(class="org-actions")
+                        if locals.isMember
+                            a(href="http://localhost:3000/organizations/#{orgData.organization_id}/leave") Leave this Organization
+                        else
+                            a(href="http://localhost:3000/organizations/#{orgData.organization_id}/join") Join this Organization
+
+                        a(href="http://localhost:3000/organizations/#{orgData.organization_id}/edit") Edit Information
+                        a(href="http://localhost:3000/events/create?orgId=#{orgData.organization_id}") Add Event
+                div(class="row")
+                    h1 #{orgData.name}
+                    p #{orgData.description}
+        div(class="row")
+            - var listOfMembersLength = locals.orgData.listOfMembers.length
+            - var listOfEventsLength = locals.orgData.listOfEvents.length
+
+            h2 Members
+            if listOfMembersLength > 0
+                ul(class="list-group org-list")
+                each val in locals.orgData.listOfMembers
+                    li(class="list-group-item")
+                        if val.avatar_path != null
+                            img(class="avatar-thumb-sm", src="#{val.avatar_path}")
+                        else
+                            img(class="avatar-thumb-sm", src="/resources/img/default_user_avatar.png")
+                        a(href="http://localhost:3000/profiles/#{val.user_id}")= val.username
+
+            h2 Events
+            if listOfEventsLength > 0
+                ul(class="list-unstyled org-list")
+                each val in locals.orgData.listOfEvents
+                    li(class="list-group-item")
+                        img(class="avatar-thumb-sm", src="#{val.event_image_path}")
+                        a(href="http://localhost:3000/events/#{val.event_id}")= val.title
+            else
+                p This organization has not posted any events.
+
+
     //
         DON'T FORGET TO ADD A BUTTON THAT ALLOWS USERS TO BECOME A MEMBER OF AN ORGANIZATION
         Also some logic in the controllers that checks if the user is already a member

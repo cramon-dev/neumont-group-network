@@ -9,6 +9,23 @@ var events = require('events');
 var eventEmitter = new events.EventEmitter();
 
 
+// =========== Event Emitter ===========
+
+eventEmitter.on('generalOrgError', function(req, res, err) {
+    res.render('all-organizations', { user: req.session.user, errorMessage: err });
+});
+
+eventEmitter.on('specificOrgError', function(req, res, err) {
+    req.session.errorMessage = err;
+    res.redirect('/');
+});
+
+eventEmitter.on('renderOrgMinimalData', function(req, res, data, err) {
+    req.session.errorMessage = err;
+    res.render('organization', { user: req.session.user, orgData: data, errorMessage: err });
+});
+
+
 // =========== View/Join Organization ===========
 
 router.get('/', function(req, res, next) {
@@ -37,38 +54,41 @@ router.get(/^\/(\d+)\/?$/, function(req, res, next) {
         if(!err) {
             if(orgData) {
                 memberModel.getOrgMemberDetails(orgId, function onMemberDetailsRetrieval(err, listOfMemberDetails) {
-                    if(!err) {
+                    if(!err && listOfMemberDetails) {
                         eventModel.getListOfEvents(orgId, function onListOfEventsRetrieval(err, listOfEvents) {
                             if(!err && listOfEvents) {
                                 orgData.listOfEvents = listOfEvents;
-                                orgData.listOfUsers = listOfMemberDetails;
-                                orgData.errorMessage = req.session.errorMessage;
-                                orgData.message = req.session.message;
+                                orgData.listOfMembers = listOfMemberDetails;
+                                // orgData.errorMessage = req.session.errorMessage;
+                                // orgData.message = req.session.message;
                                 req.session.errorMessage = null;
                                 req.session.message = null;
 
                                 res.render('organization', { user: req.session.user, orgData: orgData });
                             }
                             else {
-                                orgData.errorMessage = 'Something went wrong displaying a list of events';
-                                res.render('organization', { user: req.session.user , orgData: orgData });
+                                eventEmitter.emit('renderOrgMinimalData', req, res, orgData, 'Something went wrong getting a list of events.');
+                                // res.render('organization', { user: req.session.user , orgData: orgData });
                             }
                         });
                     }
                     else {
-                        req.session.errorMessage = err.message;
-                        res.redirect('/');
+                        eventEmitter.emit('renderOrgMinimalData', req, res, orgData, 'Something went wrong getting a list of members.');
+                        // req.session.errorMessage = err.message;
+                        // res.redirect('/');
                     }
                 });
             }
             else {
-                req.session.errorMessage = 'The organization you\'re looking for does not exist.';
-                res.redirect('/');
+                eventEmitter.emit('specificOrgError', req, res, 'The organization you\'re looking for does not exist.');
+                // req.session.errorMessage = 'The organization you\'re looking for does not exist.';
+                // res.redirect('/');
             }
         }
         else {
-            req.session.errorMessage = 'Something went wrong displaying that organization, please try again later';
-            res.redirect('/');
+            eventEmitter.emit('specificOrgError', req, res, 'Something went wrong displaying that organization, please try again later.');
+            // req.session.errorMessage = 'Something went wrong displaying that organization, please try again later.';
+            // res.redirect('/');
         }
     });
 });
@@ -81,12 +101,12 @@ router.get(/(\d+)\/join/, function(req, res, next) {
     memberModel.isMemberOfOrg(orgId, userId, function(err, result) {
         if(!err && !result) {
             memberModel.addNewOrgMember(orgId, userId, false, function(err, result) {
-                req.session.message = 'You are now a member of this organization';
+                req.session.message = 'You are now a member of this organization.';
                 res.redirect('/organizations/' + orgId);
             });
         }
         else {
-            req.session.errorMessage = 'You are already a member of this organization';
+            req.session.errorMessage = 'You are already a member of this organization.';
             res.redirect('/organizations/' + orgId);
         }
     });
@@ -100,12 +120,12 @@ router.get(/(\d+)\/leave/, function(req, res, next) {
     memberModel.isMemberOfOrg(orgId, userId, function(err, result) {
         if(!err && !result) {
             memberModel.removeOrgMember(orgId, userId, function(err, result) {
-                req.session.message = 'You are no longer a member of this organization';
+                req.session.message = 'You are no longer a member of this organization,';
                 res.redirect('/organizations/' + orgId);
             });
         }
         else {
-            req.session.errorMessage = 'You aren\'t a member of this organization';
+            req.session.errorMessage = 'You weren\'t a member of this organization to begin with.';
             res.redirect('/organizations/' + orgId);
         }
     });
@@ -125,6 +145,7 @@ router.post('/create', function(req, res, next) {
     var orgDesc = req.body.orgDesc;
     var orgImagePath = '/resources/img/default_group_avatar.png';
     if(req.files.orgImage) {
+        console.log('User provided another image');
         orgImagePath = req.files.orgImage.name;
     }
     var userId = req.session.user.userId;
@@ -132,7 +153,7 @@ router.post('/create', function(req, res, next) {
     var inputError = inputValidator.validateOrgAndEventInput(inputs);
     console.log('Org Image Name: ' + orgImagePath);
 
-    if(!inputError) {
+    // if(!inputError) {
         organizationModel.addNewOrganization(orgName, orgDesc, userId, orgImagePath, function onOrgInsert(err, result) {
             if(!err) {
                 var orgId = result;
@@ -148,10 +169,10 @@ router.post('/create', function(req, res, next) {
                 res.render('create-org', { errorMessage: err.message });
             }
         });
-    }
-    else {
-        res.render('create-org', { errorMessage: inputError.message });
-    }
+    // }
+    // else {
+    //     res.render('create-org', { errorMessage: inputError.message });
+    // }
 });
 
 
